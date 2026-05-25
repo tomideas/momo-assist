@@ -22,6 +22,9 @@ python3 -m http.server 8765 --directory docs
 # 瀏覽器開 http://127.0.0.1:8765/
 ```
 
-## 與 tomideas.github.io 的關係
+## 舊網址 `tomideas.github.io`
 
-`tomideas.github.io` 預留作日後**全專案介紹站**；Momo 說明書**只維護此 `docs/` 目錄**，不再同步到該 repo。
+根網址 **https://tomideas.github.io/** 來自將刪除的 `tomideas.github.io` repo（舊說明書副本）。
+
+- **正式說明書網址**：**https://tomideas.github.io/momo-bud/**（由本 repo 的 `docs/` 發佈）
+- 舊 repo 僅暫留跳轉頁，之後會刪除，不再維護 Momo 文件
