@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [2.21.67] - 2026-05-25
+### Changed — GitHub repo 與說明書網址
+- GitHub repository 由 `hii-momo` 更名為 **`momo-assist`**。
+- 正式說明書網址改為 **https://tomideas.github.io/momo-assist/**。
+
+---
+
 ## [2.21.66] - 2026-05-25
 ### Changed — GitHub repo 與說明書網址
 - GitHub repository 由 `momo-bud` 更名為 **`hii-momo`**。
