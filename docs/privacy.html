@@ -74,6 +74,14 @@
       <td>提示詞</td>
       <td><code>chrome.storage.local</code></td>
     </tr>
+    <tr>
+      <td>上傳／AI 回覆快取圖片</td>
+      <td>IndexedDB（AttachmentStore）</td>
+    </tr>
+    <tr>
+      <td>Hermes / OpenClaw 連線狀態</td>
+      <td><code>chrome.storage.local</code>（<code>agentProviderConnections</code>）</td>
+    </tr>
   </tbody>
 </table>
 
@@ -85,6 +93,7 @@
   <li><strong>AI 對話</strong>：訊息與設定中的端點直接傳送至你所指定的 AI 服務。</li>
   <li><strong>聯網搜尋</strong>：查詢會送往你設定的搜尋引擎或相關 API。</li>
   <li><strong>頁面擷取</strong>：在瀏覽器內本地處理，用於組合提示內容。</li>
+  <li><strong>AI 回覆圖片</strong>：若 AI 回覆包含 HTTP/HTTPS 圖片 URL，擴充功能會代為下載該 URL 以便在對話中顯示並快取至本機 IndexedDB；請求只發往該 URL 所指的主機，不會傳給 Momo 開發者。</li>
 </ul>
 
 <h2>權限使用</h2>

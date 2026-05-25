@@ -50,11 +50,47 @@
 <main class="main-content">
 <h1>更新日誌</h1>
 
-<h2>v2.21.25（2026-05-05）</h2>
-<p><strong>分類理順：</strong>文件將 <strong>Hermes</strong> 與 <strong>OpenClaw</strong> 從「本地供應商」獨立為「Agent / Gateway 供應商（獨立）」，並保留 <strong>Ollama / LM Studio</strong> 為本地模型供應商，確保 <a href="index.html">介紹頁</a> 與 <a href="ai-providers.html">AI 模型供應商頁</a> 分類一致。</p>
+<h2>v2.21.61（2026-05-25）</h2>
+<p><strong>OpenClaw 連線：</strong>WebSocket 握手協定升級為 v3–v4，修正新版 Gateway 回報 <code>protocol mismatch</code>（<code>expected=4</code>）而無法 Connect / 載入 Session。Gateway URL 支援 <code>http(s)://</code> 與 <code>ws(s)://</code>，<code>http(s)</code> 會自動轉為 <code>ws(s)</code>。</p>
 
-<h2>v2.21.24（2026-05-05）</h2>
-<p><strong>Docs 站點同步：</strong>更新 docs 首頁介紹，供應商數量由 12 改為 13，並在本地供應商列表新增 <strong>Hermes（Beta）</strong>，讓 <a href="index.html">介紹頁</a> 與目前功能一致。</p>
+<h2>v2.21.60（2026-05-25）</h2>
+<p><strong>產品名稱：</strong>Extension 顯示名稱由 <strong>Momo AI Bud</strong> 更新為 <strong>Hii~ Momo: AI Assist</strong>。同步更新 manifest、側邊欄 / 設定頁標題、多語系文件標題、浮球 tooltip、web search 標記與 README。</p>
+
+<h2>v2.21.59（2026-05-25）</h2>
+<p><strong>引用頁面圖示：</strong>修正 assistant action bar 只要整個 session 曾有引用頁面，就會在後續 AI 回覆也顯示 reference page icon 的問題。現在只有該 assistant 回覆前一條 user message 本身帶有 <code>Page Referenced</code> 時才顯示圖示，並只開啟該輪綁定的頁面內容。</p>
+
+<h2>v2.21.58（2026-05-25）</h2>
+<p><strong>引用頁面 token 成本：</strong>修正引用頁面內容綁定到 user message 後，後續多輪對話仍可能因歷史訊息一起送出而重複注入整頁內容的問題。現在只有最新一條 user message 本身帶有 <code>Page Referenced</code> 時，才會把頁面內容注入 API payload；後續追問不再重送整份頁面。</p>
+
+<h2>v2.21.57（2026-05-25）</h2>
+<p><strong>Smart Capture：</strong>引用頁面擷取模式新增 <code>Smart Capture (Recommended)</code> 與 <code>Visible Text</code>。Smart Capture 會依頁型自動選擇較省 token 的策略：文章 / 文件頁走 Markdown 智能提取，產品頁、定價頁、dashboard、settings、表格 / 卡片 / 按鈕密集頁走可見文字擷取。Visible Text 只收集實際可見的標題、段落、列表、表格、按鈕與價格 / plan / feature 類區塊並去重。</p>
+
+<h2>v2.21.56（2026-05-25）</h2>
+<p><strong>Markdown 智能提取：</strong>修正產品頁 / SPA 頁面可能被 Mozilla Readability 誤判，導致引用 URL 正確但內容抓到隱藏模板或其他文章片段的問題。擷取結果現在會與目前頁面的 title / H1 關鍵字比對；若不一致，會改用 fallback DOM 與實際可見文字 <code>document.body.innerText</code> 作保底。</p>
+
+<h2>v2.21.55（2026-05-25）</h2>
+<p><strong>引用頁面送出穩定性：</strong>修正畫面已顯示 <code>Page Referenced</code>，但部分 OpenAI-compatible provider（例如 Qwen 類模型）回覆仍像沒有看到頁面內容的問題。引用頁面內容現在會直接綁定到當次 user message 的 API payload，不再依賴對話中途插入的 system message；聯網搜尋判斷也改用原始使用者輸入，避免整份頁面內容被誤當成搜尋 query。</p>
+
+<h2>v2.21.54（2026-05-24）</h2>
+<p><strong>Hermes / OpenClaw 連線狀態：</strong>設定頁刷新或切換外觀主題後，Hermes / OpenClaw 的 Connect 狀態與模型開關會正確恢復，不再要求重新 Connect。連線狀態依 Base URL、API key、OpenClaw session key 比對；手動 Disconnect 仍會清除。側邊欄亦會同步設定頁的模型選擇。</p>
+
+<h2>v2.21.53（2026-05-24）</h2>
+<p><strong>Agent 編輯捲動：</strong>Hermes / OpenClaw 編輯舊訊息後重新發送時，對話會穩定捲至最新 user / assistant 訊息，不再出現先跳到底再彈回的問題。</p>
+
+<h2>v2.21.52（2026-05-24）</h2>
+<p><strong>Agent 編輯行為：</strong>在 Hermes 或 OpenClaw 下編輯 user message 時，Momo 會將編輯後內容作為<strong>新訊息追加</strong>並重新送給 agent，不會截斷本地對話歷史（因遠端 session 無法由 Momo 假裝回退）。一般 OpenAI-compatible provider 仍維持原本「替換並截斷後續訊息」的行為。</p>
+
+<h2>v2.21.51（2026-05-24）</h2>
+<p><strong>AI 回覆圖片去重：</strong>修正 Hermes / ComfyUI 回傳 <code>MEDIA:</code> 與 query 內裸圖片 URL 被當成兩張圖重複顯示的問題；<code>MEDIA:</code> 行只取完整 URL，ComfyUI <code>/view</code> 連結會正規化去重。</p>
+
+<h2>v2.21.50（2026-05-24）</h2>
+<p><strong>AI 回覆圖片：</strong>AI 回覆若包含 <code>MEDIA:&lt;url&gt;</code>、Markdown 圖片或 HTTP/HTTPS 圖片 URL，Momo 會自動下載並在對話中內嵌顯示，成功時存入本機 IndexedDB，不只保留外部連結。Hermes / OpenClaw 的 HTTP 圖片回覆（含 OpenClaw <code>image</code> / <code>image_url</code> content part）亦支援。詳見<a href="image-upload.html#ai-reply-images">圖片上傳 — AI 回覆中的圖片</a>。</p>
+
+<h2>v2.21.24（2026-05-07）</h2>
+<p><strong>側邊欄輸入啟動：</strong>修正打開 Momo AI Bud sidepanel 後，初始化完成才清空輸入框，導致使用者剛輸入的文字可能被清掉、體感像需要等待才能打字的問題。輸入框 reset 現在會在載入模型、語言與歷史前先完成，開啟後可立即輸入。</p>
+
+<h2>v2.21.23（2026-05-05）</h2>
+<p><strong>Hermes Setup Guide i18n：</strong>Hermes Setup Guide modal 改用 i18n key，補齊繁中、簡中、英文三套文案；<code>.env</code> 範例改為真正多行 code block，避免在 modal 內被壓成單行難以閱讀。README 與 AI Providers 文件亦補充 Hermes Agent 介紹與使用建議。</p>
 
 <h2>v2.21.22（2026-05-05）</h2>
 <p><strong>Hermes Setup Guide：</strong>Hermes (beta) 現在和 OpenClaw (beta) 一樣，在 Connect row 右側顯示 <code>Setup Guide</code> 按鈕。Setup Guide modal 會依目前 provider 切換內容；Hermes 會顯示 <code>.env</code> 範例與重啟 Hermes gateway 的步驟，包含 <code>API_SERVER_CORS_ORIGINS=*</code> 說明與 <code>API_SERVER_KEY=&lt;your-secret-key&gt;</code> 佔位。</p>

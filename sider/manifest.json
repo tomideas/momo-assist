@@ -1,8 +1,8 @@
 
 {
-  "name": "Momo AI Bud",
-  "description": "Friendly AI chat sidebar — Momo AI Bud",
-  "version": "2.21.28",
+  "name": "Hii~ Momo: AI Assist",
+  "description": "Friendly AI chat sidebar — Hii~ Momo: AI Assist",
+  "version": "2.21.65",
   "manifest_version": 3,
   "icons": {
     "16": "icons/icon16.png",
@@ -49,7 +49,7 @@
     }
   ],
   "action": {
-    "default_title": "Momo AI Bud"
+    "default_title": "Hii~ Momo: AI Assist"
   },
   "side_panel": {
     "default_path": "sidepanel.html"
@@ -82,7 +82,7 @@
         "default": "Alt+Shift+Y",
         "mac": "Command+Shift+Y"
       },
-      "description": "Open Momo AI Bud"
+      "description": "Open Hii~ Momo: AI Assist"
     }
   }
 }

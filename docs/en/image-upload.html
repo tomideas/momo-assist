@@ -92,7 +92,18 @@
 </table>
 <div class="callout warning"><strong>⚠️ Model Capability</strong> Models without vision support may not process image content correctly.</div>
 
-<h2>Technical Details</h2>
+<h2 id="ai-reply-images">Images in AI Replies</h2>
+<p>In addition to uploading images <em>to</em> the AI, Momo can also display <strong>images returned in AI replies</strong> (common with Hermes, OpenClaw, and other agents that generate images).</p>
+<p>When a reply contains any of the following, Momo tries to download and render the image inline:</p>
+<ul>
+  <li>A <code>MEDIA:&lt;https-url&gt;</code> marker</li>
+  <li>Markdown image syntax <code>![...](https://...)</code></li>
+  <li>HTTP/HTTPS URLs ending in <code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, <code>.webp</code>, or <code>.gif</code></li>
+</ul>
+<p>Successfully downloaded images are stored locally in <strong>IndexedDB</strong> (AttachmentStore) and rendered in the chat bubble, not just as external links. OpenClaw replies that include HTTP images via <code>image</code> / <code>image_url</code> content parts follow the same flow.</p>
+<div class="callout warning"><strong>⚠️ Download limits</strong> If a URL has expired, requires sign-in, or is not reachable over HTTP/HTTPS, Momo may fail to download it and you may still see a link or blank area. This is an interim solution; behavior may change when agents provide a dedicated media endpoint.</div>
+
+<h2>Technical Details (Upload)</h2>
 <p>Images are sent as Base64-encoded data. The request format follows the OpenAI Vision API convention using <code>image_url</code> content blocks.</p>
 
 <nav class="page-nav">

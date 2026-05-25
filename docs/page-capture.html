@@ -54,20 +54,37 @@
 <main class="main-content">
 
 <h1>引用頁面內容</h1>
-<p>將當前瀏覽的網頁內容擷取為 AI 對話的上下文。</p>
+<p>將當前瀏覽的網頁內容擷取為 AI 對話的上下文。點擊 📄 後，user 訊息會顯示 <strong>Page Referenced / 引用頁面</strong> 標籤；頁面內容在送 API 時綁定到<strong>該則 user message</strong>，不會以中途插入的 system message 形式混在對話歷史中。</p>
 
 <h2>使用方式</h2>
-<p>點擊 📄 按鈕 → 系統擷取頁面 → 顯示預覽卡片 → 可展開檢視或取消引用。</p>
+<p>點擊 📄 按鈕 → 系統擷取頁面 → 顯示預覽卡片 → 輸入問題並送出。可展開預覽檢視或取消引用。</p>
+<p>若只引用頁面、輸入框留空就送出，聊天畫面仍只顯示「引用頁面」標籤；Momo 會在送 API 前自動補上預設提問（例如「請根據引用頁面內容回答。」），避免部分本地模型（LM Studio / Qwen 等）因空白 user 訊息報錯。</p>
+
+<h2>多輪對話與 token</h2>
+<ul>
+  <li>頁面內容<strong>只會注入「最新一則、本身帶有 Page Referenced 的 user message」</strong>的 API payload。</li>
+  <li>後續追問（未再次按 📄）只送可見對話文字，<strong>不會重送整份頁面</strong>，避免 token 浪費。</li>
+  <li>若要就同一頁繼續提問且需再次附上全文，請重新點 📄 引用後再送出新訊息。</li>
+  <li>assistant 回覆操作列的 📄 圖示，只會出現在「前一則 user message 本身有 Page Referenced」的回覆上，並只開啟該輪綁定的頁面內容。</li>
+</ul>
+<div class="callout tip"><strong>💡 聯網搜尋</strong>是否觸發，依你<strong>輸入框中的原始文字</strong>判斷，不會把整份引用頁面內容誤當成搜尋 query。</div>
 
 <h2>擷取模式</h2>
-<p>於<strong>設定 → 引用頁面</strong>可選擇擷取模式：</p>
+<p>於<strong>設定 → 引用頁面</strong>可選擇擷取模式。<strong>新安裝或未設定時，預設為 Smart Capture（推薦）。</strong></p>
 
-<h3>Full Page（全文模式）</h3>
-<p>將完整 HTML 轉為純文字後送入對話。</p>
+<h3>Smart Capture（推薦）</h3>
+<p>自動依頁型選擇較省 token 的策略：文章、文件與 blog 走 Markdown 智能提取；產品頁、定價頁、dashboard、設定頁、表格與卡片密集頁走可見文字擷取。</p>
 
 <h3>Markdown Smart Extraction（智慧精讀模式）</h3>
-<p>使用 Mozilla Readability 與 Turndown 轉為 Markdown，利於結構化閱讀。</p>
-<div class="callout tip"><strong>💡 推薦</strong>一般閱讀與長文摘要建議使用此模式，可減少雜訊並保留標題與段落結構。</div>
+<p>使用 Mozilla Readability 與 Turndown 轉為 Markdown，利於結構化閱讀。擷取前會先<strong> clone 頁面</strong>，只在 clone 內處理 DOM，不會改動你正在瀏覽的原網站排版。</p>
+<p>若 Readability 結果與目前頁面的 title / H1 關鍵字明顯不一致（常見於產品頁、SPA），會丟棄該結果並改用 fallback DOM 與可見文字保底，避免抓到隱藏模板或其他文章片段。</p>
+<div class="callout tip"><strong>💡 適合</strong>一般閱讀、文章與長文摘要，可減少雜訊並保留標題與段落結構。</div>
+
+<h3>Visible Text（可見文字）</h3>
+<p>只收集頁面實際可見的標題、段落、列表、表格、按鈕與價格 / plan / feature 類區塊並去重。適合產品頁、定價頁與應用型頁面。若精簡結果過短，會回退到 <code>document.body.innerText</code>。</p>
+
+<h3>Full Page（全文模式）</h3>
+<p>將完整 HTML 轉為純文字後送入對話。當其他模式漏內容時才建議使用，token 成本較高。</p>
 
 <h3>自訂 CSS 選擇器模式</h3>
 <p>以 CSS 選擇器指定要包含或排除的區塊，只擷取你需要的內容。</p>

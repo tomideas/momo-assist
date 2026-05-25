@@ -50,11 +50,47 @@
 <main class="main-content">
 <h1>Changelog</h1>
 
-<h2>v2.21.25 (2026-05-05)</h2>
-<p><strong>Classification cleanup:</strong> Moved <strong>Hermes</strong> and <strong>OpenClaw</strong> out of the local-provider bucket into a standalone <strong>Agent / Gateway</strong> category, while keeping <strong>Ollama / LM Studio</strong> under local model providers. This keeps <a href="index.html">Introduction</a> and <a href="ai-providers.html">AI Providers</a> classification consistent.</p>
+<h2>v2.21.61 (2026-05-25)</h2>
+<p><strong>OpenClaw connection:</strong> WebSocket handshake now supports protocol v3–v4, fixing <code>protocol mismatch</code> (<code>expected=4</code>) on newer gateways that blocked Connect / session load. Gateway URL accepts <code>http(s)://</code> and <code>ws(s)://</code>; <code>http(s)</code> is auto-converted to <code>ws(s)</code>.</p>
 
-<h2>v2.21.24 (2026-05-05)</h2>
-<p><strong>Docs site sync:</strong> Updated the docs introduction page to reflect 13 providers (was 12) and added <strong>Hermes (Beta)</strong> to the local provider list, so the <a href="index.html">Introduction</a> matches current product capabilities.</p>
+<h2>v2.21.60 (2026-05-25)</h2>
+<p><strong>Product name:</strong> Updated the extension display name from <strong>Momo AI Bud</strong> to <strong>Hii~ Momo: AI Assist</strong>. This also updates the manifest, sidebar / settings titles, localized document titles, float ball tooltip, web search marker, and README.</p>
+
+<h2>v2.21.59 (2026-05-25)</h2>
+<p><strong>Page reference icon:</strong> Fixed the assistant action bar showing the reference page icon on later replies whenever the session had ever used a page reference. The icon now appears only when the user message immediately before that assistant reply has <code>Page Referenced</code>, and it opens only the page context bound to that turn.</p>
+
+<h2>v2.21.58 (2026-05-25)</h2>
+<p><strong>Page reference token cost:</strong> Fixed an issue where referenced page content could be injected again in later turns because it was stored on an earlier user message that remained in chat history. Page content is now injected into the API payload only when the latest user message itself has <code>Page Referenced</code>; follow-up turns no longer resend the full page.</p>
+
+<h2>v2.21.57 (2026-05-25)</h2>
+<p><strong>Smart Capture:</strong> Added <code>Smart Capture (Recommended)</code> and <code>Visible Text</code> page reference modes. Smart Capture chooses a token-saving strategy by page type: article / documentation pages use Markdown Smart Extraction, while product pages, pricing pages, dashboards, settings pages, and table / card / button-heavy pages use visible text extraction. Visible Text collects and deduplicates visible headings, paragraphs, lists, tables, buttons, and price / plan / feature blocks.</p>
+
+<h2>v2.21.56 (2026-05-25)</h2>
+<p><strong>Markdown Smart Extraction:</strong> Fixed a Readability misclassification on product / SPA pages where the referenced URL was correct but the captured content came from hidden template content or an unrelated article fragment. Extraction results are now checked against the current page title / H1 keywords; mismatches fall back to an untouched fallback DOM plus the page's visible <code>document.body.innerText</code>.</p>
+
+<h2>v2.21.55 (2026-05-25)</h2>
+<p><strong>Page reference delivery:</strong> Fixed an issue where the UI showed <code>Page Referenced</code>, but some OpenAI-compatible providers, such as Qwen-style models, still answered as if the page content was missing. Referenced page content is now attached directly to the current user message API payload instead of relying on a mid-conversation system message. Web-search detection also uses the original user input so the full referenced page is not mistaken for a search query.</p>
+
+<h2>v2.21.54 (2026-05-24)</h2>
+<p><strong>Hermes / OpenClaw connection state:</strong> After refreshing the settings page or switching appearance theme, Hermes / OpenClaw Connect state and the model toggle restore correctly without requiring reconnect. Connection state is matched by Base URL, API key, and OpenClaw session key; manual Disconnect still clears it. The sidebar also syncs model selection from settings.</p>
+
+<h2>v2.21.53 (2026-05-24)</h2>
+<p><strong>Agent edit scroll:</strong> After editing and resending a message on Hermes / OpenClaw, the chat scrolls reliably to the latest user / assistant messages without bouncing back.</p>
+
+<h2>v2.21.52 (2026-05-24)</h2>
+<p><strong>Agent edit behavior:</strong> When editing a user message on Hermes or OpenClaw, Momo appends the edited content as a <strong>new message</strong> and resends it to the agent instead of truncating local history (remote agent sessions cannot be rolled back by Momo). Standard OpenAI-compatible providers keep the original replace-and-truncate behavior.</p>
+
+<h2>v2.21.51 (2026-05-24)</h2>
+<p><strong>AI reply image dedup:</strong> Fixed duplicate images when Hermes / ComfyUI returned both a full <code>MEDIA:</code> URL and a bare image URL from the query string. <code>MEDIA:</code> lines now take only the full URL; ComfyUI <code>/view</code> links are normalized for deduplication.</p>
+
+<h2>v2.21.50 (2026-05-24)</h2>
+<p><strong>AI reply images:</strong> When an AI reply contains <code>MEDIA:&lt;url&gt;</code>, Markdown images, or HTTP/HTTPS image URLs, Momo automatically downloads and displays them inline. Successfully cached images are stored locally in IndexedDB, not just as external links. HTTP image replies from Hermes / OpenClaw (including OpenClaw <code>image</code> / <code>image_url</code> content parts) are supported. See <a href="image-upload.html#ai-reply-images">Image Upload — Images in AI Replies</a>.</p>
+
+<h2>v2.21.24 (2026-05-07)</h2>
+<p><strong>Sidebar input startup:</strong> Fixed an issue where opening the Momo AI Bud sidepanel could clear text typed immediately after the UI appeared, making it feel like users had to wait before typing. The composer reset now runs before model, language, and history initialization, so the input is ready right away.</p>
+
+<h2>v2.21.23 (2026-05-05)</h2>
+<p><strong>Hermes Setup Guide i18n:</strong> Hermes Setup Guide now uses i18n keys with Traditional Chinese, Simplified Chinese, and English text. The Hermes <code>.env</code> example now renders as a real multi-line code block instead of collapsing into one line. README and AI Providers docs also include the Hermes Agent overview and usage guidance.</p>
 
 <h2>v2.21.22 (2026-05-05)</h2>
 <p><strong>Hermes Setup Guide:</strong> Hermes (beta) now shows the same <code>Setup Guide</code> button as OpenClaw (beta) in the Connect row. The modal switches content based on the current provider; Hermes shows the <code>.env</code> example and Hermes gateway restart steps, including <code>API_SERVER_CORS_ORIGINS=*</code> and the placeholder <code>API_SERVER_KEY=&lt;your-secret-key&gt;</code>.</p>

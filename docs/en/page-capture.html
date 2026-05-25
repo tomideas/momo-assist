@@ -54,20 +54,37 @@
 <main class="main-content">
 
 <h1>Page Capture</h1>
-<p>Capture the content of the current webpage as context for your AI conversation.</p>
+<p>Capture the current webpage as context for your AI conversation. After clicking 📄, the user message shows a <strong>Page Referenced</strong> label. Page content is attached to <strong>that user message's API payload</strong>, not inserted as a mid-conversation system message in chat history.</p>
 
 <h2>How to Use</h2>
-<p>Click the 📄 button → the system captures the page → a preview card appears → you can expand to view or cancel the capture.</p>
+<p>Click the 📄 button → the system captures the page → a preview card appears → type your question and send. You can expand the preview or cancel the reference.</p>
+<p>If you send with only a page reference and an empty input, the chat still shows only the reference label. Momo adds a default user query at API time (for example, asking the model to answer based on the referenced page) so local stacks such as LM Studio / Qwen do not fail on an empty user message.</p>
+
+<h2>Multi-turn Conversations and Tokens</h2>
+<ul>
+  <li>Page content is injected into the API payload <strong>only for the latest user message that itself has Page Referenced</strong>.</li>
+  <li>Follow-up turns without clicking 📄 again send only the visible conversation text and <strong>do not resend the full page</strong>.</li>
+  <li>To ask another question with the full page attached again, click 📄 to reference the page and send a new message.</li>
+  <li>The 📄 icon in the assistant action bar appears only when the user message immediately before that reply has Page Referenced, and it opens only the page context bound to that turn.</li>
+</ul>
+<div class="callout tip"><strong>💡 Web search</strong> is decided from your <strong>original typed input</strong>, not from the full referenced page content.</div>
 
 <h2>Capture Modes</h2>
-<p>Go to <strong>Settings → Page Capture</strong> to choose a capture mode:</p>
+<p>Go to <strong>Settings → Page Capture</strong> to choose a capture mode. <strong>Smart Capture (Recommended) is the default for new installs and unset profiles.</strong></p>
 
-<h3>Full Text Mode</h3>
-<p>Converts the full HTML into plain text and sends it to the conversation.</p>
+<h3>Smart Capture (Recommended)</h3>
+<p>Automatically chooses a token-saving strategy by page type: articles, docs, and blogs use Markdown Smart Extraction; product pages, pricing pages, dashboards, settings pages, tables, and card-heavy pages use visible text extraction.</p>
 
-<h3>Reader Mode</h3>
-<p>Uses Mozilla Readability and Turndown to convert the page into Markdown, preserving structure for easier reading.</p>
-<div class="callout tip"><strong>💡 Recommended</strong> For general reading and long-text summarization, Reader Mode is recommended — it reduces noise while preserving headings and paragraph structure.</div>
+<h3>Markdown Smart Extraction</h3>
+<p>Uses Mozilla Readability and Turndown to convert the page into Markdown, preserving structure for easier reading. Capture <strong>clones the page first</strong> and processes only the clone, so the live site layout is not mutated.</p>
+<p>If the Readability result clearly mismatches the current page title / H1 keywords (common on product pages and SPAs), that result is discarded and replaced with a fallback DOM plus visible text so hidden templates or unrelated article fragments are not captured.</p>
+<div class="callout tip"><strong>💡 Best for</strong> Articles and long-text summarization. It reduces noise while preserving headings and paragraph structure.</div>
+
+<h3>Visible Text</h3>
+<p>Collects and deduplicates actually visible headings, paragraphs, lists, tables, buttons, and price / plan / feature blocks. Best for product pages, pricing pages, and app-like pages. If the trimmed result is too short, it falls back to <code>document.body.innerText</code>.</p>
+
+<h3>Full Page</h3>
+<p>Converts the full HTML into plain text and sends it to the conversation. Use this only when cleaner modes miss important content, as it costs more tokens.</p>
 
 <h3>Custom Mode</h3>
 <p>Use CSS selectors to specify which sections to include or exclude, capturing only the content you need.</p>

@@ -22,7 +22,7 @@ function tpl(key, vars){
   return s;
 }
 
-let captureSettings = { mode:'full', include:'', exclude:'' };
+let captureSettings = { mode:'smart', include:'', exclude:'' };
 let customCaptureDraft = { include:'', exclude:'' };
 
 
@@ -280,6 +280,91 @@ function isConnectFirstProvider(providerId){
   return !!(d?.isOpenClaw || d?.isAgentProvider);
 }
 
+const AGENT_PROVIDER_CONNECTIONS_KEY = 'agentProviderConnections';
+
+function isAgentProviderConnected(){
+  return !!els.btnTestConnectionOC?.classList.contains('btn-connected');
+}
+
+function updateHermesSessionControls(){
+  const isHermes = currentProvider === 'hermes';
+  if(els.hermesSessionField) els.hermesSessionField.classList.toggle('hidden', !isHermes);
+  if(els.btnNewHermesSession) els.btnNewHermesSession.disabled = !isHermes || !isAgentProviderConnected();
+}
+
+function updateAgentConnectionButtonLabel(btn){
+  if(!btn) return;
+  const connected = btn.classList.contains('btn-connected');
+  const showDisconnect = connected && btn.matches(':hover, :focus-visible');
+  btn.textContent = showDisconnect
+    ? (btn.dataset.disconnectLabel || t('openclawDisconnect'))
+    : connected
+      ? (btn.dataset.connectedLabel || t('openclawConnected'))
+      : t('openclawConnect');
+}
+
+function getAgentConnectionFingerprint(providerId){
+  const provider = providersData[providerId] || {};
+  const baseUrl = (els.providerBaseUrl?.value.trim() || provider.customBaseUrl || PROVIDER_DEFAULTS[providerId]?.baseUrl || '').replace(/\/+$/,'');
+  const apiKeySet = !!(els.providerApiKey?.value.trim() || provider.apiKey || '');
+  const sessionKey = PROVIDER_DEFAULTS[providerId]?.isOpenClaw
+    ? (els.openclawSessionKey?.value.trim() || provider.sessionKey || '')
+    : '';
+  return JSON.stringify({ baseUrl, apiKeySet, sessionKey });
+}
+
+async function persistAgentConnectionState(providerId, connected){
+  if(!isConnectFirstProvider(providerId)) return;
+  const data = await chrome.storage.local.get(AGENT_PROVIDER_CONNECTIONS_KEY);
+  const state = data[AGENT_PROVIDER_CONNECTIONS_KEY] || {};
+  state[providerId] = {
+    connected: !!connected,
+    fingerprint: getAgentConnectionFingerprint(providerId),
+    updatedAt: Date.now()
+  };
+  await chrome.storage.local.set({ [AGENT_PROVIDER_CONNECTIONS_KEY]: state });
+}
+
+async function readAgentConnectionState(providerId){
+  if(!isConnectFirstProvider(providerId)) return false;
+  const data = await chrome.storage.local.get(AGENT_PROVIDER_CONNECTIONS_KEY);
+  const record = data[AGENT_PROVIDER_CONNECTIONS_KEY]?.[providerId];
+  if(!record){
+    const primary = getProviderPrimaryModelName(providerId);
+    return !!providersData[providerId]?.models?.some(m => m.name === primary && m.enabled !== false);
+  }
+  return !!record?.connected && record.fingerprint === getAgentConnectionFingerprint(providerId);
+}
+
+async function restoreAgentConnectionState(providerId){
+  if(!isConnectFirstProvider(providerId)) return;
+  const connected = await readAgentConnectionState(providerId);
+  setAgentConnectionButtonConnected(els.btnTestConnectionOC, connected, { persist:false });
+  if(els.openclawModelToggle){
+    const primary = getProviderPrimaryModelName(providerId);
+    const modelEnabled = !!providersData[providerId]?.models?.some(m => m.name === primary && m.enabled !== false);
+    els.openclawModelToggle.checked = modelEnabled;
+    els.openclawModelToggle.disabled = !connected;
+  }
+  updateHermesSessionControls();
+}
+
+function setAgentConnectionButtonConnected(btn, connected, options = {}){
+  if(!btn) return;
+  const { persist = true } = options;
+  btn.disabled = false;
+  btn.classList.toggle('btn-connected', !!connected);
+  btn.dataset.connectedLabel = t('openclawConnected');
+  btn.dataset.disconnectLabel = t('openclawDisconnect');
+  updateAgentConnectionButtonLabel(btn);
+  updateHermesSessionControls();
+  if(persist && currentProvider && isConnectFirstProvider(currentProvider)){
+    persistAgentConnectionState(currentProvider, !!connected).catch(err => {
+      console.warn('[Agent Provider] Failed to persist connection state:', err);
+    });
+  }
+}
+
 function getProviderPrimaryModelName(providerId){
   const d = PROVIDER_DEFAULTS[providerId];
   return d?.models?.[0] || providerId || '';
@@ -404,10 +489,16 @@ function loadProviderConfig(providerId){
     if(els.btnOpenClawTutorial) els.btnOpenClawTutorial.classList.toggle('hidden', !isConnectFirst);
     if(els.agentModelName) els.agentModelName.textContent = getProviderPrimaryModelName(providerId);
     if(isConnectFirst && els.openclawModelToggle){
-      // Default: off + disabled until connected
-      els.openclawModelToggle.checked = false;
+      const primary = getProviderPrimaryModelName(providerId);
+      const modelEnabled = !!provider.models?.some(m => m.name === primary && m.enabled !== false);
+      els.openclawModelToggle.checked = modelEnabled;
       els.openclawModelToggle.disabled = true;
-      setProviderPrimaryModelEnabled(providerId, false);
+    }
+    if(isConnectFirst){
+      setAgentConnectionButtonConnected(els.btnTestConnectionOC, false, { persist:false });
+      restoreAgentConnectionState(providerId).catch(err => {
+        console.warn('[Agent Provider] Failed to restore connection state:', err);
+      });
     }
   }
   if(els.openclawSessionKeyField){
@@ -422,6 +513,10 @@ function loadProviderConfig(providerId){
       if(wsUrl) loadOpenClawSessions();
     }
   }
+  if(els.hermesSessionField){
+    if(els.hermesSessionStatus) els.hermesSessionStatus.textContent = '';
+    updateHermesSessionControls();
+  }
 
   // OpenClaw-specific: update labels/hints
   const apiKeyLabel = document.querySelector('label[for="providerApiKey"]');
@@ -434,10 +529,10 @@ function loadProviderConfig(providerId){
     if(els.providerBaseUrlHint) els.providerBaseUrlHint.innerHTML = tpl('openclawWsHint',{url:defaultUrl});
     // Rename API Key label hint for OpenClaw
     if(apiKeyLabel) apiKeyLabel.setAttribute('data-provider-key-original', apiKeyLabel.textContent);
-    if(apiKeyLabel) apiKeyLabel.textContent = 'Gateway Token';
+    if(apiKeyLabel) apiKeyLabel.textContent = t('gatewayTokenLabel');
   } else if(PROVIDER_DEFAULTS[providerId]?.isAgentProvider){
     if(apiKeyLabel) apiKeyLabel.setAttribute('data-provider-key-original', apiKeyLabel.textContent);
-    if(apiKeyLabel) apiKeyLabel.textContent = 'API Server Key';
+    if(apiKeyLabel) apiKeyLabel.textContent = t('apiServerKeyLabel');
   }
 
   // Thinking mode is now per-model (in model row dropdown), no provider-level toggle needed
@@ -629,6 +724,9 @@ function cacheDom(){
     openclawSessionKeyHint: $('#openclawSessionKeyHint'),
     sessionSwitchStatus: $('#sessionSwitchStatus'),
     btnLoadSessions: $('#btnLoadSessions'),
+    hermesSessionField: $('#hermesSessionField'),
+    btnNewHermesSession: $('#btnNewHermesSession'),
+    hermesSessionStatus: $('#hermesSessionStatus'),
     openclawProviderOption: $('#openclawProviderOption'),
     openclawTestRow: $('#openclawTestRow'),
     btnTestConnectionOC: $('#btnTestConnectionOC'),
@@ -653,9 +751,10 @@ function cacheDom(){
     secOpenclawToggle: $('#sec-openclaw-toggle'),
     openclawModelToggle: $('#openclawModelToggle'),
 
+    languageSegment: $('#languageSegment'),
     themeSegment: $('#themeSegment'),
     showFloatBall: $('#showFloatBall'),
-    languageSegment: $('#languageSegment'),
+    freshChatOnPanelOpen: $('#freshChatOnPanelOpen'),
     messageSizeSlider: $('#messageSizeSlider'),
     messageSizeValue: $('#messageSizeValue'),
     messageWeightSelect: $('#messageWeightSelect'),
@@ -706,10 +805,7 @@ async function init(){
   bindEvents();
   await loadAll();
   applyThemeButtons();
-  // 延遲執行語言轉換，確保所有 DOM 已渲染且 i18n.js 已載入
-  setTimeout(()=>{
-    applyLanguageConversion();
-  }, 100);
+  setTimeout(()=>{ applyLanguageConversion(); }, 100);
   // 延遲初始化自訂 select（等 TTS voices 等動態選項載入）
   setTimeout(()=>{
     document.querySelectorAll('select.input').forEach(sel => initCustomSelect(sel));
@@ -813,16 +909,17 @@ function bindEvents(){
 
   // OpenClaw Session 載入與選擇自動保存
   els.btnLoadSessions?.addEventListener('click', loadOpenClawSessions);
+  els.btnNewHermesSession?.addEventListener('click', resetHermesSession);
   els.openclawSessionKey?.addEventListener('change', ()=>{
     const statusEl = els.sessionSwitchStatus;
     if(statusEl){
-      statusEl.textContent = t('sessionSwitching') || '切換中…';
+      statusEl.textContent = t('sessionSwitching') || 'Switching…';
       statusEl.className = 'inline-status status-loading';
     }
     saveCurrentProviderConfig();
     setTimeout(()=>{
       if(statusEl){
-        statusEl.textContent = t('sessionSwitched') || '✓ 已切換';
+        statusEl.textContent = t('sessionSwitched') || '✓ Switched';
         statusEl.className = 'inline-status status-ok';
         setTimeout(()=>{ statusEl.textContent = ''; statusEl.className = 'inline-status'; }, 2500);
       }
@@ -837,6 +934,9 @@ function bindEvents(){
     } else {
       testConnection();
     }
+  });
+  ['mouseenter','mouseleave','focus','blur'].forEach(evt=>{
+    els.btnTestConnectionOC?.addEventListener(evt, ()=>updateAgentConnectionButtonLabel(els.btnTestConnectionOC));
   });
 
   // 主題
@@ -871,6 +971,16 @@ function bindEvents(){
     });
   }
 
+  if(els.freshChatOnPanelOpen){
+    els.freshChatOnPanelOpen.addEventListener('change',()=>{
+      const enabled = !!els.freshChatOnPanelOpen.checked;
+      chrome.storage.local.set({ freshChatOnPanelOpen: enabled });
+      chrome.storage.sync.set({ freshChatOnPanelOpen: enabled }, ()=>{
+        setStatus(t('sidebarBehaviorUpdated'),'success');
+      });
+    });
+  }
+
   // Open shortcuts page button
   const btnOpenShortcutsPage = document.getElementById('btnOpenShortcutsPage');
   if (btnOpenShortcutsPage) {
@@ -879,6 +989,24 @@ function bindEvents(){
     });
   }
   
+  // 語言設定（繁體 / 簡體 / 英文）
+  if(els.languageSegment){
+    els.languageSegment.addEventListener('click', e=>{
+      const btn=e.target.closest('.seg-btn'); if(!btn) return;
+      const lang=btn.dataset.lang;
+      chrome.storage.local.set({ zhVariant: lang }, ()=>{
+        chrome.storage.sync.set({ zhVariant: lang });
+        currentLang = lang;
+        [...els.languageSegment.querySelectorAll('.seg-btn')].forEach(b=>b.classList.toggle('active', b.dataset.lang===lang));
+        applyLanguageConversion();
+        loadProviderConfig(currentProvider);
+        updateThinkingHint(currentProvider);
+        updateOpenClawSessionPlaceholder();
+        refreshTtsVoices?.();
+      });
+    });
+  }
+
   // 頁面內容字符限制
   if(els.pageContextLimit){
     els.pageContextLimit.addEventListener('change',()=>{
@@ -891,23 +1019,6 @@ function bindEvents(){
         showAlert(t('pageLimitAlert'));
         els.pageContextLimit.value = 20000;
       }
-    });
-  }
-
-  // 語言設定（繁體/簡體/英文）
-  if(els.languageSegment){
-    els.languageSegment.addEventListener('click', e=>{
-      const btn=e.target.closest('.seg-btn'); if(!btn) return;
-      const lang=btn.dataset.lang; // hant | hans | en
-      chrome.storage.local.set({ zhVariant: lang }, async ()=>{
-        chrome.storage.sync.set({ zhVariant: lang });
-        currentLang = lang;
-        [...els.languageSegment.querySelectorAll('.seg-btn')].forEach(b=>b.classList.toggle('active', b.dataset.lang===lang));
-        await applyLanguageConversion();
-        // Re-render provider hint with new language
-        loadProviderConfig(currentProvider);
-        updateThinkingHint(currentProvider);
-      });
     });
   }
 
@@ -966,7 +1077,7 @@ async function loadAll(){
     chrome.storage.local.get([
       'apiKey','apiEndpoint','customModels',
       'providerDataMigrated',
-      'zhVariant','theme','messageSize','messageWeight','showFloatBall',
+      'zhVariant','theme','messageSize','messageWeight','showFloatBall','freshChatOnPanelOpen',
       'ttsVoice','ttsRate','ttsPitch', // TTS settings
       'pageCaptureMode','pageCaptureInclude','pageCaptureExclude',
       'pageCaptureCustomInclude','pageCaptureCustomExclude','pageContextLimit',
@@ -974,7 +1085,7 @@ async function loadAll(){
       ...providerKeys  // 本地備份，供遷移用
     ]),
     chrome.storage.sync.get([
-      'theme','activeProvider','messageWeight','messageSize','showFloatBall',
+      'theme','activeProvider','messageWeight','messageSize','showFloatBall','freshChatOnPanelOpen',
       'ttsVoice','ttsRate','ttsPitch',
       'pageCaptureMode','pageCaptureInclude','pageCaptureExclude',
       'pageCaptureCustomInclude','pageCaptureCustomExclude',
@@ -1088,6 +1199,7 @@ async function loadAll(){
   // Load current provider config
   loadProviderConfig(currentProvider);
   updateThinkingHint(currentProvider);
+  updateOpenClawSessionPlaceholder();
   
   applyTheme(merged.theme||'auto');
 
@@ -1095,23 +1207,23 @@ async function loadAll(){
   if(els.showFloatBall){
     els.showFloatBall.checked = !!merged.showFloatBall;
   }
-
-  // 初始化語言顯示（默認繁體中文）
-  const lang=merged.zhVariant||_defaultLang();
-  currentLang=lang;
-  if(els.languageSegment){
-    [...els.languageSegment.querySelectorAll('.seg-btn')].forEach(b=>b.classList.toggle('active', b.dataset.lang===lang));
+  if(els.freshChatOnPanelOpen){
+    els.freshChatOnPanelOpen.checked = merged.freshChatOnPanelOpen !== false;
   }
-  
-  // 應用翻譯（同步等待，確保 t() 可用）
+
+  currentLang = merged.zhVariant || _defaultLang();
+  if(els.languageSegment){
+    [...els.languageSegment.querySelectorAll('.seg-btn')].forEach(b=>b.classList.toggle('active', b.dataset.lang===currentLang));
+  }
   if(typeof window.__applyTranslations === 'function'){
-    try{ await window.__applyTranslations(lang); }catch(err){
+    try{ await window.__applyTranslations(currentLang); }catch(err){
       console.warn('[OPT] Failed to apply translations:', err);
     }
   }
   // Re-apply provider config now that i18n and currentLang are ready
   loadProviderConfig(currentProvider);
   updateThinkingHint(currentProvider);
+  updateOpenClawSessionPlaceholder();
 
   // 初始化訊息字號
   const size = String(merged.messageSize || '14');
@@ -1141,7 +1253,7 @@ async function loadAll(){
     if(storedInclude || storedExclude){
       mode='custom';
     }else{
-      mode='reader';
+      mode='smart';
     }
   }
 
@@ -1256,6 +1368,7 @@ function applyThemeButtons(){
 }
 
 /* ---------- TTS ---------- */
+let refreshTtsVoices = null;
 function initTtsSettings(merged){
   if(!els.ttsVoiceSelect) return;
   const savedVoice = merged.ttsVoice || '';
@@ -1280,17 +1393,17 @@ function initTtsSettings(merged){
     }
     function langLabel(lang){
       const l = (lang||'').toLowerCase();
-      if(l.startsWith('zh')) return '中文';
-      if(l.startsWith('ja')) return '日本語';
-      if(l.startsWith('ko')) return '한국어';
-      if(l.startsWith('en')) return 'English';
-      if(l.startsWith('fr')) return 'Français';
-      if(l.startsWith('de')) return 'Deutsch';
-      if(l.startsWith('es')) return 'Español';
-      if(l.startsWith('pt')) return 'Português';
-      if(l.startsWith('it')) return 'Italiano';
-      if(l.startsWith('ru')) return 'Русский';
-      return lang || 'Other';
+      if(l.startsWith('zh')) return t('ttsLangZh');
+      if(l.startsWith('ja')) return t('ttsLangJa');
+      if(l.startsWith('ko')) return t('ttsLangKo');
+      if(l.startsWith('en')) return t('ttsLangEn');
+      if(l.startsWith('fr')) return t('ttsLangFr');
+      if(l.startsWith('de')) return t('ttsLangDe');
+      if(l.startsWith('es')) return t('ttsLangEs');
+      if(l.startsWith('pt')) return t('ttsLangPt');
+      if(l.startsWith('it')) return t('ttsLangIt');
+      if(l.startsWith('ru')) return t('ttsLangRu');
+      return lang || t('ttsLangOther');
     }
 
     const sorted = [...voices].sort((a,b) => {
@@ -1319,6 +1432,7 @@ function initTtsSettings(merged){
     });
   }
 
+  refreshTtsVoices = populateVoices;
   populateVoices();
   if(window.speechSynthesis){
     window.speechSynthesis.onvoiceschanged = populateVoices;
@@ -1394,6 +1508,80 @@ function showAgentSetupGuide(providerId){
   els.openclawTutorialModal.hidden = false;
 }
 
+function makeHermesSessionId(){
+  const extId = chrome?.runtime?.id || 'extension';
+  const suffix = crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  return `momo-${extId}-hermes-${suffix}`;
+}
+
+async function resetHermesSession(){
+  if(currentProvider !== 'hermes') return;
+  if(!isAgentProviderConnected()){
+    if(els.hermesSessionStatus){
+      els.hermesSessionStatus.textContent = t('hermesNewSessionRequiresConnect') || 'Connect Hermes before creating a new session.';
+      els.hermesSessionStatus.className = 'inline-status warning';
+    }
+    updateHermesSessionControls();
+    return;
+  }
+  const ok = window.confirm(t('hermesNewSessionConfirm') || 'Start a new Hermes session and clear local Hermes history?');
+  if(!ok) return;
+  const btn = els.btnNewHermesSession;
+  const statusEl = els.hermesSessionStatus;
+  if(btn) btn.disabled = true;
+  if(statusEl){
+    statusEl.textContent = t('processing') || 'Processing...';
+    statusEl.className = 'inline-status status-loading';
+  }
+
+  try{
+    const nextSessionId = makeHermesSessionId();
+    const HERMES_LOCAL_SESSION_ID = 'momo-hermes-main';
+    const { chatSessions = [], currentSessionId = null } = await chrome.storage.local.get(['chatSessions','currentSessionId']);
+    let found = false;
+    const nextSessions = Array.isArray(chatSessions) ? chatSessions.map(session => {
+      if(session?.id === HERMES_LOCAL_SESSION_ID || session?._agentProvider === 'hermes'){
+        found = true;
+        return {
+          ...session,
+          id: HERMES_LOCAL_SESSION_ID,
+          title: session.title || 'Hermes',
+          messages: [],
+          _agentProvider: 'hermes'
+        };
+      }
+      return session;
+    }) : [];
+    if(!found){
+      nextSessions.unshift({
+        id: HERMES_LOCAL_SESSION_ID,
+        title: 'Hermes',
+        createdAt: Date.now(),
+        messages: [],
+        _agentProvider: 'hermes'
+      });
+    }
+    await chrome.storage.local.set({
+      hermesSessionId: nextSessionId,
+      hermesSessionResetAt: Date.now(),
+      chatSessions: nextSessions,
+      currentSessionId: currentSessionId === HERMES_LOCAL_SESSION_ID ? HERMES_LOCAL_SESSION_ID : currentSessionId
+    });
+    if(statusEl){
+      statusEl.textContent = t('hermesNewSessionDone') || 'New Hermes session created.';
+      statusEl.className = 'inline-status success';
+    }
+    setStatus(t('hermesNewSessionDone') || 'New Hermes session created.', 'success');
+  }catch(e){
+    if(statusEl){
+      statusEl.textContent = (t('testFailed') || 'Failed') + ': ' + (e.message || e);
+      statusEl.className = 'inline-status error';
+    }
+  }finally{
+    updateHermesSessionControls();
+  }
+}
+
 function applyCaptureModeUI(mode, values){
   if(!els.captureModeSelect || !els.includeSelectorInput || !els.excludeSelectorInput || !els.customCaptureFields) return;
   const hasPreset=Boolean(CAPTURE_PRESETS[mode]);
@@ -1417,7 +1605,12 @@ function applyCaptureModeUI(mode, values){
 
 /* ---------- OpenClaw Session Loader ---------- */
 async function loadOpenClawSessions(){
-  const wsUrl = (els.providerBaseUrl?.value.trim() || PROVIDER_DEFAULTS.openclaw?.baseUrl || '').replace(/\/+$/,'');
+  const rawUrl = (els.providerBaseUrl?.value.trim() || PROVIDER_DEFAULTS.openclaw?.baseUrl || '');
+  if(rawUrl && !isValidOpenClawGatewayUrl(rawUrl)){
+    setTestStatus(t('openclawUrlInvalid') || 'Must start with http(s):// or ws(s)://', 'error');
+    return;
+  }
+  const wsUrl = normalizeOpenClawGatewayUrl(rawUrl);
   const token = els.providerApiKey?.value.trim() || '';
   const btn = els.btnLoadSessions;
   const select = els.openclawSessionKey;
@@ -1455,7 +1648,7 @@ async function loadOpenClawSessions(){
           ws.send(JSON.stringify({
             type:'req', id: connectReqId, method:'connect',
             params:{
-              minProtocol:3, maxProtocol:3,
+              minProtocol: OPENCLAW_PROTOCOL_MIN, maxProtocol: OPENCLAW_PROTOCOL_MAX,
               client:{ id:'openclaw-control-ui', version:'1.0.0', platform:navigator.platform||'web', mode:'webchat' },
               role:'operator', scopes:['operator.admin','operator.approvals','operator.pairing'],
               caps:[], auth: authObj,
@@ -1543,11 +1736,7 @@ async function ensureHostPermission(ep){
 
 function disconnectAgentProvider(){
   const ocBtn = els.btnTestConnectionOC;
-  if(ocBtn){
-    ocBtn.textContent = t('openclawConnect');
-    ocBtn.disabled = false;
-    ocBtn.classList.remove('btn-connected');
-  }
+  setAgentConnectionButtonConnected(ocBtn, false);
   // Disable model toggle and turn off
   if(els.openclawModelToggle){
     els.openclawModelToggle.checked = false;
@@ -1556,8 +1745,9 @@ function disconnectAgentProvider(){
   }
   // Clear session list
   if(els.openclawSessionKey){
-    els.openclawSessionKey.innerHTML = '<option value="">-- Connect to load Sessions --</option>';
+    els.openclawSessionKey.innerHTML = `<option value="">${escapeHtml(t('connectToLoadSessions'))}</option>`;
   }
+  updateHermesSessionControls();
   setTestStatus('','');
   console.log('[Agent Provider] Disconnected:', currentProvider);
 }
@@ -1597,7 +1787,12 @@ async function testConnection(){
   /* ── OpenClaw：WebSocket 握手測試 ── */
   if(PROVIDER_DEFAULTS[currentProvider]?.isOpenClaw){
     const ocBtn = els.btnTestConnectionOC || btn;
-    const wsUrl = (els.providerBaseUrl?.value.trim() || PROVIDER_DEFAULTS[currentProvider]?.baseUrl || '').replace(/\/+$/,'');
+    const rawUrl = (els.providerBaseUrl?.value.trim() || PROVIDER_DEFAULTS[currentProvider]?.baseUrl || '');
+    if(rawUrl && !isValidOpenClawGatewayUrl(rawUrl)){
+      setTestStatus(t('openclawUrlInvalid') || 'Must start with http(s):// or ws(s)://', 'error');
+      return;
+    }
+    const wsUrl = normalizeOpenClawGatewayUrl(rawUrl);
     const token = els.providerApiKey?.value.trim() || '';
     if(!wsUrl){ setTestStatus(t('gatewayUrlNotSet'),'error'); return; }
     // 通知 background 更新 Origin 規則
@@ -1626,7 +1821,7 @@ async function testConnection(){
             const msg = {
               type:'req', id: connectReqId, method:'connect',
               params:{
-                minProtocol:3, maxProtocol:3,
+                minProtocol: OPENCLAW_PROTOCOL_MIN, maxProtocol: OPENCLAW_PROTOCOL_MAX,
                 client:{ id:'openclaw-control-ui', version:'1.0.0', platform:navigator.platform||'web', mode:'webchat' },
                 role:'operator',
                 scopes:['operator.admin','operator.approvals','operator.pairing'],
@@ -1650,9 +1845,7 @@ async function testConnection(){
         };
       });
       setTestStatus('','');
-      ocBtn.textContent=t('openclawDisconnect');
-      ocBtn.disabled=false;
-      ocBtn.classList.add('btn-connected');
+      setAgentConnectionButtonConnected(ocBtn, true);
       // Enable model toggle and turn on
       enableConnectedAgentModel();
       // Auto-load sessions after successful connect
@@ -1660,7 +1853,7 @@ async function testConnection(){
     }catch(e){
       setTestStatus(tpl('failedPrefix',{msg:e.message}),'error');
       ocBtn.textContent=t('failedLabel');
-      setTimeout(()=>{ ocBtn.textContent=t('openclawConnect'); ocBtn.disabled=false; ocBtn.classList.remove('btn-connected'); },2500);
+      setTimeout(()=>{ setAgentConnectionButtonConnected(ocBtn, false); },2500);
     }finally{
       clearTimeout(timer);
       try{ ws?.close(); }catch(e){}
@@ -1727,9 +1920,7 @@ async function testConnection(){
       }
 
       setTestStatus('','');
-      hBtn.textContent=t('openclawDisconnect');
-      hBtn.disabled=false;
-      hBtn.classList.add('btn-connected');
+      setAgentConnectionButtonConnected(hBtn, true);
       enableConnectedAgentModel();
     }catch(e){
       const m=e.message||String(e);
@@ -1739,7 +1930,7 @@ async function testConnection(){
       }
       else setTestStatus(tpl('failedPrefix',{msg:m}),'error');
       hBtn.textContent=t('failedLabel');
-      setTimeout(()=>{ hBtn.textContent=t('openclawConnect'); hBtn.disabled=false; hBtn.classList.remove('btn-connected'); },2500);
+      setTimeout(()=>{ setAgentConnectionButtonConnected(hBtn, false); },2500);
     }
     return;
   }
@@ -1898,8 +2089,17 @@ function ensureDefaultModels(models, providerId){
   });
   return out;
 }
+function applyModelRowI18n(node){
+  const thinking = node.querySelector('.model-thinking-params');
+  const prefix = node.querySelector('.model-prefix-prompt');
+  const thinkingTitle = t('modelThinkingParamsTitle');
+  const prefixTitle = t('modelPrefixPromptTitle');
+  if(thinking && thinkingTitle !== 'modelThinkingParamsTitle') thinking.title = thinkingTitle;
+  if(prefix && prefixTitle !== 'modelPrefixPromptTitle') prefix.title = prefixTitle;
+}
 function addModelRow(data={}, focus){
   const node=els.tplModelRow.content.firstElementChild.cloneNode(true);
+  applyModelRowI18n(node);
   const name=node.querySelector('.model-name-input');
   const enabled=node.querySelector('.model-enabled');
   const thinkingInput=node.querySelector('.model-thinking-params');
@@ -2423,69 +2623,31 @@ window.__debugPrompts = async function(){
   return { local, sync };
 };
 
-async function applyLanguageConversion(){
-  const {zhVariant} = await chrome.storage.local.get('zhVariant');
-  const lang = zhVariant || _defaultLang();
-  console.log('[OPT] Applying language:', lang);
+function updateOpenClawSessionPlaceholder(){
+  const select = els.openclawSessionKey;
+  if(!select) return;
+  const emptyOpt = select.querySelector('option[value=""]');
+  if(emptyOpt && select.options.length <= 1){
+    emptyOpt.textContent = t('connectToLoadSessions');
+  }
+}
 
-  function walkTextNodes(node, variant){
-    if(node.nodeType === Node.TEXT_NODE){
-      const text = node.textContent;
-      if(text && text.trim()){
-        node.textContent = __zhConvert(text, variant);
-      }
-    } else if(node.nodeType === Node.ELEMENT_NODE){
-      if(node.tagName === 'SCRIPT' || node.tagName === 'STYLE' || node.tagName === 'CODE') return;
-      if(node.hasAttribute('data-i18n') || node.hasAttribute('data-i18n-title') || 
-         node.hasAttribute('data-i18n-placeholder') || node.hasAttribute('data-i18n-tooltip') ||
-         node.hasAttribute('data-i18n-aria-label')) return;
-      if(node.tagName === 'OPTION' && node.hasAttribute('data-i18n')) return;
-      if(node.placeholder && !node.hasAttribute('data-i18n-placeholder')) {
-        node.placeholder = __zhConvert(node.placeholder, variant);
-      }
-      if(node.title && !node.hasAttribute('data-i18n-title')) {
-        node.title = __zhConvert(node.title, variant);
-      }
-      if(node.getAttribute('data-tooltip') && !node.hasAttribute('data-i18n-tooltip')) {
-        node.setAttribute('data-tooltip', __zhConvert(node.getAttribute('data-tooltip'), variant));
-      }
-      for(let child of node.childNodes){
-        walkTextNodes(child, variant);
-      }
-    }
-  }
-  
-  if(lang === 'en'){
+async function applyLanguageConversion(){
+  try{
+    const [localV, syncV] = await Promise.all([
+      chrome.storage.local.get('zhVariant'),
+      chrome.storage.sync.get('zhVariant')
+    ]);
+    const lang = syncV.zhVariant || localV.zhVariant || currentLang || _defaultLang();
+    /* 只用 i18n JSON 更新設定頁 UI，不重掃 DOM 繁簡轉換、不載入 zh-conv（避免卡頓） */
     if(typeof window.__applyTranslations === 'function'){
-      await window.__applyTranslations('en');
+      await window.__applyTranslations(lang === 'en' ? 'en' : lang === 'hans' ? 'hans' : 'hant');
     }
-    if(typeof window.__zhConvert === 'function'){
-      walkTextNodes(document.body, 'hant');
-    }
-    console.log('[OPT] Applied English translations');
-    return;
+    updateOpenClawSessionPlaceholder();
+    refreshTtsVoices?.();
+  }catch(err){
+    console.warn('[OPT] applyLanguageConversion failed:', err);
   }
-  
-  if(typeof window.__zhConvert !== 'function') {
-    console.warn('[OPT] __zhConvert not loaded yet, retrying...');
-    await new Promise(r => setTimeout(r, 50));
-    return applyLanguageConversion();
-  }
-  
-  if(lang === 'hant') {
-    if(typeof window.__applyTranslations === 'function'){
-      await window.__applyTranslations('hant');
-    }
-    walkTextNodes(document.body, 'hant');
-    console.log('[OPT] Applied traditional Chinese');
-    return;
-  }
-  
-  if(typeof window.__applyTranslations === 'function'){
-    await window.__applyTranslations('hans');
-  }
-  walkTextNodes(document.body, 'hans');
-  console.log('[OPT] Applied simplified Chinese');
 }
 
 /* ---------- Web Search Settings ---------- */

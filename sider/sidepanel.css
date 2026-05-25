@@ -727,6 +727,12 @@ body { overflow:hidden; }
 }
 
 /* User Bubble */
+.message-content {
+  /* Conversation text is content, not UI chrome: keep glyphs/punctuation stable
+     when the interface language switches between zh-Hant / zh-Hans / en. */
+  font-family:"PingFang TC","PingFang HK","Microsoft JhengHei","Noto Sans TC","Noto Sans CJK TC","Segoe UI",Helvetica,Arial,sans-serif;
+  font-variant-east-asian:normal;
+}
 .user-message .message-content {
   background:var(--bubble-user);
   color:var(--text);

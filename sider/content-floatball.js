@@ -215,7 +215,7 @@ function initFloatball(state){
     const btn = document.createElement('button');
     btn.className = 'momo-float-ball';
     btn.type = 'button';
-    btn.title = 'Open Momo AI Bud';
+    btn.title = 'Open Hii~ Momo: AI Assist';
     
     const iconUrl = chrome.runtime?.getURL ? chrome.runtime.getURL('assets/icons/momo.png') : null;
     if(iconUrl){
@@ -479,7 +479,7 @@ function initFloatball(state){
       sidebarIframe = document.createElement('iframe');
       sidebarIframe.src = chrome.runtime.getURL('sidepanel.html');
       sidebarIframe.allow = 'clipboard-read; clipboard-write';
-      sidebarIframe.title = 'Momo AI Bud';
+      sidebarIframe.title = 'Hii~ Momo: AI Assist';
       
       // 右上關閉
       const closeBtn = document.createElement('div');

@@ -74,6 +74,14 @@
       <td>Prompts</td>
       <td><code>chrome.storage.local</code></td>
     </tr>
+    <tr>
+      <td>Uploaded / AI-reply cached images</td>
+      <td>IndexedDB (AttachmentStore)</td>
+    </tr>
+    <tr>
+      <td>Hermes / OpenClaw connection state</td>
+      <td><code>chrome.storage.local</code> (<code>agentProviderConnections</code>)</td>
+    </tr>
   </tbody>
 </table>
 
@@ -85,6 +93,7 @@
   <li><strong>AI Conversations</strong>: Messages are sent directly to the AI service endpoint you have configured in settings.</li>
   <li><strong>Web Search</strong>: Queries are sent to the search engine or related API you have configured.</li>
   <li><strong>Page Capture</strong>: Processed locally in the browser to compose prompt content.</li>
+  <li><strong>AI reply images</strong>: If an AI reply contains HTTP/HTTPS image URLs, the extension fetches those URLs on your behalf to display and cache them locally in IndexedDB. Requests go only to the host indicated by the URL, not to the Momo developer.</li>
 </ul>
 
 <h2>Permissions</h2>

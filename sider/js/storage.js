@@ -125,3 +125,110 @@ const StorageHelper = {
     return chrome.storage.sync.set(data);
   }
 };
+
+const AttachmentStore = {
+  DB_NAME: 'momo-bud-attachments',
+  DB_VERSION: 1,
+  STORE_NAME: 'attachments',
+  _dbPromise: null,
+
+  open() {
+    if (this._dbPromise) return this._dbPromise;
+    this._dbPromise = new Promise((resolve, reject) => {
+      const req = indexedDB.open(this.DB_NAME, this.DB_VERSION);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(this.STORE_NAME)) {
+          const store = db.createObjectStore(this.STORE_NAME, { keyPath: 'id' });
+          store.createIndex('sessionId', 'sessionId', { unique: false });
+          store.createIndex('messageTs', 'messageTs', { unique: false });
+          store.createIndex('createdAt', 'createdAt', { unique: false });
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    return this._dbPromise;
+  },
+
+  async put(record) {
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(this.STORE_NAME, 'readwrite');
+      tx.objectStore(this.STORE_NAME).put(record);
+      tx.oncomplete = () => resolve(record);
+      tx.onerror = () => reject(tx.error);
+    });
+  },
+
+  async get(id) {
+    if (!id) return null;
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(this.STORE_NAME, 'readonly');
+      const req = tx.objectStore(this.STORE_NAME).get(id);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  },
+
+  async listBySession(sessionId) {
+    if (!sessionId) return [];
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(this.STORE_NAME, 'readonly');
+      const req = tx.objectStore(this.STORE_NAME).index('sessionId').getAll(sessionId);
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    });
+  },
+
+  async saveImage(img, meta = {}) {
+    const id = meta.id || (crypto?.randomUUID?.() || `att-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+    const record = {
+      id,
+      kind: meta.kind || 'image',
+      source: meta.source || 'upload',
+      sessionId: meta.sessionId || '',
+      messageTs: meta.messageTs || 0,
+      name: img.name || meta.name || 'image',
+      type: img.type || meta.type || 'image/jpeg',
+      data: img.data || '',
+      size: img.data ? Math.ceil(img.data.length * 3 / 4) : 0,
+      createdAt: meta.createdAt || Date.now(),
+      lastAccessedAt: Date.now()
+    };
+    await this.put(record);
+    return this.toRef(record);
+  },
+
+  async saveImages(images, meta = {}) {
+    const refs = [];
+    for (const img of Array.isArray(images) ? images : []) {
+      refs.push(await this.saveImage(img, meta));
+    }
+    return refs;
+  },
+
+  async getDataUrl(id) {
+    const record = await this.get(id);
+    if (!record?.data) return '';
+    record.lastAccessedAt = Date.now();
+    this.put(record).catch(() => {});
+    return `data:${record.type || 'image/jpeg'};base64,${record.data}`;
+  },
+
+  toRef(record) {
+    return {
+      id: record.id,
+      kind: record.kind || 'image',
+      source: record.source || 'upload',
+      name: record.name || 'image',
+      type: record.type || 'image/jpeg',
+      size: record.size || 0,
+      createdAt: record.createdAt || Date.now()
+    };
+  }
+};
+
+window.AttachmentStore = AttachmentStore;

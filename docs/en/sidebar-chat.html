@@ -80,6 +80,14 @@
 <h2>Welcome Screen</h2>
 <p>When no conversation has started, a welcome screen is displayed with <strong>suggested topics</strong> for one-click conversation starters.</p>
 
+<h2 id="edit-messages">Edit Messages</h2>
+<p>Click <strong>Edit</strong> on a user message to change its text or attachments and resend.</p>
+<ul>
+  <li><strong>Standard models</strong> (OpenAI, Gemini, etc.): editing <strong>replaces</strong> that user message, <strong>removes</strong> all later local messages, and regenerates the assistant reply.</li>
+  <li><strong>Hermes / OpenClaw</strong>: editing <strong>appends a new user message</strong> (keeping the original and full local history) and sends it to the agent / gateway. Remote agent sessions cannot be rolled back by Momo.</li>
+  <li>Editing is blocked while a response is streaming; stop generation first.</li>
+</ul>
+
 <nav class="page-nav">
   <a href="getting-started.html"><span class="label">Previous</span><span class="title">← Quick Start</span></a>
   <a href="ai-providers.html"><span class="label">Next</span><span class="title">AI Providers →</span></a>

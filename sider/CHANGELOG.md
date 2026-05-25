@@ -4,45 +4,314 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-## [2.21.28] - 2026-05-05
-### Docs — 英文 AI Providers 細節修正
-- `docs/en/ai-providers.html` 的 Configuring a Provider 第 3 點補齊 Hermes 條件，明確標示「local model providers usually don't；Hermes 通常需要 `API_SERVER_KEY`」。
-- 修正英文分類敘述最後一個遺漏句，讓中英文文件語意完全對齊。
+## [2.21.65] - 2026-05-25
+### Changed — OpenClaw Setup Guide 設定範例
+- Server setup 改為完整 `openclaw.json` 範例（`allowedOrigins`、`allowInsecureAuth`、`dangerouslyDisableDeviceAuth`、`auth.mode: token`），以 `YOUR_HOST:PORT` 與 `<your-gateway-token>` 佔位，不含真實 IP 或密鑰。
 
 ---
 
-## [2.21.27] - 2026-05-05
-### Docs — AI Providers 內文分類語句一致化
-- 調整中英文 `docs/ai-providers.html` 與 `docs/en/ai-providers.html` 的段落文字，將「本地供應商」舊措辭統一為「本地模型供應商 + 獨立 Agent / Gateway 供應商」語意。
-- 補充 Hermes 需要 `API_SERVER_KEY` 與自訂 API endpoint 文字說明，避免標題分類與內文敘述不一致。
+## [2.21.64] - 2026-05-25
+### Changed — OpenClaw Setup Guide
+- 將 **Token Only**（`allowInsecureAuth`、Connect 步驟、安全提示）併入 Server setup 區塊，與 WebSocket Origin 設定同一頁說明。
+- 移除重複的獨立「連線步驟」區塊。
 
 ---
 
-## [2.21.26] - 2026-05-05
-### Docs — Web Search 英文文件修正
-- 修正 `docs/en/web-search.html` 仍列出已不存在的 Google / SearXNG 搜尋引擎，改為與實際設定頁一致的 DuckDuckGo（預設）、Brave、Tavily。
-- 同步補齊 Brave / Tavily 的描述文字，避免英文文件與產品行為不一致。
+## [2.21.63] - 2026-05-25
+### Fixed — Setup Guide 顯示原始 HTML 標籤
+- i18n 新增 `data-i18n-html`，讓教學文案中的 `<code>`、`<strong>`、`<em>` 正確渲染為格式，不再顯示成字面 `<strong>` 文字。
 
 ---
 
-## [2.21.25] - 2026-05-05
-### Docs — Hermes / OpenClaw 分類理順
-- 文件中將 `Hermes` 與 `OpenClaw` 從「本地供應商」獨立為「Agent / Gateway 供應商（獨立）」；`Ollama` 與 `LM Studio` 保留在本地模型供應商。
-- 同步調整中英文 `docs/index.html` 與 `docs/*/ai-providers.html` 的分類文案，避免首頁與供應商頁分類不一致。
+## [2.21.62] - 2026-05-25
+### Fixed — OpenClaw Setup Guide 文案
+- 移除從 Copilot / ClawClip 複製的 Device Auth、Ed25519、Save & Connect 等不適用說明。
+- 改為符合 Momo 實作：Gateway Token + Connect、Session 選擇與遠端 Gateway 注意事項。
 
 ---
 
-## [2.21.24] - 2026-05-05
-### Docs — 官網介紹頁同步 Hermes
-- `docs/index.html` 與 `docs/en/index.html` 的介紹頁供應商統計由 12 更新為 13，並在本地供應商列表加入 Hermes（Beta）。
-- `docs/changelog.html` 與 `docs/en/changelog.html` 新增對應更新條目，保持文件站與版本紀錄一致。
+## [2.21.61] - 2026-05-25
+### Fixed — OpenClaw 連線與 Gateway URL
+- 將 OpenClaw WebSocket 握手協定由僅支援 v3（`min=3, max=3`）升級為 v3–v4（`min=3, max=4`），修正新版 Gateway 回報 `protocol mismatch`（`expected=4`）而無法 Connect / 載入 Session 的問題。
+- Gateway URL 現可接受 `http(s)://` 與 `ws(s)://`；`http(s)` 會自動轉為 `ws(s)` 再連線，並在格式不正確時顯示明確錯誤提示。
+
+---
+
+## [2.21.60] - 2026-05-25
+### Changed — 產品名稱更新
+- Extension 顯示名稱由 **Momo AI Bud** 更新為 **Hii~ Momo: AI Assist**。
+- 同步更新 `manifest.json`、側邊欄 / 設定頁 `<title>`、多語系文件標題、浮球 tooltip、web search 標記與 README 內的產品名稱。
+
+---
+
+## [2.21.59] - 2026-05-25
+### Fixed — 後續 AI 回覆不再顯示舊引用頁面圖示
+- 修正 assistant action bar 的引用頁面圖示用整個 session 是否曾有 `_pageContext` 判斷，導致第二輪、第三輪未重新引用頁面的 AI 回覆仍顯示 reference page icon。
+- 圖示現在只會顯示在「該 assistant 回覆前一條 user message」本身帶有 Page Referenced 的情況，並只打開該輪綁定的 page context。
+
+---
+
+## [2.21.58] - 2026-05-25
+### Fixed — 引用頁面不再於後續回合重複注入
+- 修正引用頁面內容綁定到 user message 後，後續多輪對話仍可能因歷史訊息一起送出而重複注入整頁內容、增加 token 成本的問題。
+- 現在只有「最新一條 user message 本身帶有 Page Referenced」時，才會把頁面內容注入 API payload；後續追問會只送可見對話歷史，不再重送整份頁面。
+
+---
+
+## [2.21.57] - 2026-05-25
+### Added — Smart Capture 與可見文字擷取
+- 引用頁面擷取模式新增 `Smart Capture (Recommended)` 與 `Visible Text`；新安裝或未設定模式時預設使用 Smart Capture。
+- Smart Capture 會先偵測頁型：文章 / 文件頁走 `Markdown Smart Extraction`，產品頁、定價頁、dashboard、settings、表格 / 卡片 / 按鈕密集頁走 `Visible Text`，以降低多餘 DOM / hidden template 對 token 的浪費。
+- Visible Text 只收集實際可見的標題、段落、列表、表格、按鈕、價格 / plan / feature 類區塊並去重；若精簡結果太短，才回退到 `document.body.innerText`。
+
+---
+
+## [2.21.56] - 2026-05-25
+### Fixed — Markdown 智能提取誤抓隱藏內容
+- 修正 `Markdown Smart Extraction` 在產品頁 / SPA 頁面可能被 Mozilla Readability 誤判，導致引用 URL 正確但內容抓到頁面內隱藏模板或其他文章片段的問題。
+- Readability 擷取結果現在會與目前頁面的 title / H1 關鍵字比對；若不一致，會丟棄 Readability 結果並改用未被 Readability 改動的 fallback DOM。
+- fallback 另加入實際頁面的 `document.body.innerText` 可見文字保底，避免 hidden DOM / template content 混入引用內容。
+
+---
+
+## [2.21.55] - 2026-05-25
+### Fixed — 引用頁面內容送出穩定性
+- 修正「Page Referenced / 已引用頁面」已顯示，但部分 OpenAI-compatible provider（例如 Qwen 類模型）回覆仍像沒有看到頁面內容的問題。
+- 引用頁面內容現在會綁定到當次 user message 的 API payload，而不是依賴對話中途插入的 system message；送出 API 時會過濾本地 `_pageContext` system 訊息，避免 provider 對中途 system role 支援不一致。
+- 聯網搜尋判斷改用原始使用者輸入，不會把整份引用頁面內容誤當成搜尋 query。
+
+---
+
+## [2.21.54] - 2026-05-24
+### Fixed — Hermes / OpenClaw 設定頁刷新後保持連線狀態
+- 修正設定頁載入 Hermes / OpenClaw provider config 時會把 agent model toggle 強制關閉、並把 Connect button 重設為 disconnected 的問題；切換 Appearance Theme 或刷新 settings 後不再要求重新 Connect。
+- Hermes / OpenClaw 上次成功 Connect 的狀態會按 provider 存入 local storage，並用 Base URL / API key 是否存在 / OpenClaw session key 作為匹配條件；舊版本未記錄狀態時會沿用已啟用的 agent model 作為首次恢復依據，手動 Disconnect 仍會清除該 provider 的連線狀態並關閉模型。
+- sidepanel 補上 sync `model` 變更監聽，避免 settings 頁更新模型選擇後，聊天面板模型下拉與實際選擇不同步。
+
+---
+
+## [2.21.53] - 2026-05-24
+### Fixed — Hermes / OpenClaw 編輯後滾動位置
+- Hermes / OpenClaw 編輯舊 user message 後會作為新訊息重新發送，因此儲存編輯後會穩定跳到最底部的新 user / assistant 訊息位置。
+- 修正 agent provider 編輯時重畫整個訊息列表造成「先跳到底、再跳回舊位置」的回彈問題；現在只局部恢復舊訊息 DOM，再追加新訊息。
+- 一般 OpenAI-compatible provider 的編輯重跑位置不變。
+
+---
+
+## [2.21.52] - 2026-05-24
+### Changed — Hermes / OpenClaw 編輯舊訊息改為重新發送
+- 編輯 user message 時，若目前模型是 Hermes 或 OpenClaw，Momo 不再替換舊訊息並截斷本地對話歷史；儲存編輯後會把編輯後內容作為一條新的 user message 追加，然後重新送給 agent provider。
+- 一般 OpenAI-compatible provider 保留原本行為：編輯舊 user message 會截斷該訊息之後的本地訊息並重新生成。
+- 這符合 Hermes API Server 與 OpenClaw Gateway 的 session/gateway 型行為：遠端 agent session 已接收的歷史不能由 Momo 假裝回退。
+
+---
+
+## [2.21.51] - 2026-05-24
+### Fixed — AI 生成圖片接收去重
+- 修正 Hermes / ComfyUI 回傳 `MEDIA:http://.../view?filename=xxx.png&type=output` 時，Momo 會同時把完整 `MEDIA:` URL 與 query 裡截出的裸 `.png` URL 當成兩張圖下載，造成同圖重複顯示的問題。
+- 圖片 URL 偵測改為逐行處理：`MEDIA:` 行只取完整 media URL，不再額外套用裸 URL 偵測；ComfyUI `/view` URL 會以 `origin + path + filename + type + subfolder` 正規化去重。
+
+---
+
+## [2.21.50] - 2026-05-24
+### Added — Hermes / OpenClaw 生成圖片接收暫行方案
+- AI 回覆中若包含 `MEDIA:<https-url>`、Markdown 圖片或裸圖片 URL，sidepanel 會嘗試經 background `proxy_fetch` 下載圖片，轉成 data URL 後存入 `AttachmentStore`，並在 AI 訊息中以本地 IndexedDB 附件渲染，不只保留外部連結。
+- background `proxy_fetch` 新增 `responseType: "dataUrl"` 分支，供 sidepanel 下載 Hermes / OpenClaw 回傳的遠端圖片資源。
+- OpenClaw Gateway 回覆若以 `image` / `image_url` content part 帶出 HTTP 圖片，也會轉成 `MEDIA:<url>` 進入同一條下載與本地保存流程。
+- 後續若改成 Hermes / OpenClaw media endpoint 直連方案，可優先移除 `extractAssistantImageUrls()`、`cacheAssistantGeneratedImages()`、`downloadAssistantImageRef()` 與 `proxy_fetch` 的 `dataUrl` 分支，再改由 endpoint 回傳穩定媒體 URL 或二進位內容。
+
+---
+
+## [2.21.49] - 2026-05-23
+### Fixed — 設定頁三語系走查補漏
+- 補齊 `promptVisibleToggle`、`connectToLoadSessions`、`gatewayTokenLabel`、`apiServerKeyLabel`、TTS 語系分組等 i18n key。
+- 修正 OpenClaw 教學關閉鈕、Session 下拉 placeholder、Provider API Key 標籤等硬編碼字串。
+- 切換語言時同步更新 TTS 語音分組標籤與 OpenClaw Session placeholder。
+
+---
+
+## [2.21.48] - 2026-05-23
+### Fixed — 設定頁模型列 tooltip 語系
+- 啟用模型列表的 Custom / Prefix 輸入框 tooltip 改走 i18n，英文介面不再顯示硬編碼繁中提示。
+
+### Fixed — Hermes / OpenClaw 連線狀態
+- Hermes `New Session` 在 Connect 成功前會保持 disabled，避免未連線時建立無效的新 session。
+- Hermes / OpenClaw 連線成功後按鈕顯示 `Connected`，hover 或 focus 時才顯示 `Disconnect`，點擊後才會斷線。
+
+---
+
+## [2.21.47] - 2026-05-23
+### Fixed — Hermes session reset 與污染 history
+- Hermes request 現在只送最新一條 user message，避免把 Momo 本地舊對話或其他 provider 的非標準欄位帶入 Hermes API Server。
+- 設定頁 Hermes 區塊新增 `New Session`，可建立新的 Hermes server session id，並清空 Momo 本地 Hermes 對話記錄，用於處理 server session 內混入不相容 provider history 的情況。
+- sidepanel 會監聽 Hermes session reset，若 Hermes 畫面已開啟會即時清空本地 Hermes 對話。
+
+---
+
+## [2.21.46] - 2026-05-22
+### Fixed — Hermes 單一 session 與歷史延續
+- Hermes (beta) 現在會固定使用 Momo 的 `momo-hermes-main` 本地對話，重新打開 sidepanel 或切回 Hermes 時會回到同一份 Momo 聊天記錄，不再被「重新打開時開新對話」切出多個 Hermes 對話。
+- 除 Hermes / OpenClaw 外，切換到任何一般模型時都會建立新的 `New Chat`；重新打開 sidepanel 時若目前選的是一般模型，也會避免沿用 Hermes / OpenClaw 或上一輪一般模型的對話。
+- Hermes chat request 會帶上 `X-Hermes-Session-Id`、`X-Hermes-Session-Key` 與 `Idempotency-Key`，讓 Hermes API Server 端維持同一條 session / memory scope，並保存 Hermes 回傳的 session id 供下次沿用。
+- background `proxy_fetch` 現在會回傳 response headers，支援讀取 Hermes 的 `X-Hermes-Session-Id`。
+
+---
+
+## [2.21.45] - 2026-05-18
+### Fixed — Markdown 表格解析放寬
+- 放寬 AI 回覆表格的 Markdown 解析：接受 `-` / `--` 分隔、標題與分隔行之間空行、缺少完整分隔列，以及分隔列尾端僅有 `:` 的對齊標記。
+- 無標準分隔列時，若下一行起為連續 pipe 列，會自動視為表頭＋資料列並渲染成 HTML 表格，減少回覆顯示成一排 `|` 的情況。
+
+---
+
+## [2.21.44] - 2026-05-18
+### Docs — 同步最新說明書與 UI 規格
+- 更新 docs 的設定總覽、側邊欄聊天、聊天記錄、圖片上傳與更新日誌，補充重新打開時開新對話、附件分離儲存、圖片壓縮與啟用模型窄版排版。
+- 更新 `dev-notes/UI-SPEC.md` 至 v1.2，加入設定頁 toggle section 與 Enabled Models 在窄版下的排版規範。
+
+---
+
+## [2.21.43] - 2026-05-18
+### Fixed — 啟用模型窄版排版
+- 修正設定頁縮窄時「啟用模型」列擠出右側或控制項重疊的問題。
+- 窄版下模型名稱、Custom JSON、Prefix、啟用開關與刪除按鈕會自動換行並維持在卡片內，與其他設定區塊排版規範一致。
+
+---
+
+## [2.21.42] - 2026-05-18
+### Fixed — 設定頁窄版開關排版
+- 修正 Chrome 視窗縮窄時「懸浮球」與「側邊欄行為」區塊被置中顯示的問題。
+- 這兩個開關區塊在窄版仍維持標題與說明靠左、開關靠右，避免版面跳動。
+
+---
+
+## [2.21.41] - 2026-05-18
+### Added — 側邊欄自動新對話開關
+- 在設定頁「側邊欄」區塊新增「重新打開時開新對話」開關，預設開啟。
+- 關閉後，重新打開 sidepanel 會延續上次對話；開啟時則維持重新打開後自動建立新對話。
+- 補齊繁中、簡中、英文 i18n 文案，並讓 sidepanel 即時讀取 `freshChatOnPanelOpen` 設定。
+
+---
+
+## [2.21.40] - 2026-05-18
+### Changed — 重新打開側邊欄時開新對話
+- 恢復 sidepanel 重新開啟時自動建立全新對話；只有目前 session 已有使用者或 AI 對話內容時才新建，避免空白 session 重複堆疊。
+- sidepanel 從 hidden 回到 visible 時也會套用同樣邏輯，符合按工具列 icon 關閉後再打開應看到新對話的預期。
+- 保留離開當前 session 時的附件歷史壓縮流程，避免重新開啟造成圖片附件膨脹。
+
+---
+
+## [2.21.39] - 2026-05-18
+### Changed — 關閉預設效能診斷輸出
+- 停用預設 `[SP][perf]` 啟動量測與 `chatSessions stats` console 輸出，避免正式使用時 console 過度吵雜，也避免不必要的歷史統計計算。
+- 附件歷史壓縮完成 log 改為只在 debug 模式顯示。
+- 若需重新診斷，可在 sidepanel DevTools Console 執行 `localStorage.setItem('momoDebugPerf','1')` 後 reload；關閉則執行 `localStorage.removeItem('momoDebugPerf')` 後 reload。
+
+---
+
+## [2.21.38] - 2026-05-18
+### Performance — 歷史附件二次壓縮
+- 新增歷史附件降級流程：新增對話、切換對話、sidepanel 隱藏或關閉時，會嘗試將該 session 的圖片附件壓縮成最長邊 640px、JPEG quality 0.7 的歷史版本。
+- 當前對話仍先保留較清楚的 1600px 版本供 AI 分析；對話離開當前狀態後再縮小，降低 IndexedDB 附件庫長期成長速度。
+- `AttachmentStore` 新增依 session 查詢附件能力，供歷史壓縮流程只處理指定對話。
+
+---
+
+## [2.21.37] - 2026-05-18
+### Performance — 新圖片與截圖自動壓縮
+- 新增圖片壓縮流程：新上傳、貼上與截圖附件在儲存前會以最長邊 1600px、JPEG quality 0.82 產生較小版本，若原圖更小則保留原圖。
+- 截圖仍可送給視覺模型分析，但不再預設保存未壓縮 PNG，降低 IndexedDB 附件庫後續成長速度。
+- 編輯訊息時新增圖片也會套用相同壓縮流程，避免重新編輯造成大型 base64 回流。
+
+---
+
+## [2.21.36] - 2026-05-18
+### Performance — 圖片與截圖附件分離儲存
+- 新增 IndexedDB 附件儲存層，新的圖片上傳與截圖會存入 `momo-bud-attachments`，`chatSessions` 只保留附件引用，避免把 base64 原圖塞進主對話歷史。
+- 送 API、OpenClaw、訊息渲染與編輯流程會在需要時依附件引用讀回圖片資料；舊版已存在於 `chatSessions` 的 base64 圖片仍維持相容。
+- 側邊欄開啟時不再自動建立新對話並立即寫回整包 `chatSessions`，降低冷啟動時的大型 storage 寫入成本。
+- `chatSessions stats` 補充 legacy 圖片、inline data URL、附件引用數與最大 session 列表，方便定位既有歷史資料膨脹來源。
+
+---
+
+## [2.21.35] - 2026-05-18
+### Performance — 啟動與對話儲存量測
+- 新增側邊欄啟動分段 console 量測，記錄 input-ready、theme/model 載入、資料狀態載入、sidepanel open handling、`renderAllMessages()` 同步段與 init 完成耗時。
+- 新增 idle 階段的 `chatSessions` 統計輸出，包含 session 數、總訊息數、總文字長度、近似 storage JSON 大小與最大單則訊息長度，用來判斷冷啟動卡感是否來自歷史資料過大。
+
+---
+
+## [2.21.34] - 2026-05-18
+### Performance — 降低語言切換與超長 Markdown 卡頓
+- 側邊欄 `zhVariant` storage 變更改為 80ms debounce，合併 local + sync 連續事件，避免同一次語言切換重複刷新靜態 UI。
+- 非串流超長 Markdown（超過 30,000 字）初次渲染時先顯示純文字，再透過 `requestIdleCallback` 回填 Markdown DOM，降低冷啟動或切換長對話時的同步卡頓。
+
+---
+
+## [2.21.33] - 2026-05-18
+### Fixed — 對話文字渲染不受 UI 語系影響
+- 對每個 `.message-content` 加上 `translate="no"` 與依內容偵測出的固定 `lang`（`zh-Hant` / `zh-Hans` / `und`），避免 UI 切換 `html lang` 時讓對話泡泡跟著使用不同語系的字型 fallback。
+- 在 `sidepanel.css` 為 `.message-content` 指定穩定中文字型序列，讓標點與中文字形在繁中／簡中／英文 UI 間保持一致。
+- 串流更新與最終回填 (`updateStreamingMessage()` / `replaceMessageContent()`) 也會同步更新對話內容自己的 `lang`，但不做文字轉換。
+
+---
+
+## [2.21.32] - 2026-05-18
+### Fixed — UI 翻譯不觸碰對話內容
+- 在 `i18n-loader.js` 的 `__applyTranslations()` 加入硬性保護：所有位於 `.message-content` 內的節點一律跳過，不更新 `data-i18n`、`title`、`placeholder`、`data-tooltip` 或 `aria-label`。
+- 目的：繁中／簡中／英文切換只影響 UI，不會改寫已顯示的使用者或 AI 對話內容；即使對話文字中意外出現 `data-i18n` 類似標記，也不會被翻譯器處理。
+- 延續 v2.21.30 的效能策略：語言切換不重繪對話泡泡、不跑繁簡轉換、不重建 Markdown DOM。
+
+---
+
+## [2.21.31] - 2026-05-18
+### Docs — 卡頓修復總結
+- 補充本輪效能調整的最終結論：語言選擇（繁中／簡中／英文）只影響 UI 文案，不再處理 AI 或使用者對話內容。
+- 明確記錄已降低負載的關鍵點：語言切換不重跑 `renderAllMessages()`、設定頁不再載入 `zh-conv.js`、頁面擷取函式庫維持按需載入、外部腳本維持 `defer`、長對話渲染維持分批補填。
+- 保留後續觀察重點：若仍有卡感，優先檢查 `sidepanel.js` 體積、`chatSessions` 儲存量、以及超長 Markdown 訊息的首批渲染成本。
+
+---
+
+## [2.21.30] - 2026-05-15
+### Performance — UI 語系切換不碰對話內容
+- **側邊欄**：切換 `zhVariant`（繁中／簡中／英）時只執行 `__applyTranslations` 更新具 `data-i18n` 的介面元件；**不再呼叫 `renderAllMessages()`**，避免對所有對話泡泡重跑 Markdown／重建 DOM（先前主要卡頓來源）；僅在歷史面板已開啟時輕量重繪 `renderSessionList()`。
+- **設定頁**：`applyLanguageConversion()` 僅載入對應 `hant`/`hans`/`en` 的 JSON 翻譯，**移除整頁 DOM  walks + `zh-conv.js`**，降低切換語言時的 CPU 與 script 載入。
+- **語意**：繁／簡切換僅影響使用者介面文案；**對話區顯示的 AI／使用者訊息保持原文字**，不因語系選項而再處理。
+
+---
+
+## [2.21.29] - 2026-05-15
+### Changed — 還原介面語言選擇
+- 設定頁再次提供 **繁體中文 / 简体中文 / English** 三選一切換（`#sec-language`），選擇寫入 `chrome.storage.sync` / `local` 的 `zhVariant`。
+- 側邊欄：`loadTheme` 會讀取 `zhVariant` 並套用 `__applyTranslations`；`chrome.storage.onChanged` 監聽 `zhVariant`，即時重繪對話區、建議問題與歡迎區；`sp_t`／頁面工具提示／TTS `utterance.lang` 皆以使用者選定的語言為準。
+- 選項頁透過 `applyLanguageConversion()` 套用翻譯（v2.21.30 起改為僅 `__applyTranslations`，不再載入 `zh-conv.js`）。
+- `background.js`：首次安裝仍會依瀏覽器語言寫入預設 `zhVariant`（若尚未設定）。
+
+---
+
+## [2.21.28] - 2026-05-15
+### Performance — 啟動卡頓修復（介面語言選擇已於 v2.21.29 還原）
+- **按需載入頁面擷取函式庫**：`Readability.js`（82KB）、`turndown.js`（26KB）改為點擊「引用頁面」時才動態載入，減少啟動同步解析約 110KB，冷啟動凍結改善 100–200ms。
+- **腳本背景執行緒解析**：所有外部腳本加上 `defer`，V8 改於背景執行緒編譯，不阻塞主執行緒，預估主執行緒凍結時間再減少 30–60%。
+- **輸入欄立即解鎖**：`init()` 重構，`autoGrow`、`bindEvents` 移至第一行同步執行，storage 讀取分兩批並行（Phase 1 主題＋模型 → Phase 2 對話資料），`setupPageChangeWatcher` 延後至 `setTimeout(0)` 執行，使用者不再需要等到所有資料載入完畢才能輸入。
+- **長對話非阻塞渲染**：`renderAllMessages()` 改用 `DocumentFragment` 批次插入；超過 15 條訊息時先同步渲染最新 15 條，其餘舊訊息透過 `requestIdleCallback` 非同步向前補填，自動維持滾動位置。
+- **URL 輪詢間隔**：頁面變化偵測從 500ms 調整為 1500ms，降低持續 CPU 佔用。
+
+---
+
+## [2.21.25] - 2026-05-08
+### Fixed — Fetch Timeout for Stalled Connections
+- Added a 120-second fetch timeout (`setTimeout` + `AbortController.abort()`) to `streamChatCompletion()` in `sidepanel.js`.
+- Prevents the vague `(Error) Connection failed: signal is aborted without reason` when the browser `fetch` hangs indefinitely due to network stalls, proxy issues, or CORS preflight failures.
+- The timeout now produces a clear `Request timed out after 120s` error message instead of the cryptic default abort reason.
 
 ---
 
 ## [2.21.23] - 2026-05-05
-### Docs — Hermes Agent 介紹與快速上手
-- README（中英文）新增 Hermes Agent 介紹區塊，包含定位、預設 Base URL / model、以及 5 步驟快速上手。
-- 文件頁 `docs/ai-providers.html` 與 `docs/en/ai-providers.html` 補充 Hermes 使用建議，強化 Connect 先行、切換後新對話、遠端防火牆/埠號檢查等實務指引。
+### Fixed — Hermes Setup Guide i18n
+- Hermes Setup Guide modal 改用 i18n key，補齊繁中、簡中、英文三套文案。
+- Hermes `.env` 範例改為真正多行 code block，避免在 modal 內被壓成單行難以閱讀。
+- README（中英文）新增 Hermes Agent 介紹區塊，文件頁 `docs/ai-providers.html` 與 `docs/en/ai-providers.html` 補充 Hermes 使用建議。
 
 ---
 

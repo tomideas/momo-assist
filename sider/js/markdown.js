@@ -55,13 +55,8 @@ function renderMarkdownBlocksCore(src = '') {
 function renderStreamingMarkdown(src = '') {
   if (!src) return '';
   try {
-    // Traditional/simplified Chinese conversion
-    const zh = (awaitGetZhVariant.cached) || (typeof window.__detectBrowserLanguage === 'function' ? window.__detectBrowserLanguage() : 'en');
-    let adjusted = (typeof window.__zhConvert === 'function' && zh)
-      ? __zhConvert(String(src), zh)
-      : String(src);
-
     // Un-escape thinking tags
+    let adjusted = String(src);
     adjusted = adjusted
       .replace(/&lt;think&gt;/gi, '<think>').replace(/&lt;\/think&gt;/gi, '</think>')
       .replace(/&lt;thinking&gt;/gi, '<thinking>').replace(/&lt;\/thinking&gt;/gi, '</thinking>')
@@ -208,45 +203,97 @@ function renderBlockText(text) {
 
 /* ================= Table Parsing ================= */
 
-function isTableHeader(lines, idx) {
-  if (idx + 1 >= lines.length) return false;
-  const header = lines[idx];
-  const sep = lines[idx + 1];
-  if (!/\|/.test(header) || !/\|/.test(sep)) return false;
-  const hCells = splitTableRow(header);
-  if (hCells.length < 2) return false;
-  return isSeparatorRow(sep);
+function isSeparatorRow(line) {
+  if (!line || !line.trim()) return false;
+  const trimmed = line.trim();
+  if (!/\|/.test(trimmed) && /^[\s:\-|—–﹣－]+$/.test(trimmed)) {
+    const chunks = trimmed.split(/[\|｜]/).map(s => s.trim());
+    return chunks.length >= 2 && chunks.every(isSeparatorCell);
+  }
+  let cleaned = trimmed;
+  if (cleaned.startsWith('|') || cleaned.startsWith('｜')) cleaned = cleaned.slice(1);
+  if (cleaned.endsWith('|') || cleaned.endsWith('｜')) cleaned = cleaned.slice(0, -1);
+  const cells = cleaned.split(/[|｜]/).map(s => s.trim());
+  if (cells.length < 2) return false;
+  return cells.every(isSeparatorCell);
 }
 
-function isSeparatorRow(line) {
-  let cleaned = line.trim();
-  if (cleaned.startsWith('|')) cleaned = cleaned.slice(1);
-  if (cleaned.endsWith('|')) cleaned = cleaned.slice(0, -1);
-  const cells = cleaned.split('|').map(s => s.trim());
-  if (cells.length < 2) return false;
-  return cells.every(c => /^:?-{3,}:?$/.test(c));
+function normalizeTableDash(text = '') {
+  return String(text).trim().replace(/[—–﹣－]/g, '-');
+}
+
+function isSeparatorCell(cell) {
+  const c = normalizeTableDash(cell);
+  if (!c) return true;
+  if (/^:?-{1,}:?$/.test(c)) return true;
+  if (/^:+$/.test(c)) return true;
+  return false;
 }
 
 function splitTableRow(line) {
   let raw = line;
-  if (raw.trim().startsWith('|')) raw = raw.replace(/^\s*\|/, '');
-  if (raw.trim().endsWith('|')) raw = raw.replace(/\|\s*$/, '');
-  return raw.split(/(?<!\\)\|/).map(c => c.trim().replace(/\\\|/g, '|'));
+  if (raw.trim().startsWith('|') || raw.trim().startsWith('｜')) raw = raw.replace(/^\s*[|｜]/, '');
+  if (raw.trim().endsWith('|') || raw.trim().endsWith('｜')) raw = raw.replace(/[|｜]\s*$/, '');
+  return raw.split(/(?<!\\)[|｜]/).map(c => c.trim().replace(/\\\|/g, '|'));
+}
+
+function looksLikeTableRow(line) {
+  if (!line || !/\|/.test(line)) return false;
+  return splitTableRow(line).length >= 2;
+}
+
+function alignmentFromSeparatorCell(cell = '') {
+  const c = normalizeTableDash(cell);
+  if (c.startsWith(':') && c.endsWith(':')) return 'center';
+  if (c.startsWith(':')) return 'left';
+  if (c.endsWith(':')) return 'right';
+  return 'left';
+}
+
+function findTableBlock(lines, idx) {
+  if (!looksLikeTableRow(lines[idx])) return null;
+  const headerCells = splitTableRow(lines[idx]);
+  if (headerCells.length < 2) return null;
+
+  let sepIdx = idx + 1;
+  while (sepIdx < lines.length && /^\s*$/.test(lines[sepIdx])) sepIdx++;
+  if (sepIdx >= lines.length) return null;
+
+  if (isSeparatorRow(lines[sepIdx])) {
+    return { headerIdx: idx, sepIdx, implicitSeparator: false };
+  }
+
+  if (looksLikeTableRow(lines[sepIdx]) && !isSeparatorRow(lines[sepIdx])) {
+    return { headerIdx: idx, sepIdx: null, implicitSeparator: true, bodyStart: sepIdx };
+  }
+
+  return null;
+}
+
+function isTableHeader(lines, idx) {
+  return findTableBlock(lines, idx) !== null;
 }
 
 function parseTable(lines, idx) {
-  const headerLine = lines[idx];
-  const sepLine = lines[idx + 1];
-  const align = splitTableRow(sepLine).map(cell => {
-    if (cell.startsWith(':') && cell.endsWith(':')) return 'center';
-    if (cell.startsWith(':')) return 'left';
-    if (cell.endsWith(':')) return 'right';
-    return 'left';
-  });
-  const headerCells = splitTableRow(headerLine);
-  let bodyIndex = idx + 2;
+  const block = findTableBlock(lines, idx);
+  if (!block) return { html: '', nextIndex: idx + 1 };
+
+  const headerCells = splitTableRow(lines[block.headerIdx]);
+  let align;
+  let bodyIndex;
+
+  if (block.implicitSeparator) {
+    align = headerCells.map(() => 'left');
+    bodyIndex = block.bodyStart;
+  } else {
+    const sepCells = splitTableRow(lines[block.sepIdx]);
+    align = sepCells.map(alignmentFromSeparatorCell);
+    while (align.length < headerCells.length) align.push('left');
+    bodyIndex = block.sepIdx + 1;
+  }
+
   const bodyRows = [];
-  while (bodyIndex < lines.length && /\|/.test(lines[bodyIndex]) && !/^\s*$/.test(lines[bodyIndex])) {
+  while (bodyIndex < lines.length && looksLikeTableRow(lines[bodyIndex])) {
     if (isSeparatorRow(lines[bodyIndex])) break;
     bodyRows.push(splitTableRow(lines[bodyIndex]));
     bodyIndex++;

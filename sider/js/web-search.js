@@ -1,5 +1,5 @@
 /* js/web-search.js
-   Web Search module for Momo AI Bud
+   Web Search module for Hii~ Momo: AI Assist
    Providers:
      - DuckDuckGo (free, no key — scrapes html.duckduckgo.com)
      - Brave Search API (free tier 2000/month, needs key)

@@ -49,6 +49,24 @@ function normalizeEndpoint(ep) {
   return ep.replace(/\s+/g, '').replace(/\/+$/, '');
 }
 
+/* ── OpenClaw Gateway URL & protocol (single source of truth) ── */
+const OPENCLAW_PROTOCOL_MIN = 3;
+const OPENCLAW_PROTOCOL_MAX = 4;
+
+function isValidOpenClawGatewayUrl(url) {
+  if (!url) return false;
+  return /^(https?|wss?):\/\/.+/i.test(String(url).trim());
+}
+
+/** Accept http(s):// or ws(s)://; convert http(s) to ws(s) for WebSocket. */
+function normalizeOpenClawGatewayUrl(url) {
+  if (!url) return '';
+  let u = String(url).trim().replace(/\s+/g, '').replace(/\/+$/, '');
+  if (!u) return '';
+  if (!isValidOpenClawGatewayUrl(u)) return '';
+  return u.replace(/^https:\/\//i, 'wss://').replace(/^http:\/\//i, 'ws://');
+}
+
 /* ── Provider icon mapping ── */
 const PROVIDER_ICONS = {
   qwen:     'assets/icons/qwen.svg',
@@ -150,6 +168,8 @@ const PROVIDER_DEFAULTS = {
 
 /* ── Capture presets ── */
 const CAPTURE_PRESETS = {
+  smart:  { include: '', exclude: 'header\nfooter\nnav\naside' },
+  visible:{ include: '', exclude: 'header\nfooter\nnav\naside' },
   full:   { include: '', exclude: '' },
   reader: { include: '', exclude: 'header\nfooter\nnav\naside' }
 };

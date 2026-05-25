@@ -71,14 +71,10 @@
   <li><strong>NVIDIA NIM</strong>：<code>integrate.api.nvidia.com/v1</code></li>
 </ul>
 
-<h3>本地模型供應商</h3>
+<h3>本地供應商</h3>
 <ul>
   <li><strong>Ollama</strong>：<code>localhost:11434/v1</code> — 免費本地模型。</li>
   <li><strong>LM Studio</strong>：<code>localhost:1234/v1</code> — 圖形化介面管理本地模型。</li>
-</ul>
-
-<h3>Agent / Gateway 供應商（獨立）</h3>
-<ul>
   <li><strong>Hermes (Beta)</strong>：<code>127.0.0.1:8642/v1</code> — 本地 Agent 的 OpenAI 相容 API Server；預設模型為 <code>hermes-agent</code>。</li>
   <li><strong>OpenClaw (Beta)</strong>：<code>ws://127.0.0.1:18789</code> — WebSocket 協定。</li>
 </ul>
@@ -99,7 +95,7 @@
     <tr><td>NVIDIA</td><td><a href="https://build.nvidia.com/" target="_blank">build.nvidia.com</a></td></tr>
   </tbody>
 </table>
-<p>本地模型供應商（Ollama、LM Studio）通常不需要 API 金鑰。獨立 Agent / Gateway 供應商中，Hermes 通常需要填入本地 API Server 的 <code>API_SERVER_KEY</code>；OpenClaw 走 WebSocket 連線流程。</p>
+<p>本地供應商（Ollama、LM Studio、OpenClaw）不需要 API 金鑰。Hermes 通常需要填入本地 API Server 的 <code>API_SERVER_KEY</code>。</p>
 
 <h2>Hermes (Beta) 設定</h2>
 <p>Hermes 透過 OpenAI 相容 HTTP API 接入，和 OpenClaw 一樣需要先在 Hermes 的 <code>.env</code> 開啟 gateway / API Server，再在 Momo 填入相同的 key。</p>
@@ -113,6 +109,7 @@ API_SERVER_CORS_ORIGINS=*</code></pre>
   <li>遠端或 Chrome extension 直接連線時，<code>API_SERVER_CORS_ORIGINS=*</code> 是最簡單的可用設定；若要更嚴格，可改成指定可信任 origin。</li>
   <li>重啟 Hermes Gateway，預設會監聽 <code>http://127.0.0.1:8642</code>。</li>
   <li>在 Momo 選擇 <strong>Hermes (beta)</strong>，保留預設 Base URL 或填入你的遠端 URL，然後啟用 <code>hermes-agent</code> 模型。</li>
+  <li>Connect 成功後連線狀態會保存在本機；刷新設定頁或切換外觀主題後仍會恢復（Base URL 與 API key 須與上次 Connect 時一致）。</li>
 </ol>
 
 <h3>Hermes 使用建議（Momo 內）</h3>
@@ -120,13 +117,15 @@ API_SERVER_CORS_ORIGINS=*</code></pre>
   <li>先按 <strong>Connect</strong> 確認 gateway 可用，再開始聊天，可避免未連線直接送出導致 401/403。</li>
   <li>若你剛切換到 Hermes，建議直接開新對話，避免把其他 provider 的上下文混入 Agent 任務。</li>
   <li>若使用遠端 Hermes，請優先確認目標機器防火牆與埠號（預設 8642）已開啟。</li>
+  <li>若 Agent 回覆包含 HTTP 圖片（例如 <code>MEDIA:&lt;url&gt;</code> 或 Markdown 圖片），Momo 會自動下載並在對話中內嵌顯示；詳見<a href="image-upload.html#ai-reply-images">圖片上傳 — AI 回覆中的圖片</a>。</li>
+  <li>編輯舊 user message 時，Hermes 會<strong>追加新訊息</strong>重新送給 agent，不截斷本地歷史；詳見<a href="sidebar-chat.html#edit-messages">側邊欄聊天 — 編輯訊息</a>。</li>
 </ul>
 
 <h2>設定供應商</h2>
 <ol>
   <li>開啟側邊欄，點擊右上角 <strong>設定</strong>（⚙️）。</li>
   <li>在左側導覽列選擇 <strong>AI 模型</strong>。</li>
-  <li>選擇要使用的供應商，輸入 <strong>API 金鑰</strong>（雲端供應商通常需要；本地模型供應商通常不需要；Hermes 需填入 <code>API_SERVER_KEY</code>）。</li>
+  <li>選擇要使用的供應商，輸入 <strong>API 金鑰</strong>（雲端供應商需要；本地供應商不需要）。</li>
   <li>若需自訂網址，填寫 <strong>API 端點</strong>（見下方「自訂 API 端點」）。</li>
   <li>使用 <strong>測試連線</strong> 確認金鑰與網路可正常連線後再開始對話。</li>
 </ol>
@@ -149,12 +148,15 @@ API_SERVER_CORS_ORIGINS=*</code></pre>
 <p>OpenClaw 是 WebSocket 協定的本地 AI 閘道器，設定流程與其他供應商不同：</p>
 <ol>
   <li>點擊 <strong>Connect</strong> 按鈕連線到 OpenClaw 閘道器。</li>
-  <li>連線成功後按鈕變為 <strong>Disconnect</strong>（hover 變紅），可隨時斷開。</li>
+  <li>連線成功後按鈕顯示 <strong>Connected</strong>；hover 或 focus 時可看到 <strong>Disconnect</strong> 以斷開。</li>
+  <li>連線狀態會保存在本機；刷新設定頁或切換外觀主題後仍會恢復（Base URL、API key、Session key 須與上次 Connect 時一致）。</li>
   <li>連線後自動載入可用的 Session 列表。</li>
   <li>選擇 Session 後，側邊欄會自動載入該 Session 的對話記錄。</li>
   <li>模型開關會自動啟用，顯示為 <code>openclaw</code>。</li>
 </ol>
 <p>點擊 <strong>Setup Guide</strong> 可查看完整的伺服器架設與裝置認證教學。</p>
+<p>若 Gateway 回覆包含 HTTP 圖片（<code>image</code> / <code>image_url</code> content part，或文字中的 <code>MEDIA:&lt;url&gt;</code>），Momo 會自動下載並在對話中內嵌顯示；詳見<a href="image-upload.html#ai-reply-images">圖片上傳 — AI 回覆中的圖片</a>。</p>
+<p>編輯舊 user message 時，OpenClaw 會<strong>追加新訊息</strong>重新送給 gateway，不截斷本地歷史；詳見<a href="sidebar-chat.html#edit-messages">側邊欄聊天 — 編輯訊息</a>。</p>
 
 <div class="callout tip">
   <strong>💡 注意</strong>
@@ -162,7 +164,7 @@ API_SERVER_CORS_ORIGINS=*</code></pre>
 </div>
 
 <h2>自訂 API 端點</h2>
-<p>若使用代理、企業閘道或自架相容服務，可在供應商設定中覆寫預設 Base URL，將請求導向你的 <strong>自訂 API 端點</strong>（仍須符合 OpenAI 相容的 path 與回應格式）。本地模型供應商與獨立 Agent / Gateway 供應商則可依預設埠連線，亦可改為其他機器或埠號。</p>
+<p>若使用代理、企業閘道或自架相容服務，可在供應商設定中覆寫預設 Base URL，將請求導向你的 <strong>自訂 API 端點</strong>（仍須符合 OpenAI 相容的 path 與回應格式）。本地供應商則依預設埠為準，亦可改為其他機器或埠號。</p>
 
 <nav class="page-nav">
   <a href="sidebar-chat.html"><span class="label">上一頁</span><span class="title">← 側邊欄聊天</span></a>

@@ -6,7 +6,22 @@
    Date: 2025-10-02 */
 
 'use strict';
-console.time('[SP] boot');
+const SP_BOOT_STARTED_AT = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+const SP_DEBUG_PERF = localStorage.getItem('momoDebugPerf') === '1';
+
+function spPerfNow(){
+  return (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+}
+
+function spPerfLog(label, startedAt = SP_BOOT_STARTED_AT, extra = null){
+  if(!SP_DEBUG_PERF) return;
+  const elapsed = Math.round((spPerfNow() - startedAt) * 10) / 10;
+  if(extra){
+    console.info(`[SP][perf] ${label}: ${elapsed}ms`, extra);
+  }else{
+    console.info(`[SP][perf] ${label}: ${elapsed}ms`);
+  }
+}
 
 const SHOW_SYSTEM_PROMPT_BUBBLE = false;
 const STREAM_TEMPERATURE = 0.7;
@@ -25,6 +40,7 @@ const AUTO_FOLLOW_REARM_OFFSET = 150;
 
 let prompts = [];
 let sessions = [];
+let sessionsLoaded = false;
 let currentSessionId = null;
 let selectedSessionIds = new Set();
 
@@ -35,6 +51,7 @@ let missingApiAlerted = false;
 let lastSelectedModelUid = '';
 let chatWithPageEnabled = false;
 let webSearchEnabled = false;
+let freshChatOnPanelOpen = true;
 let pageContextBusy = false;
 let pageContextCancelRequested = false; // 取消抓取標誌
 let pageContextErrorResetHandle = null;
@@ -52,6 +69,11 @@ const STREAM_RENDER_VERY_LONG_LENGTH = 80000; // 超长内容阈值
 const STREAM_RENDER_VERY_LONG_INTERVAL_MS = 800; // 超长内容的更新间隔（1.25 FPS）
 const streamUpdateTimers = new Map(); // ts -> { timer, latest, isMarkdown }
 const streamingContexts = new Map(); // ts -> { model, modelProvider, modelThinkingParams }
+let zhVariantRefreshTimer = null;
+let pendingZhVariantRefreshLang = '';
+let zhVariantRefreshToken = 0;
+let lastZhVariantRefreshLang = '';
+let lastZhVariantRefreshAt = 0;
 
 /* ── PROVIDER_ICONS & getProviderIconUrl now in js/utils.js ── */
 
@@ -83,12 +105,10 @@ async function streamOpenClawChat(assistantTs){
   const cfg = providerConfigs?.[modelProvider];
   if(!cfg?.isOpenClaw) throw new Error('Not an OpenClaw provider');
 
-  const wsUrl = cfg.baseUrl;
+  const wsUrl = normalizeOpenClawGatewayUrl(cfg.baseUrl || '');
   const token = cfg.apiKey || '';
 
   if(!wsUrl) throw new Error(sp_t('openclawMissingUrl'));
-
-  const lang = await awaitGetZhVariant();
 
   // 確保 Origin 規則已更新（通知 background）
   try{ chrome.runtime.sendMessage({ type:'openclaw_update_origin', wsUrl }); }catch(e){}
@@ -130,7 +150,7 @@ async function streamOpenClawChat(assistantTs){
       userText = lastUserMsg.content;
     } else if(Array.isArray(lastUserMsg.content)){
       userText = lastUserMsg.content.filter(p => p.type === 'text').map(p => p.text).join(' ');
-      userImages = lastUserMsg.content.filter(p => p.type === 'image_url').map(p => p.image_url?.url || '');
+      userImages = await extractMessageImagesForSend(lastUserMsg);
     }
   }
 
@@ -555,7 +575,7 @@ const SUGGESTION_KEYS = ['suggestion1', 'suggestion2', 'suggestion3'];
 
 /* ================= Welcome zh apply ================= */
 async function getTimeBasedGreeting(lang){
-  lang = lang || (awaitGetZhVariant.cached) || _defaultLang();
+  lang = lang || uiLang();
   const hour = new Date().getHours();
   
   let titleKey, subtitleKey;
@@ -596,7 +616,7 @@ async function getTimeBasedGreeting(lang){
 
 async function applyWelcomeZh(){
   try{
-    const lang = (awaitGetZhVariant.cached) || _defaultLang();
+    const lang = uiLang();
     if(!els.welcomeSection) return;
     
     // 獲取基於時間的問候語（使用翻譯）
@@ -605,22 +625,8 @@ async function applyWelcomeZh(){
     const h1 = els.welcomeSection.querySelector('.hero-title');
     const p  = els.welcomeSection.querySelector('.hero-subtitle');
     
-    if(h1) {
-      // 如果是中文，可能需要繁簡轉換
-      if(lang !== 'en' && typeof window.__zhConvert === 'function') {
-        h1.textContent = __zhConvert(greeting.title, lang);
-      } else {
-        h1.textContent = greeting.title;
-      }
-    }
-    if(p) {
-      // 如果是中文，可能需要繁簡轉換
-      if(lang !== 'en' && typeof window.__zhConvert === 'function') {
-        p.textContent = __zhConvert(greeting.subtitle, lang);
-      } else {
-        p.textContent = greeting.subtitle;
-      }
-    }
+    if(h1) h1.textContent = greeting.title;
+    if(p)  p.textContent  = greeting.subtitle;
     
     // 在 momo 卡通旁邊添加時間圖標
     const momoSticker = document.querySelector('.momo-sticker');
@@ -648,8 +654,28 @@ const PAGE_CONTEXT_BODY_MAX = 20000; // 默認 20000 字符，用戶可在設置
 const PAGE_CONTEXT_SELECTION_MAX = 2000; // 也增加選擇文本的限制
 const GLOBAL_PAGE_ORIGINS = ['https://*/*','http://*/*'];
 /* DEFAULT_PROMPT_ID & PROMPT_ID_MIGRATION now in prompt-defaults.js */
-/* Cache zhVariant for quick access */
-/* sp_t(key) — sync i18n helper using cached language */
+
+/* ── Lazy-load page-capture libs (Readability + Turndown) ── */
+let _pageCaptureLibsLoaded = false;
+async function ensurePageCaptureLibs(){
+  if(_pageCaptureLibsLoaded) return;
+  function loadScript(url){
+    return new Promise((resolve, reject)=>{
+      const s = document.createElement('script');
+      s.src = url; s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  const base = chrome.runtime.getURL('');
+  await Promise.all([
+    loadScript(base + 'libs/Readability.js'),
+    loadScript(base + 'libs/turndown.js')
+      .then(()=> loadScript(base + 'libs/turndown-plugin-gfm.js'))
+  ]);
+  _pageCaptureLibsLoaded = true;
+}
+
+/* sp_t(key) — sync i18n helper using system language */
 /* ---- Custom dialog helpers (replaces native confirm/alert) ---- */
 function _spDialog(msg, isConfirm){
   return new Promise(resolve=>{
@@ -669,8 +695,7 @@ function showConfirm(msg){return _spDialog(msg,true);}
 function showAlert(msg){return _spDialog(msg,false);}
 
 function sp_t(key){
-  const lang = awaitGetZhVariant.cached || _defaultLang();
-  return (typeof window.__t === 'function') ? window.__t(key, lang) : key;
+  return (typeof window.__t === 'function') ? window.__t(key, uiLang()) : key;
 }
 function sp_tpl(key, vars){
   let s = sp_t(key);
@@ -678,34 +703,260 @@ function sp_tpl(key, vars){
   return s;
 }
 function getDefaultPageContextQuery(){
-  const lang = awaitGetZhVariant.cached || _defaultLang();
+  const lang = uiLang();
   if(lang === 'en') return 'Please answer based on the referenced page content.';
   if(lang === 'hans') return '请根据引用页面内容回答。';
   return '請根據引用頁面內容回答。';
 }
-function getApiMessageContent(msg){
-  if(msg?.role !== 'user' || !msg._hasPageContext) return msg?.content;
-  if(typeof msg.content === 'string'){
-    return msg.content.trim() ? msg.content : getDefaultPageContextQuery();
+function normalizePageContextRefs(refs){
+  return (Array.isArray(refs) ? refs : [])
+    .filter(ref => ref && typeof ref.content === 'string' && ref.content.trim())
+    .map((ref, index) => ({
+      index: index + 1,
+      title: ref.pageTitle || ref.title || sp_t('untitledPage'),
+      url: ref.pageUrl || ref.url || '',
+      content: ref.content
+    }));
+}
+function buildPageContextPrompt(refs){
+  const normalized = normalizePageContextRefs(refs);
+  if(!normalized.length) return '';
+  const blocks = normalized.map(ref => {
+    const sourceLine = ref.url ? `URL: ${ref.url}\n` : '';
+    return `Page ${ref.index}: ${ref.title}\n${sourceLine}Content:\n${ref.content}`;
+  }).join('\n\n---\n\n');
+  return `Referenced page content follows. Use it as the primary source for this turn.\n\n<referenced_pages>\n${blocks}\n</referenced_pages>`;
+}
+function mergePageContextIntoUserContent(content, refs){
+  const contextPrompt = buildPageContextPrompt(refs);
+  if(!contextPrompt) return content;
+  const defaultQuery = getDefaultPageContextQuery();
+  if(typeof content === 'string'){
+    const userText = content.trim() || defaultQuery;
+    return `${contextPrompt}\n\nUser request:\n${userText}`;
   }
-  if(Array.isArray(msg.content)){
-    const hasText = msg.content.some(part => part?.type === 'text' && String(part.text || '').trim());
-    return hasText ? msg.content : [{ type: 'text', text: getDefaultPageContextQuery() }, ...msg.content];
+  if(Array.isArray(content)){
+    const next = content.slice();
+    const textIndex = next.findIndex(part => part?.type === 'text');
+    if(textIndex >= 0){
+      const original = String(next[textIndex].text || '').trim() || defaultQuery;
+      next[textIndex] = {
+        ...next[textIndex],
+        text: `${contextPrompt}\n\nUser request:\n${original}`
+      };
+    }else{
+      next.unshift({ type: 'text', text: `${contextPrompt}\n\nUser request:\n${defaultQuery}` });
+    }
+    return next;
   }
-  return msg?.content || getDefaultPageContextQuery();
+  return `${contextPrompt}\n\nUser request:\n${defaultQuery}`;
+}
+function getApiMessageContent(msg, { includePageContext = true } = {}){
+  if(msg?.role !== 'user' || !msg._hasPageContext || !includePageContext) return msg?.content;
+  return mergePageContextIntoUserContent(msg?.content, msg.pageContexts);
+}
+function getImageAttachmentId(part){
+  return part?.image_attachment_id || part?.attachmentId || part?.image_url?.attachment_id || '';
+}
+function imageRefToContentPart(ref){
+  return {
+    type: 'image_url',
+    image_attachment_id: ref.id,
+    image_url: { attachment_id: ref.id },
+    name: ref.name || 'image',
+    mimeType: ref.type || 'image/jpeg',
+    size: ref.size || 0
+  };
+}
+async function imagePartToDataUrl(part){
+  const directUrl = part?.image_url?.url || '';
+  if(directUrl) return directUrl;
+  const attachmentId = getImageAttachmentId(part);
+  if(!attachmentId || typeof AttachmentStore === 'undefined') return '';
+  return AttachmentStore.getDataUrl(attachmentId);
+}
+
+function dataUrlToImagePayload(dataUrl, fallbackName = 'generated-image'){
+  const m = /^data:([^;,]+);base64,(.+)$/i.exec(String(dataUrl || ''));
+  if(!m || !m[1].startsWith('image/')) return null;
+  const ext = (m[1].split('/')[1] || 'png').replace(/[^a-z0-9]/gi, '').slice(0, 8) || 'png';
+  return {
+    data: m[2],
+    type: m[1],
+    name: /\.[a-z0-9]+$/i.test(fallbackName) ? fallbackName : `${fallbackName}.${ext}`
+  };
+}
+
+function extractAssistantImageUrls(text){
+  const source = String(text || '');
+  const urls = new Map();
+  const normalizeUrlKey = value => {
+    try{
+      const u = new URL(value);
+      if(u.pathname.endsWith('/view') && u.searchParams.has('filename')){
+        return [
+          u.origin,
+          u.pathname,
+          u.searchParams.get('filename') || '',
+          u.searchParams.get('type') || '',
+          u.searchParams.get('subfolder') || ''
+        ].join('|');
+      }
+      u.hash = '';
+      u.searchParams.sort?.();
+      return u.toString();
+    }catch{
+      return String(value || '');
+    }
+  };
+  const addUrl = value => {
+    const raw = String(value || '').trim().replace(/[),.;\]]+$/g, '');
+    if(!/^https?:\/\//i.test(raw)) return;
+    urls.set(normalizeUrlKey(raw), raw);
+  };
+  const scanBareUrls = line => {
+    line.replace(/\bhttps?:\/\/[^\s<>"')]+(?:\.(?:png|jpe?g|webp|gif))(?:\?[^\s<>"')]*)?/gi, url => {
+      addUrl(url);
+      return url;
+    });
+  };
+  source.split(/\n/).forEach(line => {
+    const mediaMatch = /^\s*MEDIA:\s*(https?:\/\/\S+)\s*$/i.exec(line);
+    if(mediaMatch){
+      addUrl(mediaMatch[1]);
+      return;
+    }
+    line.replace(/!\[[^\]]*]\((https?:\/\/[^)\s]+)(?:\s+"[^"]*")?\)/gi, (_, url) => {
+      addUrl(url);
+      return _;
+    });
+    scanBareUrls(line);
+  });
+  return [...urls.values()];
+}
+
+function stripAssistantImageLinks(text, urls){
+  let cleaned = String(text || '');
+  cleaned = cleaned.replace(/^\s*MEDIA:\s*https?:\/\/\S+\s*$/gmi, '');
+  cleaned = cleaned.replace(/!\[[^\]]*]\((https?:\/\/[^)\s]+)(?:\s+"[^"]*")?\)/gi, (match, url) => {
+    return urls.includes(url.trim().replace(/[),.;\]]+$/g, '')) ? '' : match;
+  });
+  urls.forEach(url => {
+    const escaped = url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    cleaned = cleaned.replace(new RegExp(`(^|\\s)${escaped}(?=\\s|$)`, 'g'), '$1');
+  });
+  return cleaned.replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function imageNameFromUrl(url, fallback = 'generated-image'){
+  try{
+    const path = new URL(url).pathname;
+    const name = decodeURIComponent(path.split('/').filter(Boolean).pop() || '');
+    return name || fallback;
+  }catch{
+    return fallback;
+  }
+}
+
+async function downloadAssistantImageRef(url, ts){
+  if(typeof AttachmentStore === 'undefined') return null;
+  const proxied = await proxyFetchViaBackground(url, {
+    method: 'GET',
+    responseType: 'dataUrl'
+  });
+  if(!proxied?.ok || !proxied.dataUrl){
+    console.warn('[assistant-media] image download failed:', url, proxied?.status, proxied?.error || proxied?.text || '');
+    return null;
+  }
+  const payload = dataUrlToImagePayload(proxied.dataUrl, imageNameFromUrl(url));
+  if(!payload) return null;
+  return AttachmentStore.saveImage(payload, {
+    source: 'assistant',
+    sessionId: currentSessionId || '',
+    messageTs: ts,
+    name: payload.name,
+    type: payload.type
+  });
+}
+
+async function cacheAssistantGeneratedImages(ts, content){
+  const session = getCurrentSession();
+  const msg = session?.messages.find(m => m.ts === ts);
+  if(!msg || msg.role !== 'assistant' || typeof content !== 'string') return content;
+  if(msg._assistantMediaProcessed) return content;
+  const urls = extractAssistantImageUrls(content);
+  if(!urls.length){
+    msg._assistantMediaProcessed = true;
+    return content;
+  }
+  const refs = [];
+  for(const url of urls){
+    try{
+      const ref = await downloadAssistantImageRef(url, ts);
+      if(ref) refs.push({ ...ref, originalUrl: url });
+    }catch(e){
+      console.warn('[assistant-media] image cache failed:', url, e);
+    }
+  }
+  msg._assistantMediaProcessed = true;
+  if(refs.length){
+    msg.generatedImages = [...(Array.isArray(msg.generatedImages) ? msg.generatedImages : []), ...refs];
+    return stripAssistantImageLinks(content, urls);
+  }
+  return content;
+}
+
+async function hydrateContentAttachmentsForApi(content){
+  if(!Array.isArray(content)) return content;
+  const hydrated = [];
+  for(const part of content){
+    if(part?.type === 'image_url'){
+      const url = await imagePartToDataUrl(part);
+      if(url){
+        hydrated.push({ type: 'image_url', image_url: { url } });
+      }
+      continue;
+    }
+    hydrated.push(part);
+  }
+  return hydrated;
+}
+async function getApiMessageContentForSend(msg, options){
+  return hydrateContentAttachmentsForApi(getApiMessageContent(msg, options));
+}
+async function extractMessageImagesForSend(msg){
+  const urls = [];
+  if(Array.isArray(msg?.content)){
+    for(const part of msg.content){
+      if(part?.type === 'image_url'){
+        const url = await imagePartToDataUrl(part);
+        if(url) urls.push(url);
+      }
+    }
+  }
+  if(!urls.length && Array.isArray(msg?.images)){
+    msg.images.forEach(img=>{
+      if(img?.data) urls.push(`data:${img.type || 'image/jpeg'};base64,${img.data}`);
+    });
+  }
+  return urls;
 }
 function _defaultLang() {
   return (typeof window.__detectBrowserLanguage === 'function') ? window.__detectBrowserLanguage() : 'en';
 }
 async function awaitGetZhVariant(){
   try{
-    const syncData = await chrome.storage.sync.get('zhVariant');
-    const localData = await chrome.storage.local.get('zhVariant');
+    const [syncData, localData] = await Promise.all([
+      chrome.storage.sync.get('zhVariant'),
+      chrome.storage.local.get('zhVariant')
+    ]);
     const zhVariant = syncData.zhVariant || localData.zhVariant;
     awaitGetZhVariant.cached = zhVariant || _defaultLang();
     return awaitGetZhVariant.cached;
   }catch{ return _defaultLang(); }
 }
+awaitGetZhVariant.cached = '';
+function uiLang(){ return awaitGetZhVariant.cached || _defaultLang(); }
 
 /* migratePromptIds now in prompt-defaults.js */
 
@@ -716,6 +967,45 @@ function setButtonTooltip(btn, text){
   }else{
     btn.removeAttribute('data-tooltip');
   }
+}
+
+function scheduleZhVariantRefresh(lang){
+  const nextLang = lang || _defaultLang();
+  awaitGetZhVariant.cached = nextLang;
+  document.documentElement.setAttribute('lang', nextLang === 'en' ? 'en' : nextLang === 'hans' ? 'zh-CN' : 'zh-TW');
+
+  pendingZhVariantRefreshLang = nextLang;
+  const scheduledToken = ++zhVariantRefreshToken;
+  if(zhVariantRefreshTimer) clearTimeout(zhVariantRefreshTimer);
+  zhVariantRefreshTimer = setTimeout(()=>{
+    const runLang = pendingZhVariantRefreshLang;
+    const now = Date.now();
+    zhVariantRefreshTimer = null;
+    pendingZhVariantRefreshLang = '';
+    if(runLang === lastZhVariantRefreshLang && now - lastZhVariantRefreshAt < 500) return;
+
+    const token = scheduledToken;
+    void (async ()=>{
+      try{
+        if(typeof window.__applyTranslations === 'function'){
+          await window.__applyTranslations(runLang);
+        }
+        if(token !== zhVariantRefreshToken) return;
+        if(els.historyPanel?.classList.contains('open')){
+          renderSessionList();
+        }
+        await renderSuggestionsIfNeeded();
+        if(token !== zhVariantRefreshToken) return;
+        await applyWelcomeZh();
+        if(token !== zhVariantRefreshToken) return;
+        updateSendButtonState();
+        lastZhVariantRefreshLang = runLang;
+        lastZhVariantRefreshAt = Date.now();
+      }catch(err){
+        console.warn('[SP] zhVariant refresh failed:', err);
+      }
+    })();
+  }, 80);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -764,45 +1054,76 @@ function showFatal(message, error) {
 // 處理 sidepanel 打開時自動創建新對話
 async function handleSidePanelOpen(){
   try{
-    // 檢查是否剛剛打開 sidepanel
-    const lastOpenTime = sessionStorage.getItem('sidepanelOpenTime');
-    const now = Date.now();
-    
-    // 如果沒有記錄或距離上次打開超過5分鐘，創建新對話
-    if(!lastOpenTime || (now - parseInt(lastOpenTime)) > 300000){
-      console.log('[SP] SidePanel opened, creating new session');
-      // 如果已經有對話且有內容，創建新對話
-      if(sessions.length > 0 && currentSessionId){
-        const currentSession = sessions.find(s => s.id === currentSessionId);
-        if(currentSession && currentSession.messages && currentSession.messages.length > 0){
-          createNewSession(true);
-          console.log('[SP] New session created on panel open');
-        }
-      }
-    }
-    
-    // 更新打開時間
-    sessionStorage.setItem('sidepanelOpenTime', now.toString());
+    sessionStorage.setItem('sidepanelOpenTime', Date.now().toString());
+    resetConversationOnPanelOpen('panel-open');
   }catch(e){
     console.warn('[SP] handleSidePanelOpen failed', e);
   }
 }
 
+async function loadSidebarBehaviorState(){
+  try{
+    const [syncData, localData] = await Promise.all([
+      chrome.storage.sync.get('freshChatOnPanelOpen'),
+      chrome.storage.local.get('freshChatOnPanelOpen')
+    ]);
+    const stored = syncData.freshChatOnPanelOpen ?? localData.freshChatOnPanelOpen;
+    freshChatOnPanelOpen = stored !== false;
+  }catch{
+    freshChatOnPanelOpen = true;
+  }
+}
+
+function sessionHasConversation(session){
+  return !!session?.messages?.some(m =>
+    (m.role === 'user' || m.role === 'assistant') && !m._pageContext && !m._streaming
+  );
+}
+
+function resetConversationOnPanelOpen(reason = 'panel-open'){
+  if(!freshChatOnPanelOpen) return false;
+  if(isSelectedAgentProviderSync()) return false;
+  const cur = getCurrentSession();
+  if(!sessionHasConversation(cur)) return false;
+  createNewSession(true);
+  renderAllMessages();
+  renderSessionList();
+  resetComposerIfEmpty();
+  hidePageContentPreview();
+  spPerfLog(`fresh session on ${reason}`);
+  return true;
+}
+
 async function init(){
+  const initStartedAt = spPerfNow();
   cacheDom();
   if(!assertDom()) return;
-  // 確保 momo 圖片存在且使用擴展絕對路徑
+
+  // ── Phase 0: 同步、零等待 — 輸入欄立即可用 ──
+  const phase0StartedAt = spPerfNow();
+  preventBrowserRestoreAndResetComposer();
+  autoGrow(els.messageInput, { force:true });
+  setInputEngagedState();
+  updateSendButtonState();
+  bindEvents();
+  spPerfLog('phase0 input-ready', phase0StartedAt);
+
+  // ── Phase 1: 主題 + 模型（含 zhVariant／i18n）──
+  const phase1StartedAt = spPerfNow();
+  await Promise.all([loadTheme(), loadModels()]);
+  spPerfLog('phase1 theme+models', phase1StartedAt);
+
+  // 確保 momo 圖片（需在 loadTheme 後，bubble 文案才會用對應語言）
+  const momoStartedAt = spPerfNow();
   try{
     const url=chrome.runtime?.getURL ? chrome.runtime.getURL('assets/icons/momo.png') : 'assets/icons/momo.png';
     let wrap=document.querySelector('.momo-wrap');
     if(!wrap){
       wrap=document.createElement('div');
       wrap.className='momo-wrap';
-      // bubble
       const bubble=document.createElement('div');
       bubble.className='momo-bubble';
       bubble.textContent=sp_t('momoEasterEgg');
-      // image
       const img=document.createElement('img');
       img.className='momo-sticker';
       img.alt=''; img.setAttribute('aria-hidden','true');
@@ -819,35 +1140,46 @@ async function init(){
       if(img && img.getAttribute('src')!==url) img.setAttribute('src', url);
     }
   }catch(e){ console.warn('[SP] momo image setup failed', e); }
-  bindEvents();
+  spPerfLog('momo setup', momoStartedAt);
+
+  // ── Phase 2: 對話資料 + 狀態 ──
+  const phase2StartedAt = spPerfNow();
   await Promise.all([
-    loadTheme(),
     loadPrompts(),
     loadSessions(),
-    loadModels(),
+    loadSidebarBehaviorState(),
     loadChatWithPageState(),
-    loadWebSearchState(),
-    awaitGetZhVariant() // 初始化繁簡偏好快取
+    loadWebSearchState()
   ]);
-  
-  // 每次打開 sidepanel 時自動創建新對話
+  spPerfLog('phase2 data+state', phase2StartedAt);
+
+  ensureHermesLocalSession();
+  {
+    const { providerConfigs } = await chrome.storage.local.get('providerConfigs');
+    ensureFreshStandardSession(providerConfigs);
+  }
+
+  const panelOpenStartedAt = spPerfNow();
   await handleSidePanelOpen();
-  
+  spPerfLog('sidepanel open handling', panelOpenStartedAt);
+
   ensureSession();
+  const renderStartedAt = spPerfNow();
   renderAllMessages();
+  spPerfLog('renderAllMessages sync portion', renderStartedAt, {
+    currentSessionId,
+    visibleMessages: getCurrentSession()?.messages?.length || 0
+  });
   renderSuggestionsIfNeeded().catch(err => console.warn('[SP] renderSuggestionsIfNeeded failed:', err));
   applyWelcomeZh().catch(err => console.warn('[SP] applyWelcomeZh failed:', err));
   observeScroll();
   setupScrollButton();
-
-  preventBrowserRestoreAndResetComposer();
-  autoGrow(els.messageInput, { force:true });
-  setInputEngagedState();
   updateSendButtonState();
-  setupPermissionWatchers();
-  setupPageChangeWatcher();
 
-  console.timeEnd('[SP] boot');
+  // 背景監聽：延後執行，不阻塞主流程
+  setTimeout(()=>{ setupPermissionWatchers(); setupPageChangeWatcher(); }, 0);
+
+  spPerfLog('init complete', initStartedAt);
 }
 
 /* ================= DOM ================= */
@@ -998,25 +1330,27 @@ function bindEvents(){
 
   // 剪貼板粘貼圖片事件
   els.messageInput?.addEventListener('paste', handlePaste);
+  window.addEventListener('pagehide', ()=>archiveCurrentSessionAttachments('sidepanel-close'));
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === 'hidden'){
+      archiveCurrentSessionAttachments('sidepanel-hidden');
+    }else if(document.visibilityState === 'visible'){
+      if(ensureHermesLocalSession({ render: currentSessionId !== HERMES_LOCAL_SESSION_ID })) return;
+      chrome.storage.local.get('providerConfigs').then(({ providerConfigs }) => {
+        if(ensureFreshStandardSession(providerConfigs, { render: true })) return;
+        resetConversationOnPanelOpen('panel-visible');
+      });
+      return;
+    }
+  });
 
   chrome.storage.onChanged.addListener((changes, area)=>{
-    // 語言變更同時監聽 local 和 sync（background 首次安裝可能只寫 sync）
     if((area==='local' || area==='sync') && changes.zhVariant){
-      const lang = changes.zhVariant.newValue || _defaultLang(); 
-      awaitGetZhVariant.cached = lang;
-      if(lang === 'en'){
-        document.documentElement.setAttribute('lang', 'en');
-      } else {
-        document.documentElement.setAttribute('lang', lang==='hans'?'zh-CN':'zh-TW');
-      }
-      if(typeof window.__applyTranslations === 'function'){
-        window.__applyTranslations(lang).catch(err => {
-          console.warn('[SP] Failed to apply translations:', err);
-        });
-      }
-      renderAllMessages();
-      renderSuggestionsIfNeeded().catch(err => console.warn('[SP] renderSuggestionsIfNeeded failed:', err));
-      applyWelcomeZh().catch(err => console.warn('[SP] applyWelcomeZh failed:', err));
+      // local + sync 會連續觸發兩次；合併後只刷新一次靜態 UI。
+      scheduleZhVariantRefresh(changes.zhVariant.newValue);
+    }
+    if((area==='local' || area==='sync') && changes.freshChatOnPanelOpen){
+      freshChatOnPanelOpen = changes.freshChatOnPanelOpen.newValue !== false;
     }
     if(area==='local'){
       if(changes.theme) applyTheme(changes.theme.newValue);
@@ -1028,7 +1362,7 @@ function bindEvents(){
         const w = String(changes.messageWeight.newValue || '500');
         document.documentElement.style.setProperty('--message-weight', w);
       }
-      if(changes.customModels || changes.model) loadModels();
+      if(changes.customModels) loadModels();
       if(changes.apiKey) missingApiAlerted=false;
       // OpenClaw: auto-reload history when sessionKey changes
       if(changes.providerConfigs){
@@ -1040,6 +1374,9 @@ function bindEvents(){
           console.log('[SP] OpenClaw sessionKey changed →', newOC.sessionKey);
           loadAndShowOpenClawHistory().catch(e => console.warn('[SP] auto-reload history failed:', e));
         }
+      }
+      if(changes.hermesSessionResetAt){
+        clearHermesLocalSession({ render: true });
       }
       if(changes.webSearchEnabled != null){
         const val = !!changes.webSearchEnabled.newValue;
@@ -1054,6 +1391,9 @@ function bindEvents(){
         loadPrompts().then(syncSystemMessage);
       }
     }
+    if(area==='sync' && changes.model){
+      loadModels();
+    }
   });
 }
 
@@ -1067,7 +1407,7 @@ async function loadTheme(){
     const theme = syncTheme.theme || localTheme.theme;
     const messageSize = syncTheme.messageSize || localTheme.messageSize;
     const messageWeight = syncTheme.messageWeight || localTheme.messageWeight;
-    const zhVariant = syncTheme.zhVariant || localTheme.zhVariant;
+    const zhVariant = syncTheme.zhVariant ?? localTheme.zhVariant;
     if(theme) applyTheme(theme);
     if(messageSize){
       document.documentElement.style.setProperty('--message-size', String(messageSize) + 'px');
@@ -1076,23 +1416,17 @@ async function loadTheme(){
       document.documentElement.style.setProperty('--message-weight', String(messageWeight));
     }
     const lang = zhVariant || _defaultLang();
-    // 設定語言屬性
+    awaitGetZhVariant.cached = lang;
     if(lang === 'en'){
       document.documentElement.setAttribute('lang', 'en');
     } else {
       document.documentElement.setAttribute('lang', lang==='hans'?'zh-CN':'zh-TW');
     }
-    
-    // 應用翻譯（同步等待，確保 sp_t() 可用且 DOM 翻譯完成）
     if(typeof window.__applyTranslations === 'function'){
       try{ await window.__applyTranslations(lang); }catch(err){
         console.warn('[SP] Failed to apply translations:', err);
       }
     }
-    // 緩存 lang 以供 sp_t() 使用
-    awaitGetZhVariant.cached = lang;
-    
-    console.log('[SP] Language loaded:', lang, '| converter ready:', typeof window.__zhConvert);
   }catch(e){}
 }
 function applyTheme(t){
@@ -1373,10 +1707,123 @@ function buildModelDropdown(enabledModels){
 }
 
 const AGENT_PROVIDER_IDS = new Set(['openclaw', 'hermes']);
+const HERMES_LOCAL_SESSION_ID = 'momo-hermes-main';
+
+function getSelectedModelProviderId(){
+  return (els.modelSelector?.value || '').split('::')[0] || '';
+}
+
+function getDefaultHermesSessionId(){
+  const extId = chrome?.runtime?.id || 'extension';
+  return `momo-${extId}-hermes-main`;
+}
+
+function getDefaultHermesSessionKey(){
+  const extId = chrome?.runtime?.id || 'extension';
+  return `agent:main:momo:dm:${extId}`;
+}
+
+function makeHermesSessionId(){
+  const extId = chrome?.runtime?.id || 'extension';
+  const suffix = crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  return `momo-${extId}-hermes-${suffix}`;
+}
 
 function isAgentProviderId(providerId, providerConfigs){
   const cfg = providerConfigs?.[providerId];
   return !!providerId && (AGENT_PROVIDER_IDS.has(providerId) || !!cfg?.isOpenClaw || !!cfg?.isAgentProvider);
+}
+
+function isSelectedAgentProviderSync(){
+  return AGENT_PROVIDER_IDS.has(getSelectedModelProviderId());
+}
+
+function ensureHermesLocalSession({ render = false } = {}){
+  if(getSelectedModelProviderId() !== 'hermes') return false;
+  if(!sessionsLoaded) return false;
+  let changed = false;
+  let session = sessions.find(s => s.id === HERMES_LOCAL_SESSION_ID || s._agentProvider === 'hermes');
+  if(!session){
+    session = {
+      id: HERMES_LOCAL_SESSION_ID,
+      title: 'Hermes',
+      createdAt: Date.now(),
+      messages: [],
+      _agentProvider: 'hermes'
+    };
+    sessions.unshift(session);
+    changed = true;
+  }else{
+    if(session.id !== HERMES_LOCAL_SESSION_ID){ session.id = HERMES_LOCAL_SESSION_ID; changed = true; }
+    if(!session.title){ session.title = 'Hermes'; changed = true; }
+    if(session._agentProvider !== 'hermes'){ session._agentProvider = 'hermes'; changed = true; }
+  }
+  if(currentSessionId !== session.id){
+    currentSessionId = session.id;
+    changed = true;
+  }
+  if(changed){
+    persistSessions();
+  }
+  syncSystemMessage();
+  if(render){
+    renderAllMessages();
+    renderSessionList();
+    requestAnimationFrame(()=> scrollToBottom(true));
+    setTimeout(()=> scrollToBottom(true), 50);
+  }
+  return true;
+}
+
+function isHermesLocalSession(session){
+  return !!session && (session.id === HERMES_LOCAL_SESSION_ID || session._agentProvider === 'hermes');
+}
+
+function clearHermesLocalSession({ render = false } = {}){
+  if(!sessionsLoaded) return false;
+  const session = sessions.find(s => isHermesLocalSession(s));
+  if(!session) return false;
+  session.id = HERMES_LOCAL_SESSION_ID;
+  session.title = session.title || 'Hermes';
+  session._agentProvider = 'hermes';
+  session.messages = [];
+  if(getSelectedModelProviderId() === 'hermes'){
+    currentSessionId = session.id;
+  }
+  persistSessions();
+  if(render && getSelectedModelProviderId() === 'hermes'){
+    syncSystemMessage();
+    renderAllMessages();
+    renderSessionList();
+    resetComposerIfEmpty();
+    hidePageContentPreview();
+  }
+  return true;
+}
+
+function ensureFreshStandardSession(providerConfigs, { render = false, force = false } = {}){
+  const providerId = getSelectedModelProviderId();
+  if(isAgentProviderId(providerId, providerConfigs)) return false;
+  if(!sessionsLoaded) return false;
+
+  const cur = getCurrentSession();
+  const shouldReset = force
+    || isHermesLocalSession(cur)
+    || !!cur?.messages?.some(m => m._fromOpenClawHistory)
+    || sessionHasConversation(cur);
+  if(!shouldReset) return false;
+
+  createNewSession(true);
+
+  if(render){
+    renderAllMessages();
+    renderSessionList();
+    resetComposerIfEmpty();
+    hidePageContentPreview();
+    requestAnimationFrame(()=> scrollToBottom(true));
+  }
+  console.log('[SP] Standard provider selected; started fresh session:', providerId);
+  return true;
 }
 
 async function handleAgentProviderModelSwitch(nextUid, previousUid){
@@ -1385,7 +1832,22 @@ async function handleAgentProviderModelSwitch(nextUid, previousUid){
   if(!nextProvider || nextProvider === previousProvider) return;
 
   const { providerConfigs } = await chrome.storage.local.get('providerConfigs');
-  if(nextProvider !== 'hermes' && !providerConfigs?.[nextProvider]?.isAgentProvider) return;
+  if(nextProvider !== 'hermes' && !providerConfigs?.[nextProvider]?.isAgentProvider){
+    ensureFreshStandardSession(providerConfigs, { render: true, force: true });
+    uploadedImages = [];
+    renderImagePreviews();
+    resetComposerIfEmpty();
+    return;
+  }
+
+  if(nextProvider === 'hermes'){
+    ensureHermesLocalSession({ render: true });
+    console.log('[SP] Hermes model selected, using persistent local session:', HERMES_LOCAL_SESSION_ID);
+    uploadedImages = [];
+    renderImagePreviews();
+    resetComposerIfEmpty();
+    return;
+  }
 
   const cur = getCurrentSession();
   if(cur && Array.isArray(cur.messages) && cur.messages.length > 0){
@@ -1449,10 +1911,14 @@ async function updateOpenClawPromptVisibility(){
     if(isOpenClaw){
       console.log('[SP] OpenClaw 模型已選取，禁用系統提示詞選擇器、歷史按鈕、聯網搜尋與引用頁面，自動載入對話記錄');
       loadAndShowOpenClawHistory();
+    } else if(providerId === 'hermes'){
+      ensureHermesLocalSession({ render: true });
+      console.log('[SP] Hermes 模型已選取，使用固定本地對話並保留 history');
     } else if(isAgentProvider){
       console.log('[SP] Agent provider 模型已選取，禁用系統提示詞選擇器、歷史按鈕、聯網搜尋與引用頁面');
       hidePageContentPreview();
     } else {
+      ensureFreshStandardSession(providerConfigs, { render: true });
       // 切換離開 OpenClaw：若當前 session 含 OpenClaw 歷史，建立新對話
       const session = getCurrentSession();
       if(session && session.messages.some(m => m._fromOpenClawHistory)){
@@ -1500,7 +1966,7 @@ async function loadAndShowOpenClawHistory(){
   const cfg = providerConfigs?.[modelProvider];
   if(!cfg?.isOpenClaw) return;
 
-  const wsUrl = (cfg.baseUrl || '').replace(/\/+$/,'');
+  const wsUrl = normalizeOpenClawGatewayUrl(cfg.baseUrl || '');
   const token = cfg.apiKey || '';
   if(!wsUrl){ showToast(sp_t('gatewayUrlNotSet')); return; }
 
@@ -1965,7 +2431,7 @@ async function performWebSearch(query, contextual){
 function buildSearchGroundedUserContent(originalContent, searchData){
   if(!searchData || !searchData.text) return originalContent;
   const searchBlock =
-    `\n\n[Web search results fetched by Momo AI Bud]\n` +
+    `\n\n[Web search results fetched by Hii~ Momo: AI Assist]\n` +
     `Search query: ${searchData.query || ''}\n` +
     `${searchData.text}\n` +
     `[/Web search results]\n\n` +
@@ -2155,7 +2621,7 @@ function setupPageChangeWatcher(){
     } catch(e) {
       console.warn('[pageContext] Polling error:', e);
     }
-  }, 500); // 每 0.5 秒檢查一次，更快反應
+  }, 1500); // 每 1.5 秒檢查一次（平衡反應速度與 CPU 佔用）
 }
 
 function flagPageContextError(message){
@@ -2505,7 +2971,7 @@ async function handlePageContextToggle(){
     // 更新按鈕狀態：顯示正在捕獲
     if(btn){
       btn.classList.add('active');
-      const lang = awaitGetZhVariant.cached || _defaultLang();
+      const lang = uiLang();
       const tip = window.__t ? window.__t('capturingPage', lang) : 'Capturing (click to stop)';
       setButtonTooltip(btn, tip);
       btn.setAttribute('aria-label', tip);
@@ -2543,7 +3009,7 @@ async function handlePageContextToggle(){
           // 如果還沒使用，檢查是否達到上限
           const MAX_PAGE_CONTEXTS = 5;
           if(pageContextMessages.length >= MAX_PAGE_CONTEXTS){
-            const lang = awaitGetZhVariant.cached || _defaultLang();
+            const lang = uiLang();
             const limitMsg = window.__t ? window.__t('pageContextLimitReached', lang) : 'Page reference limit reached';
             showToast(`${limitMsg} (${MAX_PAGE_CONTEXTS})`);
             if(btn){
@@ -2604,7 +3070,7 @@ async function handlePageContextToggle(){
       // 恢復按鈕正常狀態
       if(btn){
         btn.classList.remove('active');
-        const lang = awaitGetZhVariant.cached || _defaultLang();
+        const lang = uiLang();
         const refPageText = window.__t ? window.__t('referencePage', lang) : 'Reference Page';
         setButtonTooltip(btn, refPageText);
         btn.setAttribute('aria-label', refPageText);
@@ -2624,7 +3090,7 @@ async function handlePageContextToggle(){
       // 終止後恢復按鈕狀態
       if(btn){
         btn.classList.remove('active');
-        const lang = awaitGetZhVariant.cached || _defaultLang();
+        const lang = uiLang();
         const refPageText = window.__t ? window.__t('referencePage', lang) : 'Reference Page';
         setButtonTooltip(btn, refPageText);
         btn.setAttribute('aria-label', refPageText);
@@ -2639,7 +3105,165 @@ async function handlePageContextToggle(){
 }
 
 // 使用 Readability 進行智能內容提取
+async function getPageContextBodyLimit(){
+  const [syncData, localData] = await Promise.all([
+    chrome.storage.sync.get(['pageContextLimit']),
+    chrome.storage.local.get(['pageContextLimit'])
+  ]);
+  return syncData.pageContextLimit || localData.pageContextLimit || PAGE_CONTEXT_BODY_MAX;
+}
+
+async function detectSmartCaptureStrategy(tab){
+  const [{ result } = {}] = await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: () => {
+      const text = (document.body?.innerText || '').slice(0, 50000);
+      const path = location.pathname.toLowerCase();
+      const title = (document.title || '').toLowerCase();
+      const h1 = Array.from(document.querySelectorAll('h1'))
+        .map(el => (el.innerText || el.textContent || '').trim())
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      const articleLike = !!document.querySelector('article, [role="article"], .markdown-body, main article');
+      const structuredSignals = [
+        /pricing|price|plans?|billing|checkout|subscribe|subscription/.test(path + ' ' + title + ' ' + h1),
+        /dashboard|settings|account|console|admin|app/.test(path),
+        (text.match(/(?:\$|€|£|HK\$|NT\$|¥|USD|month|year|billed|plan|free|pro|team|enterprise)/gi) || []).length >= 4,
+        document.querySelectorAll('button, [role="button"], table, [role="grid"], [class*="card"], [class*="plan"], [class*="price"]').length >= 12
+      ];
+      const structuredScore = structuredSignals.filter(Boolean).length;
+      return {
+        strategy: structuredScore >= 1 && !articleLike ? 'visible' : 'reader',
+        structuredScore,
+        articleLike,
+        title: document.title || '',
+        h1
+      };
+    }
+  });
+  return result || { strategy: 'reader' };
+}
+
+async function captureWithVisibleText(){
+  const tab = await getActiveTab();
+  if(!tab?.id) throw new Error('Tab not found');
+  if(!isSupportedPageUrl(tab.url)) throw new Error('Page not supported for capture');
+  const globalGranted = await ensureGlobalPagePermission({ requestIfNeeded:false });
+  if(!globalGranted) throw new Error('Not authorized to read this page');
+
+  const bodyLimit = await getPageContextBodyLimit();
+  const [{ result } = {}] = await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    func: (limit) => {
+      const normalize = (value = '') => String(value)
+        .replace(/\u00a0/g, ' ')
+        .replace(/\t/g, ' ')
+        .replace(/\r/g, '')
+        .replace(/[ ]{2,}/g, ' ')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+      const skipSelector = [
+        'script', 'style', 'noscript', 'template', 'svg',
+        'header', 'footer', 'nav', 'aside',
+        '[role="navigation"]', '[role="banner"]', '[role="contentinfo"]',
+        '[aria-hidden="true"]', '[hidden]'
+      ].join(',');
+      const isVisible = (el) => {
+        if(!el || el.closest(skipSelector)) return false;
+        const style = window.getComputedStyle(el);
+        if(style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0) return false;
+        const rect = el.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+      };
+      const directText = (el) => {
+        const parts = [];
+        el.childNodes.forEach(node => {
+          if(node.nodeType === Node.TEXT_NODE) parts.push(node.textContent || '');
+        });
+        return normalize(parts.join(' '));
+      };
+      const lines = [];
+      const seen = new Set();
+      const add = (text, prefix = '') => {
+        const clean = normalize(text);
+        if(!clean || clean.length < 2) return;
+        if(clean.length > 1800 && !prefix.startsWith('#')) return;
+        if(/^(cookie|privacy settings|accept all|reject all)$/i.test(clean)) return;
+        const key = clean.toLowerCase();
+        if(seen.has(key)) return;
+        seen.add(key);
+        lines.push(prefix ? `${prefix}${clean}` : clean);
+      };
+
+      const title = normalize(document.title || '');
+      const metaDesc = normalize(document.querySelector('meta[name="description"]')?.content || '');
+      const selection = normalize(window.getSelection?.().toString() || '');
+      add(title, '# ');
+      if(metaDesc) add(metaDesc);
+      if(selection) add(selection, 'Selected text:\n');
+
+      const selector = [
+        'main h1','main h2','main h3','main h4','main p','main li','main dt','main dd',
+        'main th','main td','main caption','main button','main [role="button"]','main label',
+        'main [aria-label]',
+        'main [class*="price"]','main [class*="Price"]','main [class*="plan"]','main [class*="Plan"]',
+        'main [class*="card"]','main [class*="Card"]','main [class*="feature"]','main [class*="Feature"]',
+        'article h1','article h2','article h3','article p','article li',
+        '[role="main"] h1','[role="main"] h2','[role="main"] h3','[role="main"] p','[role="main"] li',
+        'h1','h2','h3','h4','p','li','dt','dd','th','td','caption','button','[role="button"]','label',
+        '[class*="price"]','[class*="Price"]','[class*="plan"]','[class*="Plan"]','[class*="feature"]','[class*="Feature"]'
+      ].join(',');
+      const elements = Array.from(document.querySelectorAll(selector));
+      for(const el of elements){
+        if(!isVisible(el)) continue;
+        const tag = el.tagName.toLowerCase();
+        const text = tag === 'button' || el.getAttribute('role') === 'button'
+          ? (el.innerText || el.textContent || el.getAttribute('aria-label') || '')
+          : (directText(el) || el.innerText || el.textContent || el.getAttribute('aria-label') || '');
+        if(/^h[1-6]$/.test(tag)) add(text, `${'#'.repeat(Number(tag[1]) || 2)} `);
+        else if(tag === 'li') add(text, '- ');
+        else if(tag === 'td' || tag === 'th') add(text, '| ');
+        else if(tag === 'button' || el.getAttribute('role') === 'button') add(text, '[Button] ');
+        else add(text);
+        if(lines.join('\n').length > limit * 1.5) break;
+      }
+
+      let body = lines.join('\n');
+      if(body.length < 500){
+        body = normalize(document.body?.innerText || body);
+      }
+      return {
+        title,
+        url: location.href,
+        bodyExcerpt: body.slice(0, limit),
+        bodyTruncated: body.length > limit,
+        metaDesc,
+        headings: Array.from(document.querySelectorAll('h1, h2, h3'))
+          .filter(isVisible)
+          .map(h => normalize(h.innerText || h.textContent || ''))
+          .filter(Boolean)
+          .slice(0, 10),
+        selection
+      };
+    },
+    args: [bodyLimit]
+  });
+
+  if(!result?.bodyExcerpt) throw new Error('No visible text found on page');
+  return {
+    message: formatPageContextPayload(tab.url || '', result),
+    meta: {
+      url: tab.url || '',
+      title: result.title || '',
+      bodyTruncated: result.bodyTruncated,
+      extractionMethod: 'Visible Text'
+    }
+  };
+}
+
 async function captureWithReadability(){
+  await ensurePageCaptureLibs();
   const tab = await getActiveTab();
   if(!tab?.id) throw new Error('Tab not found');
   if(!isSupportedPageUrl(tab.url)) throw new Error('Page not supported for capture');
@@ -2650,7 +3274,7 @@ async function captureWithReadability(){
   console.log('[Readability] Starting intelligent content extraction...');
   
   // 從頁面獲取完整 HTML
-  const [{ result: htmlString } = {}] = await chrome.scripting.executeScript({
+  const [{ result: pageSnapshot } = {}] = await chrome.scripting.executeScript({
     target: { tabId: tab.id },
     func: () => {
       const docClone = document.documentElement.cloneNode(true);
@@ -2678,21 +3302,97 @@ async function captureWithReadability(){
       
       if(bodyClone) removeHidden(bodyClone);
       
-      return '<!doctype html>\n' + docClone.outerHTML;
+      const h1Text = Array.from(docClone.querySelectorAll('h1'))
+        .map(h => (h.textContent || '').trim())
+        .filter(Boolean)
+        .slice(0, 3)
+        .join(' ');
+      const visibleText = (document.body?.innerText || '')
+        .replace(/\u00a0/g, ' ')
+        .replace(/\t/g, ' ')
+        .replace(/\r/g, '')
+        .replace(/ +/g, ' ')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+
+      return {
+        html: '<!doctype html>\n' + docClone.outerHTML,
+        url: window.location.href,
+        title: document.title || '',
+        h1Text,
+        visibleText
+      };
     }
   });
   
+  const htmlString = pageSnapshot?.html || '';
   if(!htmlString) throw new Error('Failed to get page HTML');
   
-  console.log('[Readability] HTML obtained, length:', htmlString.length);
+  console.log('[Readability] HTML obtained, length:', htmlString.length, 'url:', pageSnapshot?.url || tab.url);
   
   // 在 sidepanel 上下文中使用 Readability 解析
   const parser = new DOMParser();
   const dom = parser.parseFromString(htmlString, 'text/html');
+  const fallbackDom = parser.parseFromString(htmlString, 'text/html');
   
   if(!dom || dom.documentElement.nodeName === 'parsererror'){
     throw new Error('HTML parse failed');
   }
+
+  const normalizeForCompare = (value = '') => String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9\u4e00-\u9fff]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const extractCompareTokens = (value = '') => {
+    const normalized = normalizeForCompare(value);
+    if(!normalized) return [];
+    const stopwords = new Set([
+      'the','and','for','with','from','this','that','all','one','page','pricing',
+      'official','website','home','app','apps','pro','com','www'
+    ]);
+    return normalized
+      .split(' ')
+      .map(t => t.trim())
+      .filter(t => t.length >= 3 && !stopwords.has(t))
+      .slice(0, 10);
+  };
+  const hasPageSignalMatch = (articleTitle = '', articleText = '') => {
+    const h1Tokens = extractCompareTokens(pageSnapshot?.h1Text || '');
+    const titleTokens = extractCompareTokens(pageSnapshot?.title || dom.title || '');
+    const requiredTokens = h1Tokens.length ? h1Tokens : titleTokens.slice(0, 6);
+    if(!requiredTokens.length) return true;
+    const haystack = normalizeForCompare(`${articleTitle}\n${articleText}`).replace(/\s/g, '');
+    const matched = requiredTokens.filter(token => haystack.includes(token.replace(/\s/g, '')));
+    // Marketing/product pages usually have a strong H1; if Readability misses all
+    // page-specific tokens, it probably selected hidden/template content.
+    return matched.length > 0;
+  };
+  const buildFallbackExtraction = (reason) => {
+    console.warn('[Readability] Using fallback extraction:', reason);
+    const bodyClone = fallbackDom.body ? fallbackDom.body.cloneNode(true) : null;
+    const visibleText = String(pageSnapshot?.visibleText || '').trim();
+    if(!bodyClone) return { markdown: visibleText, title: fallbackDom.title || pageSnapshot?.title || '', excerpt: visibleText.slice(0, 200) };
+    const excludeSelectors = [
+      'script', 'style', 'noscript', 'iframe',
+      'header', 'footer', 'nav', 'aside',
+      '[role="navigation"]', '[role="banner"]', '[role="contentinfo"]'
+    ];
+    excludeSelectors.forEach(sel => {
+      bodyClone.querySelectorAll(sel).forEach(el => el.remove());
+    });
+    const h1 = bodyClone.querySelector('h1');
+    const title = h1?.textContent?.trim() || fallbackDom.title || pageSnapshot?.title || '';
+    const markdownText = turndownService.turndown(bodyClone.innerHTML || '');
+    const fallbackText = hasPageSignalMatch(title, markdownText)
+      ? markdownText
+      : (visibleText || markdownText);
+    return {
+      markdown: fallbackText,
+      title,
+      excerpt: (visibleText || bodyClone.textContent || '').substring(0, 200).trim()
+    };
+  };
   
   // 使用 Readability 提取主要內容
   const reader = new Readability(dom, {
@@ -2723,24 +3423,17 @@ async function captureWithReadability(){
   let extractedTitle = '';
   let extractedExcerpt = '';
   
-  if(!article || !article.content){
-    console.warn('[Readability] No article content found (likely marketing/product page), using fallback extraction');
-    
-    // Fallback: 手動提取整個 body，但排除導航/footer
-    const bodyClone = dom.body.cloneNode(true);
-    const excludeSelectors = ['header', 'footer', 'nav', 'aside', '[role="navigation"]', '[role="banner"]', '[role="contentinfo"]'];
-    excludeSelectors.forEach(sel => {
-      bodyClone.querySelectorAll(sel).forEach(el => el.remove());
-    });
-    
-    // 提取標題
-    const h1 = bodyClone.querySelector('h1');
-    extractedTitle = h1?.textContent?.trim() || dom.title || '';
-    
-    // 轉換為 Markdown
-    markdown = turndownService.turndown(bodyClone.innerHTML || '');
-    extractedExcerpt = bodyClone.textContent?.substring(0, 200).trim() || '';
-    
+  const articleText = article?.textContent || '';
+  const articleLooksCurrent = article?.content
+    ? hasPageSignalMatch(article.title || '', articleText)
+    : false;
+
+  if(!article || !article.content || !articleLooksCurrent){
+    const fallback = buildFallbackExtraction(!article?.content ? 'no article content' : 'article did not match current page title/H1');
+    markdown = fallback.markdown;
+    extractedTitle = fallback.title;
+    extractedExcerpt = fallback.excerpt;
+
     console.log('[Readability] Fallback extraction:', {
       title: extractedTitle,
       excerpt: extractedExcerpt.substring(0, 100),
@@ -2763,8 +3456,7 @@ async function captureWithReadability(){
   console.log('[Readability] Converted to Markdown, length:', markdown.length);
   
   // 獲取字符限制
-  const { pageContextLimit } = await chrome.storage.local.get(['pageContextLimit']);
-  const bodyLimit = pageContextLimit || PAGE_CONTEXT_BODY_MAX;
+  const bodyLimit = await getPageContextBodyLimit();
   
   // 格式化為消息（先不截斷，讓 formatPageContextPayload 處理）
   const formattedData = {
@@ -2812,7 +3504,7 @@ async function captureWithReadability(){
     message: message,
     meta: {
       url: tab.url,
-      title: article.title || dom.title,
+      title: extractedTitle || pageSnapshot?.title || dom.title,
       bodyTruncated: actualTruncated,
       extractionMethod: 'Readability + Markdown'
     }
@@ -2829,8 +3521,7 @@ async function captureWithSmartScroll(){
   if(!globalGranted) throw new Error('Not authorized to read this page');
   if(!chrome.scripting?.executeScript) throw new Error('Browser version does not support page capture');
 
-  const settings = await chrome.storage.local.get(['pageContextLimit']);
-  const bodyLimit = settings.pageContextLimit || PAGE_CONTEXT_BODY_MAX;
+  const bodyLimit = await getPageContextBodyLimit();
 
   // 執行智能滾動捕獲
   const [{ result } = {}] = await chrome.scripting.executeScript({
@@ -3096,7 +3787,21 @@ async function capturePageContext(){
   
   // 使用 Readability 模式進行智能內容提取（僅限 reader 模式）
   const { pageCaptureMode } = await chrome.storage.sync.get(['pageCaptureMode']);
-  const mode = pageCaptureMode || 'reader';
+  const mode = pageCaptureMode || 'smart';
+  
+  if(mode === 'smart'){
+    const strategy = await detectSmartCaptureStrategy(tab);
+    console.log('[pageContext] Smart Capture strategy:', strategy);
+    if(strategy.strategy === 'visible'){
+      return await captureWithVisibleText();
+    }
+    return await captureWithReadability();
+  }
+  
+  if(mode === 'visible'){
+    console.log('[pageContext] Using Visible Text mode');
+    return await captureWithVisibleText();
+  }
   
   if(mode === 'reader'){
     console.log('[pageContext] Using Readability + Markdown mode for intelligent content extraction');
@@ -3466,6 +4171,7 @@ async function capturePageContext(){
   if(result.bodyHTML){
     console.log('[pageContext] Converting full page HTML to Markdown');
     try{
+      await ensurePageCaptureLibs();
       // 初始化 Turndown 服務
       const turndownService = new TurndownService({
         headingStyle: 'atx',
@@ -3605,10 +4311,89 @@ function formatPageContextPayload(url, data, lang = null){
 /* ================= Sessions ================= */
 async function loadSessions(){
   try{
+    const startedAt = spPerfNow();
     const d=await chrome.storage.local.get(['chatSessions','currentSessionId']);
+    spPerfLog('storage.get chatSessions', startedAt);
     sessions=d.chatSessions||[];
     currentSessionId=d.currentSessionId||null;
+    sessionsLoaded = true;
+    scheduleChatSessionsStatsReport();
   }catch(e){ showFatal('Failed to load chats', e); }
+}
+
+function scheduleChatSessionsStatsReport(){
+  if(!SP_DEBUG_PERF) return;
+  runWhenIdle(()=>{
+    try{
+      const statsStartedAt = spPerfNow();
+      let totalMessages = 0;
+      let totalTextChars = 0;
+      let largestMessageChars = 0;
+      let largestMessageSessionId = '';
+      let largestMessageRole = '';
+      let legacyImageChars = 0;
+      let inlineImageUrlChars = 0;
+      let attachmentRefCount = 0;
+      const sessionSizes = [];
+      for(const session of sessions){
+        const messages = Array.isArray(session?.messages) ? session.messages : [];
+        totalMessages += messages.length;
+        sessionSizes.push({
+          id: session.id || '',
+          title: session.title || '',
+          bytes: JSON.stringify(session).length,
+          messages: messages.length
+        });
+        for(const msg of messages){
+          const len = messageRawText(msg?.content).length;
+          totalTextChars += len;
+          if(len > largestMessageChars){
+            largestMessageChars = len;
+            largestMessageSessionId = session.id || '';
+            largestMessageRole = msg?.role || '';
+          }
+          if(Array.isArray(msg?.images)){
+            legacyImageChars += msg.images.reduce((sum, img)=>sum + String(img?.data || '').length, 0);
+          }
+          if(Array.isArray(msg?.content)){
+            for(const part of msg.content){
+              if(part?.type === 'image_url'){
+                inlineImageUrlChars += String(part.image_url?.url || '').length;
+                if(getImageAttachmentId(part)) attachmentRefCount++;
+              }
+            }
+          }
+        }
+      }
+      const storageJsonChars = JSON.stringify(sessions).length;
+      const largestSessions = sessionSizes
+        .sort((a,b)=>b.bytes-a.bytes)
+        .slice(0,5)
+        .map(s=>({
+          id: s.id,
+          title: String(s.title).slice(0, 24),
+          approxKb: Math.round(s.bytes / 102.4) / 10,
+          messages: s.messages
+        }));
+      spPerfLog('chatSessions stats', statsStartedAt, {
+        sessions: sessions.length,
+        totalMessages,
+        totalTextChars,
+        storageJsonChars,
+        approxStorageKb: Math.round(storageJsonChars / 102.4) / 10,
+        legacyImageApproxKb: Math.round(legacyImageChars / 102.4) / 10,
+        inlineImageUrlApproxKb: Math.round(inlineImageUrlChars / 102.4) / 10,
+        attachmentRefCount,
+        largestSessions,
+        largestMessageChars,
+        largestMessageSessionId,
+        largestMessageRole,
+        currentSessionId
+      });
+    }catch(err){
+      console.warn('[SP][perf] chatSessions stats failed:', err);
+    }
+  }, 2000);
 }
 function ensureSession(){
   if(!currentSessionId || !sessions.some(s=>s.id===currentSessionId)){
@@ -3618,6 +4403,7 @@ function ensureSession(){
 }
 function getCurrentSession(){ return sessions.find(s=>s.id===currentSessionId); }
 function createNewSession(silent=false){
+  const previousSessionId = currentSessionId;
   // If user-triggered and current session is already empty, just reset UI — don't add to history
   if(!silent){
     const cur=getCurrentSession();
@@ -3634,6 +4420,9 @@ function createNewSession(silent=false){
   const id=Date.now().toString();
   sessions.unshift({ id, title:'New Chat', createdAt:Date.now(), messages:[] });
   currentSessionId=id;
+  if(previousSessionId && previousSessionId !== id){
+    archiveSessionAttachments(previousSessionId, 'new-session');
+  }
   persistSessions();
   if(!silent){
     renderAllMessages();
@@ -3667,7 +4456,11 @@ function renameSession(id,title){
 }
 function switchSession(id){
   if(id===currentSessionId) return;
+  const previousSessionId = currentSessionId;
   currentSessionId=id;
+  if(previousSessionId){
+    archiveSessionAttachments(previousSessionId, 'switch-session');
+  }
   persistSessions();
   renderAllMessages();
   renderSuggestionsIfNeeded().catch(err => console.warn('[SP] renderSuggestionsIfNeeded failed:', err));
@@ -3871,7 +4664,7 @@ async function renderSuggestionsIfNeeded(){
     // 清空現有內容，防止重複
     els.suggestionList.innerHTML='';
     
-    const lang = (awaitGetZhVariant.cached) || _defaultLang();
+    const lang = uiLang();
     
     try {
       // 使用翻譯系統載入建議問題
@@ -3882,13 +4675,7 @@ async function renderSuggestionsIfNeeded(){
         } else if(typeof window.__t === 'function'){
           text = window.__t(key, lang);
         } else {
-          // 回退到硬編碼（不應該發生）
           text = key;
-        }
-        
-        // 如果是中文且語言不是繁體，需要轉換
-        if(lang !== 'en' && typeof window.__zhConvert === 'function' && lang === 'hans'){
-          text = __zhConvert(text, 'hans');
         }
         
         const card=document.createElement('div');
@@ -4013,26 +4800,160 @@ function updateWelcomeVisibility(){
   }
 }
 
+const RENDER_SYNC_LIMIT = 15; // 同步渲染最後 N 條，其餘非同步補填
+const LONG_MARKDOWN_DEFER_LENGTH = 30000; // 超長 Markdown 先顯示純文字，再於 idle 回填
+
+function messageRawText(content){
+  if(content == null) return '';
+  if(typeof content === 'string') return content;
+  if(Array.isArray(content)){
+    return content
+      .filter(part=>part?.type === 'text')
+      .map(part=>String(part.text || ''))
+      .join('');
+  }
+  return String(content);
+}
+
+function detectMessageContentLang(text=''){
+  const s = String(text);
+  if(/[这吗们为个汉语简体气话无过后发里点对问开关]/.test(s)) return 'zh-Hans';
+  if(/[這嗎們為個漢語簡體氣話無過後發裡點對問開關]/.test(s)) return 'zh-Hant';
+  if(/[\u4e00-\u9fff]/.test(s)) return 'zh-Hant';
+  return 'und';
+}
+
+function isolateMessageContentElement(el, text=''){
+  if(!el) return;
+  el.setAttribute('translate', 'no');
+  el.setAttribute('lang', detectMessageContentLang(text));
+}
+
+function runWhenIdle(cb, timeout=1200){
+  if(window.requestIdleCallback){
+    requestIdleCallback(cb, { timeout });
+  }else{
+    setTimeout(cb, 0);
+  }
+}
+
+function renderMessageText(target, rawText, msg, role){
+  const original = String(rawText || '');
+  const shouldRenderMarkdown = preferMarkdown && role !== 'system' && !msg._streaming;
+  if(!shouldRenderMarkdown){
+    target.textContent = original;
+    return;
+  }
+
+  if(original.length > LONG_MARKDOWN_DEFER_LENGTH){
+    target.textContent = original;
+    target.dataset.markdownPending = 'true';
+    runWhenIdle(()=>{
+      if(!target.isConnected || target.dataset.markdownPending !== 'true') return;
+      if(target.textContent !== original) return;
+      target.innerHTML = renderMarkdownBlocks(original);
+      delete target.dataset.markdownPending;
+      scheduleAutoFollow();
+      updateScrollBtnVisibility();
+    });
+    return;
+  }
+
+  target.innerHTML = renderMarkdownBlocks(original);
+}
+
+function buildMessageImageElement(srcPromise, altText){
+  const img = document.createElement('img');
+  img.className = 'message-image';
+  img.alt = altText || 'Image';
+  const setImageSrc = url => {
+    if(!url) return;
+    img.src = url;
+    img.onclick = ()=>{
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+      const modalImg = document.createElement('img');
+      modalImg.src = url;
+      modalImg.style.cssText = 'max-width:90%;max-height:90%;border-radius:8px;';
+      modal.appendChild(modalImg);
+      modal.onclick = ()=> modal.remove();
+      document.body.appendChild(modal);
+    };
+  };
+  Promise.resolve(srcPromise).then(setImageSrc).catch(err => console.warn('[attachments] image load failed:', err));
+  return img;
+}
+
+function buildImageRefsContainer(refs){
+  const validRefs = (Array.isArray(refs) ? refs : []).filter(ref => ref?.id);
+  if(!validRefs.length) return null;
+  const container = document.createElement('div');
+  container.className = 'message-images';
+  validRefs.forEach(ref => {
+    container.appendChild(buildMessageImageElement(
+      (typeof AttachmentStore !== 'undefined' && AttachmentStore.getDataUrl) ? AttachmentStore.getDataUrl(ref.id) : '',
+      ref.name || 'Generated image'
+    ));
+  });
+  return container;
+}
+
 function renderAllMessages(){
   const session=getCurrentSession();
   const container=els.chatMessages;
   if(!container)return;
   container.innerHTML='';
   if(!session)return;
+
   const list=session.messages.filter(m=>SHOW_SYSTEM_PROMPT_BUBBLE?true:(m.role!=='system' || m._pageContext));
-  list.forEach(m=>container.appendChild(renderMessage(m)));
-  
-  // 更新歡迎區和卡通的顯示狀態（通過添加/移除 chatting 類和滾動）
+
   updateWelcomeVisibility();
-  
-  // 只有在沒有對話消息時才滾動到底部（顯示歡迎區時）
-  const hasConversationMessages = session.messages.some(m => 
-    (m.role === 'user' || m.role === 'assistant') && !m._pageContext
+
+  const hasConvMsgs = session.messages.some(m=>
+    (m.role==='user'||m.role==='assistant') && !m._pageContext
   );
-  
-  if (!hasConversationMessages) {
-    scrollToBottom();
+
+  if(!list.length){ if(!hasConvMsgs) scrollToBottom(); return; }
+
+  if(list.length <= RENDER_SYNC_LIMIT){
+    // 短對話：一次用 Fragment 插入，只觸發一次 reflow
+    const frag = document.createDocumentFragment();
+    list.forEach(m=>frag.appendChild(renderMessage(m)));
+    container.appendChild(frag);
+    if(!hasConvMsgs) scrollToBottom();
+    return;
   }
+
+  // 長對話：先同步渲染最新的 RENDER_SYNC_LIMIT 條（使用者看得到的）
+  const olderList  = list.slice(0, list.length - RENDER_SYNC_LIMIT);
+  const recentList = list.slice(list.length - RENDER_SYNC_LIMIT);
+
+  const recentFrag = document.createDocumentFragment();
+  recentList.forEach(m=>recentFrag.appendChild(renderMessage(m)));
+  container.appendChild(recentFrag);
+  if(!hasConvMsgs) scrollToBottom();
+
+  // 非同步向前補填舊訊息，每批 10 條，不鎖定主執行緒
+  let idx = olderList.length - 1;
+  const _ric = window.requestIdleCallback
+    ? cb => requestIdleCallback(cb, { timeout: 500 })
+    : cb => setTimeout(cb, 0);
+
+  function prependBatch(){
+    if(idx < 0) return;
+    const scrollBefore  = container.scrollTop;
+    const heightBefore  = container.scrollHeight;
+    const batchFrag     = document.createDocumentFragment();
+    const end           = Math.max(idx - 9, -1);
+    const items         = [];
+    while(idx > end) items.unshift(renderMessage(olderList[idx--]));
+    items.forEach(el=>batchFrag.appendChild(el));
+    container.insertBefore(batchFrag, container.firstChild);
+    // 維持滾動位置，避免畫面跳動
+    container.scrollTop = scrollBefore + (container.scrollHeight - heightBefore);
+    if(idx >= 0) _ric(prependBatch);
+  }
+  _ric(prependBatch);
 }
 
 function renderMessage(msg){
@@ -4059,9 +4980,11 @@ function renderMessage(msg){
   
   const content=document.createElement('div');
   content.className='message-content';
+  isolateMessageContentElement(content, messageRawText(msg.content));
   
   // 用於存儲圖片容器（稍後添加到wrap，而不是content）
   let separateImagesContainer = null;
+  const generatedImagesContainer = buildImageRefsContainer(msg.generatedImages);
   
   // 正常渲染消息內容
   {
@@ -4077,19 +5000,28 @@ function renderMessage(msg){
         imageParts.forEach(part=>{
           const img = document.createElement('img');
           img.className = 'message-image';
-          img.src = part.image_url.url;
-          img.alt = 'Uploaded image';
-          img.onclick = ()=>{
+          img.alt = part.name || 'Uploaded image';
+          const setImageSrc = url => {
+            if(!url) return;
+            img.src = url;
+            img.onclick = ()=>{
             // 點擊圖片放大顯示
             const modal = document.createElement('div');
             modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
             const modalImg = document.createElement('img');
-            modalImg.src = part.image_url.url;
+              modalImg.src = url;
             modalImg.style.cssText = 'max-width:90%;max-height:90%;border-radius:8px;';
             modal.appendChild(modalImg);
             modal.onclick = ()=> modal.remove();
             document.body.appendChild(modal);
+            };
           };
+          const directUrl = part.image_url?.url || '';
+          if(directUrl){
+            setImageSrc(directUrl);
+          }else{
+            imagePartToDataUrl(part).then(setImageSrc).catch(err => console.warn('[attachments] image load failed:', err));
+          }
           separateImagesContainer.appendChild(img);
         });
         
@@ -4099,18 +5031,8 @@ function renderMessage(msg){
       // 然後處理文字
       msg.content.forEach(part=>{
         if(part.type === 'text'){
-          const zhPref = (awaitGetZhVariant.cached) ?? _defaultLang();
-          const original = String(part.text || '');
-          const converted = (typeof window.__zhConvert==='function' && zhPref) 
-            ? __zhConvert(original, zhPref) 
-            : original;
-          
           const textDiv = document.createElement('div');
-          if(preferMarkdown && role!=='system' && !msg._streaming){
-            textDiv.innerHTML=renderMarkdownBlocks(converted);
-          }else{
-            textDiv.innerHTML=escapeHtml(converted);
-          }
+          renderMessageText(textDiv, part.text, msg, role);
           content.appendChild(textDiv);
         }
       });
@@ -4141,38 +5063,13 @@ function renderMessage(msg){
       // 然後添加文字
       const textPart = String(msg.content||'');
       if(textPart){
-        const zhPref = (awaitGetZhVariant.cached) ?? _defaultLang();
-        const converted = (typeof window.__zhConvert==='function' && zhPref) 
-          ? __zhConvert(textPart, zhPref) 
-          : textPart;
         const textDiv = document.createElement('div');
-        if(preferMarkdown && role!=='system' && !msg._streaming){
-          textDiv.innerHTML=renderMarkdownBlocks(converted);
-        }else{
-          textDiv.innerHTML=escapeHtml(converted);
-        }
+        renderMessageText(textDiv, textPart, msg, role);
         content.appendChild(textDiv);
       }
     } else {
       // 純文本消息
-      const zhPref = (awaitGetZhVariant.cached) ?? _defaultLang();
-      const original = String(msg.content||'');
-      const converted = (typeof window.__zhConvert==='function' && zhPref) 
-        ? __zhConvert(original, zhPref) 
-        : original;
-      
-      // 調試輸出（首次或變更時）
-      if(!renderMessage._logged || renderMessage._lastZh !== zhPref){
-        console.log('[SP] renderMessage zh:', zhPref, '| sample:', original.slice(0,20), '→', converted.slice(0,20));
-        renderMessage._logged = true;
-        renderMessage._lastZh = zhPref;
-      }
-      
-      if(preferMarkdown && role!=='system' && !msg._streaming){
-        content.innerHTML=renderMarkdownBlocks(converted);
-      }else{
-        content.innerHTML=escapeHtml(converted);
-      }
+      renderMessageText(content, msg.content, msg, role);
       if(role==='user' && !msg._streaming){
     const plain=content.textContent;
     if(plain && !/\n/.test(plain) && plain.length<=40){
@@ -4187,7 +5084,7 @@ function renderMessage(msg){
     const attachmentsContainer = document.createElement('div');
     attachmentsContainer.className = 'message-attachments';
     
-    const lang = (awaitGetZhVariant.cached) || _defaultLang();
+    const lang = uiLang();
     const labelText = typeof window.__t === 'function' ? window.__t('pageReferenced', lang) : 'Reference Page';
     const titleText = typeof window.__t === 'function' ? window.__t('referencePage', lang) : 'Reference Page';
     
@@ -4212,6 +5109,9 @@ function renderMessage(msg){
   // 如果有圖片，添加圖片容器（在content之前）
   if(separateImagesContainer){
     wrap.appendChild(separateImagesContainer);
+  }
+  if(generatedImagesContainer){
+    wrap.appendChild(generatedImagesContainer);
   }
   
   // 對於用戶消息，只有在 content 有內容時才添加（避免顯示空的氣泡）
@@ -4320,22 +5220,35 @@ function buildMessageActions(msg){
   
   if(msg.role==='assistant'){
     bar.appendChild(btn(ICONS.copy,sp_t('copy'),()=>{
-      // 先轉為可複製文字（圖片→[圖片]），再去思路、依中文偏好轉換後複製
-      const zhPref = (awaitGetZhVariant.cached) ?? _defaultLang();
-      const original = contentToCopyableText(msg.content);
-      const noThink = stripThinkBlocks(original);
-      const converted = (typeof window.__zhConvert==='function' && zhPref) 
-        ? __zhConvert(noThink, zhPref) 
-        : noThink;
-      navigator.clipboard.writeText(converted);
+      const noThink = stripThinkBlocks(contentToCopyableText(msg.content));
+      navigator.clipboard.writeText(noThink);
     }));
     bar.appendChild(btn(ICONS.retry,sp_t('retry'),()=>retryAssistant(msg)));
     bar.appendChild(btn(ICONS.speak,sp_t('readAloud'),(btnEl)=>speakMessage(msg, btnEl), 'speak-btn'));
     
-    // 如果當前會話包含頁面內容，在 AI 回覆中添加附件按鈕
+    // 只在這則 AI 回覆對應的上一條 user message 有引用頁面時顯示附件按鈕。
     const session=getCurrentSession();
     if(session?.messages){
-      const pageContextMessages = session.messages.filter(m => m._pageContext && m.role === 'system');
+      const idx = session.messages.findIndex(m => m.ts === msg.ts);
+      let sourceUserMessage = null;
+      for(let i = idx - 1; i >= 0; i--){
+        const candidate = session.messages[i];
+        if(candidate?.role === 'user'){
+          sourceUserMessage = candidate;
+          break;
+        }
+      }
+      const pageContextMessages = (sourceUserMessage?._hasPageContext && Array.isArray(sourceUserMessage.pageContexts))
+        ? sourceUserMessage.pageContexts.map(ref => ({
+          role: 'system',
+          content: ref.content || '',
+          pageUrl: ref.pageUrl || '',
+          pageTitle: ref.pageTitle || '',
+          ts: ref.ts || sourceUserMessage.ts,
+          bodyTruncated: !!ref.bodyTruncated,
+          isLikelyIncomplete: !!ref.isLikelyIncomplete
+        })).filter(ref => ref.content)
+        : [];
       if(pageContextMessages.length > 0){
         // 檢查是否有任何頁面有警告（內容不完整）
         const hasWarning = pageContextMessages.some(m => m.bodyTruncated || m.isLikelyIncomplete);
@@ -4364,22 +5277,16 @@ function buildMessageActions(msg){
       bar.appendChild(tokenSpan);
     }
   }else if(msg.role==='user'){
-    bar.appendChild(btn(ICONS.edit,sp_t('edit'),()=>editUserMessage(msg)));
+    bar.appendChild(btn(ICONS.edit,sp_t('edit'),()=>editUserMessage(msg).catch(err=>console.warn('[SP] editUserMessage failed:', err))));
     bar.appendChild(btn(ICONS.copy,sp_t('copy'),()=>{
-      // 先轉為可複製文字（圖片→[圖片]），再依中文偏好轉換後複製
-      const zhPref = (awaitGetZhVariant.cached) ?? _defaultLang();
-      const original = contentToCopyableText(msg.content);
-      const converted = (typeof window.__zhConvert==='function' && zhPref) 
-        ? __zhConvert(original, zhPref) 
-        : original;
-      navigator.clipboard.writeText(converted);
+      navigator.clipboard.writeText(contentToCopyableText(msg.content));
     }));
   }
   return bar;
 }
 
 /* ================= Message Ops ================= */
-function editUserMessage(msg){
+async function editUserMessage(msg){
   const wrap=els.chatMessages.querySelector(`.message[data-ts="${msg.ts}"]`);
   if(!wrap)return;
   let contentEl=wrap.querySelector('.message-content');
@@ -4411,7 +5318,7 @@ function editUserMessage(msg){
   
   if (Array.isArray(msg.content)) {
     // 多模態格式：提取文本和圖片
-    msg.content.forEach(item => {
+    for(const item of msg.content){
       if (item.type === 'text' && item.text) {
         textContent = item.text;
       } else if (item.type === 'image_url' && item.image_url && item.image_url.url) {
@@ -4434,8 +5341,18 @@ function editUserMessage(msg){
             });
           }
         }
+      } else if (item.type === 'image_url' && getImageAttachmentId(item)) {
+        const dataUrl = await imagePartToDataUrl(item);
+        const parts = dataUrl ? dataUrl.split(',') : [];
+        if(parts[1]){
+          existingImages.push({
+            data: parts[1],
+            type: item.mimeType || item.image_url?.mimeType || 'image/jpeg',
+            name: item.name || `image-${existingImages.length + 1}`
+          });
+        }
       }
-    });
+    }
     
     // 如果有 images 字段，優先使用它（因為它可能包含文件名等信息）
     if (msg.images && msg.images.length > 0) {
@@ -4642,12 +5559,7 @@ function editUserMessage(msg){
           continue;
         }
         try{
-          const base64 = await fileToBase64(file);
-          uploadedImages.push({
-            data: base64,
-            type: file.type,
-            name: file.name
-          });
+          uploadedImages.push(await fileToOptimizedImageUpload(file, file.name));
         }catch(err){
           console.error('圖片轉換失敗:', err);
           showAlert(sp_tpl('imageUploadFailed',{name:file.name}));
@@ -4755,25 +5667,81 @@ async function submitEditedUserMessage(msg, newContent, editedImages = []){
     if (newContent && newContent.trim()) {
       content.push({ type: 'text', text: newContent });
     }
-    editedImages.forEach(img => {
-      content.push({
-        type: 'image_url',
-        image_url: {
-          url: `data:${img.type};base64,${img.data}`
-        }
+    let attachmentRefs = [];
+    if(typeof AttachmentStore !== 'undefined'){
+      attachmentRefs = await AttachmentStore.saveImages(editedImages, {
+        sessionId: session.id,
+        messageTs: now,
+        source: 'edit'
       });
-    });
+    }
+    if(attachmentRefs.length){
+      attachmentRefs.forEach(ref=>content.push(imageRefToContentPart(ref)));
+      updatedMessage.attachments = attachmentRefs;
+      delete updatedMessage.images;
+    }else{
+      editedImages.forEach(img => {
+        content.push({
+          type: 'image_url',
+          image_url: {
+            url: `data:${img.type};base64,${img.data}`
+          }
+        });
+      });
+      updatedMessage.images = editedImages.map(img => ({
+        data: img.data,
+        type: img.type,
+        name: img.name
+      }));
+    }
     updatedMessage.content = content;
-    updatedMessage.images = editedImages.map(img => ({
-      data: img.data,
-      type: img.type,
-      name: img.name
-    }));
   } else {
     // 純文本
     updatedMessage.content = newContent;
     // 如果原有圖片但編輯時刪除了，也要清除 images 字段
     delete updatedMessage.images;
+  }
+
+  if(await isCurrentModelAgentProvider()){
+    const resentMessage = {
+      role: 'user',
+      content: updatedMessage.content,
+      ts: now
+    };
+    if(updatedMessage.attachments) resentMessage.attachments = updatedMessage.attachments;
+    if(updatedMessage.images) resentMessage.images = updatedMessage.images;
+    rerenderMessageByTs(target.ts);
+
+    uploadedImages = [];
+
+    const ts=Date.now();
+    appendMessage(resentMessage);
+    appendMessage({ role:'assistant', content:'', ts, _streaming:true });
+    jumpToComposer();
+    streaming=true; setSendButtonState(); renderSuggestionsIfNeeded().catch(err => console.warn('[SP] renderSuggestionsIfNeeded failed:', err));
+    try{
+      await streamChatCompletion(ts);
+    }catch(e){
+      const errHtml = escapeHtml(sp_t('errorPrefix')+formatErrorMessage(e));
+      replaceMessageContent(ts, errHtml);
+      setTimeout(()=>{
+        const node = els.chatMessages?.querySelector(`.message[data-ts="${ts}"] .message-content`);
+        if(node && !node.querySelector('.inline-retry-btn')){
+          const retryBtn = document.createElement('button');
+          retryBtn.className = 'inline-retry-btn';
+          retryBtn.textContent = sp_t('retry');
+          retryBtn.addEventListener('click', ()=>{
+            const msg = getCurrentSession()?.messages.find(m=>m.ts===ts);
+            if(msg) retryAssistant(msg);
+          });
+          node.appendChild(retryBtn);
+        }
+      }, 0);
+    }finally{
+      streaming=false; finalizeStreamingMessage(ts); setSendButtonState();
+      resetComposerIfEmpty();
+    }
+    return;
   }
   
   session.messages[idx] = updatedMessage;
@@ -5026,11 +5994,7 @@ async function speakMessage(msg, btnEl){
   }
 
   const original = _extractTextContent(msg.content);
-  const zhPref = (awaitGetZhVariant.cached) ?? _defaultLang();
-  const stripped = sanitizeSpeakText(original);
-  const text = (typeof window.__zhConvert==='function' && zhPref)
-    ? __zhConvert(stripped, zhPref)
-    : stripped;
+  const text = sanitizeSpeakText(original);
   if(!text.trim()){
     console.warn('[speak] No content to speak');
     return;
@@ -5045,7 +6009,7 @@ async function speakMessage(msg, btnEl){
   window.speechSynthesis.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'zh-CN';
+  utterance.lang = uiLang()==='en' ? 'en-US' : (uiLang()==='hans'?'zh-CN':'zh-TW');
   utterance.rate = parseFloat(ttsSettings.ttsRate) || 1.0;
   utterance.pitch = parseFloat(ttsSettings.ttsPitch) || 1.0;
   utterance.volume = 1.0;
@@ -5322,6 +6286,13 @@ function purgeOldPageContextMessages(){
 }
 
 /* ================= Image Upload ================= */
+const IMAGE_OPTIMIZE_MAX_DIMENSION = 1600;
+const IMAGE_OPTIMIZE_QUALITY = 0.82;
+const IMAGE_OPTIMIZE_OUTPUT_TYPE = 'image/jpeg';
+const IMAGE_ARCHIVE_MAX_DIMENSION = 640;
+const IMAGE_ARCHIVE_QUALITY = 0.7;
+const archivedSessionIds = new Set();
+
 // 處理剪貼板粘貼（支持圖片）
 async function handlePaste(e){
   const items = e.clipboardData?.items;
@@ -5343,12 +6314,7 @@ async function handlePaste(e){
       }
 
       try{
-        const base64 = await fileToBase64(file);
-        uploadedImages.push({
-          data: base64,
-          type: file.type,
-          name: `pasted-image-${Date.now()}.${file.type.split('/')[1]}`
-        });
+        uploadedImages.push(await fileToOptimizedImageUpload(file, `pasted-image-${Date.now()}`));
       }catch(err){
         console.error('圖片轉換失敗:', err);
         showAlert(sp_t('pasteFailed'));
@@ -5421,12 +6387,7 @@ async function handleImageUpload(e){
     }
 
     try{
-      const base64 = await fileToBase64(file);
-      uploadedImages.push({
-        data: base64,
-        type: file.type,
-        name: file.name
-      });
+      uploadedImages.push(await fileToOptimizedImageUpload(file, file.name));
     }catch(err){
       console.error('圖片轉換失敗:', err);
       showAlert(sp_tpl('imageUploadFailed',{name:file.name}));
@@ -5448,6 +6409,116 @@ function fileToBase64(file){
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+}
+
+function fileToDataUrl(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=> resolve(String(reader.result || ''));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function fileToOptimizedImageUpload(file, name){
+  const dataUrl = await fileToDataUrl(file);
+  return dataUrlToOptimizedImageUpload(dataUrl, name || file.name || 'image');
+}
+
+function imageNameAsJpeg(name){
+  const base = String(name || 'image').replace(/\.[^.]*$/, '');
+  return `${base || 'image'}.jpg`;
+}
+
+async function dataUrlToOptimizedImageUpload(dataUrl, name, options = {}){
+  const original = dataUrlToImageUpload(dataUrl, name);
+  const originalBytes = estimateBase64Bytes(original.data);
+  const maxDimension = options.maxDimension || IMAGE_OPTIMIZE_MAX_DIMENSION;
+  const quality = options.quality ?? IMAGE_OPTIMIZE_QUALITY;
+  const outputType = options.outputType || IMAGE_OPTIMIZE_OUTPUT_TYPE;
+  const optimizedDataUrl = await resizeImageDataUrl(dataUrl, maxDimension, outputType, quality);
+  const optimized = dataUrlToImageUpload(optimizedDataUrl, outputType === 'image/jpeg' ? imageNameAsJpeg(name) : name);
+  const optimizedBytes = estimateBase64Bytes(optimized.data);
+  return optimizedBytes > 0 && optimizedBytes < originalBytes ? optimized : original;
+}
+
+function resizeImageDataUrl(dataUrl, maxDimension, outputType, quality){
+  return new Promise((resolve, reject)=>{
+    const image = new Image();
+    image.onload = () => {
+      try{
+        const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
+        const width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
+        const height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if(outputType === 'image/jpeg'){
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(0, 0, width, height);
+        }
+        ctx.drawImage(image, 0, 0, width, height);
+        resolve(canvas.toDataURL(outputType, quality));
+      }catch(e){
+        reject(e);
+      }
+    };
+    image.onerror = () => reject(new Error('Image decode failed'));
+    image.src = dataUrl;
+  });
+}
+
+async function archiveSessionAttachments(sessionId, reason = 'history', options = {}){
+  if(!sessionId || streaming || typeof AttachmentStore === 'undefined') return;
+  if(archivedSessionIds.has(sessionId)) return;
+  archivedSessionIds.add(sessionId);
+  const task = async ()=>{
+    try{
+      const records = await AttachmentStore.listBySession(sessionId);
+      let changed = 0;
+      for(const record of records){
+        if(!record?.data || record.kind !== 'image') continue;
+        if(record.archivedAt && record.archiveMaxDimension <= IMAGE_ARCHIVE_MAX_DIMENSION) continue;
+        const originalBytes = estimateBase64Bytes(record.data);
+        const dataUrl = `data:${record.type || 'image/jpeg'};base64,${record.data}`;
+        const archived = await dataUrlToOptimizedImageUpload(dataUrl, record.name || 'image.jpg', {
+          maxDimension: IMAGE_ARCHIVE_MAX_DIMENSION,
+          quality: IMAGE_ARCHIVE_QUALITY,
+          outputType: IMAGE_OPTIMIZE_OUTPUT_TYPE
+        });
+        const archivedBytes = estimateBase64Bytes(archived.data);
+        if(archivedBytes > 0 && archivedBytes < originalBytes){
+          record.data = archived.data;
+          record.type = archived.type;
+          record.name = imageNameAsJpeg(record.name || archived.name);
+          record.size = archivedBytes;
+          record.archivedAt = Date.now();
+          record.archiveMaxDimension = IMAGE_ARCHIVE_MAX_DIMENSION;
+          record.archiveQuality = IMAGE_ARCHIVE_QUALITY;
+          record.archiveReason = reason;
+          await AttachmentStore.put(record);
+          changed++;
+        }
+      }
+      if(changed && SP_DEBUG_PERF){
+        console.info('[attachments] archived session attachments:', { sessionId, reason, changed });
+      }
+    }catch(err){
+      console.warn('[attachments] archive failed:', err);
+    }finally{
+      archivedSessionIds.delete(sessionId);
+    }
+  };
+  if(options.immediate){
+    void task();
+  }else{
+    runWhenIdle(task, 1500);
+  }
+}
+
+function archiveCurrentSessionAttachments(reason = 'sidepanel-close'){
+  if(currentSessionId) archiveSessionAttachments(currentSessionId, reason, { immediate: true });
 }
 
 function dataUrlToImageUpload(dataUrl, name){
@@ -5662,12 +6733,12 @@ async function handleScreenshotUpload(){
 
     let fullDataUrl = await captureVisibleTabDataUrl(tab.windowId, { format: 'png' });
     let dataUrl = await cropImageDataUrl(fullDataUrl, selection, 'image/png');
-    let img = dataUrlToImageUpload(dataUrl, `screenshot-${Date.now()}.png`);
+    let img = await dataUrlToOptimizedImageUpload(dataUrl, `screenshot-${Date.now()}.jpg`);
 
     if(estimateBase64Bytes(img.data) > 5 * 1024 * 1024){
       fullDataUrl = await captureVisibleTabDataUrl(tab.windowId, { format: 'jpeg', quality: 92 });
       dataUrl = await cropImageDataUrl(fullDataUrl, selection, 'image/jpeg', 0.92);
-      img = dataUrlToImageUpload(dataUrl, `screenshot-${Date.now()}.jpg`);
+      img = await dataUrlToOptimizedImageUpload(dataUrl, `screenshot-${Date.now()}.jpg`);
     }
     if(estimateBase64Bytes(img.data) > 5 * 1024 * 1024){
       showAlert(sp_t('screenshotTooLarge') || 'Screenshot is too large. Please reduce the browser window size and try again.');
@@ -5787,6 +6858,16 @@ async function onSend(){
   // 只有在有等待使用的頁面內容時，才標記此訊息
   if(hasPendingPageContent){
     userMessage._hasPageContext = true;
+    userMessage.pageContexts = session.messages
+      .filter(m => m._pendingPageContext)
+      .map(m => ({
+        content: m.content || '',
+        pageUrl: m.pageUrl || '',
+        pageTitle: m.pageTitle || '',
+        ts: m.ts,
+        bodyTruncated: !!m.bodyTruncated,
+        isLikelyIncomplete: !!m.isLikelyIncomplete
+      }));
     
     // 將所有等待中的頁面內容標記為已使用
     session.messages.forEach(m => {
@@ -5805,20 +6886,33 @@ async function onSend(){
     if(finalText){
       content.push({ type: 'text', text: finalText });
     }
-    uploadedImages.forEach(img=>{
-      content.push({
-        type: 'image_url',
-        image_url: {
-          url: `data:${img.type};base64,${img.data}`
-        }
+    let attachmentRefs = [];
+    if(typeof AttachmentStore !== 'undefined'){
+      attachmentRefs = await AttachmentStore.saveImages(uploadedImages, {
+        sessionId: session.id,
+        messageTs: userMessage.ts,
+        source: 'upload'
       });
-    });
+    }
+    if(attachmentRefs.length){
+      attachmentRefs.forEach(ref=>content.push(imageRefToContentPart(ref)));
+      userMessage.attachments = attachmentRefs;
+    }else{
+      uploadedImages.forEach(img=>{
+        content.push({
+          type: 'image_url',
+          image_url: {
+            url: `data:${img.type};base64,${img.data}`
+          }
+        });
+      });
+      userMessage.images = uploadedImages.map(img => ({
+        data: img.data,
+        type: img.type,
+        name: img.name
+      }));
+    }
     userMessage.content = content;
-    userMessage.images = uploadedImages.map(img => ({
-      data: img.data,
-      type: img.type,
-      name: img.name
-    }));
   } else {
     // 純文本消息（可能是空的）
     userMessage.content = finalText || '';
@@ -5945,6 +7039,9 @@ function buildHermesConnectionError(status, bodyText, fallbackMessage){
   if(status === 0){
     return `${fallbackMessage || 'Connection failed'}\nFor direct browser access to Hermes, set API_SERVER_CORS_ORIGINS=${origin} on the Hermes host and restart hermes gateway.`;
   }
+  if(status === 400 && /reasoning_details|Extra inputs are not permitted|request validation/i.test(body)){
+    return `HTTP ${status}${detail}\nHermes server session contains provider-specific history that the active model rejected. Open Momo settings → Hermes → New Session to start a clean Hermes session.`;
+  }
   return fallbackMessage || `HTTP ${status}${detail}`;
 }
 
@@ -5972,13 +7069,41 @@ function extractOpenAICompletionText(payload){
   return typeof text === 'string' ? text : '';
 }
 
+function sanitizeHermesContent(content){
+  if(typeof content === 'string') return content;
+  if(Array.isArray(content)){
+    return content.map(part => {
+      if(part?.type === 'text'){
+        return { type:'text', text: String(part.text || '') };
+      }
+      if(part?.type === 'image_url'){
+        const url = part.image_url?.url || '';
+        return url ? { type:'image_url', image_url:{ url } } : null;
+      }
+      return null;
+    }).filter(Boolean);
+  }
+  if(content == null) return '';
+  return String(content);
+}
+
+function buildHermesMessagesForSend(messages){
+  const list = Array.isArray(messages) ? messages : [];
+  const lastUser = [...list].reverse().find(m => m?.role === 'user');
+  if(!lastUser) return [];
+  return [{
+    role: 'user',
+    content: sanitizeHermesContent(lastUser.content)
+  }];
+}
+
 async function streamChatCompletion(assistantTs){
   console.log('[SP] streamChatCompletion() called');
   
   // Get current model and find its provider
   const selectedUid = els.modelSelector.value || '';
   const model = modelNameFromUid(selectedUid) || 'gpt-3.5-turbo';
-  const { customModels, providerConfigs } = await chrome.storage.local.get(['customModels', 'providerConfigs']);
+  const { customModels, providerConfigs, hermesSessionId } = await chrome.storage.local.get(['customModels', 'providerConfigs', 'hermesSessionId']);
   
   // Find which provider this model belongs to
   let modelProvider = null;
@@ -6032,19 +7157,31 @@ async function streamChatCompletion(assistantTs){
   const session=getCurrentSession();
   
   // 過濾掉當前正在流式輸出的空 assistant 消息（避免發送到 API）
-  const messages=session.messages
+  const sourceMessages = session.messages
     .filter(m => !(m.ts === assistantTs && m._streaming && !m.content))
     .filter(m => !(isAgentProvider && m.role === 'system'))
-    .map(m => ({ role: m.role, content: getApiMessageContent(m) }));
+    .filter(m => !m._pageContext);
+  const latestUserMessage = [...sourceMessages].reverse()
+    .find(m => m.role === 'user');
+  const messages = await Promise.all(sourceMessages
+    .map(async m => ({
+      role: m.role,
+      content: await getApiMessageContentForSend(m, {
+        includePageContext: !!latestUserMessage?._hasPageContext && m.ts === latestUserMessage.ts
+      })
+    })));
 
   // ── 聯網搜尋 ──
   let userQuery = '';
   let lastUserIdx = -1;
-  for(let i = messages.length - 1; i >= 0; i--){
-    if(messages[i].role === 'user'){
+  for(let i = sourceMessages.length - 1; i >= 0; i--){
+    if(sourceMessages[i].role === 'user'){
       lastUserIdx = i;
-      const c = messages[i].content;
+      const c = sourceMessages[i].content;
       userQuery = typeof c === 'string' ? c : (Array.isArray(c) ? c.filter(p => p.type === 'text').map(p => p.text).join(' ') : '');
+      if(!userQuery.trim() && sourceMessages[i]._hasPageContext){
+        userQuery = getDefaultPageContextQuery();
+      }
       break;
     }
   }
@@ -6180,15 +7317,22 @@ async function streamChatCompletion(assistantTs){
   }
 
   if(modelProvider === 'hermes'){
+    const requestSessionId = (typeof hermesSessionId === 'string' && hermesSessionId.trim())
+      ? hermesSessionId.trim()
+      : getDefaultHermesSessionId();
+    const requestSessionKey = getDefaultHermesSessionKey();
     const hermesBody = {
       model: 'hermes-agent',
-      messages,
+      messages: buildHermesMessagesForSend(messages),
       stream: false
     };
     const proxied = await proxyFetchViaBackground(url, {
       method:'POST',
       headers: {
         'Content-Type':'application/json',
+        'X-Hermes-Session-Id': requestSessionId,
+        'X-Hermes-Session-Key': requestSessionKey,
+        'Idempotency-Key': crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
         ...(apiKey ? { 'Authorization':'Bearer '+apiKey } : {})
       },
       body: JSON.stringify(hermesBody)
@@ -6205,6 +7349,10 @@ async function streamChatCompletion(assistantTs){
     }
     const text = extractOpenAICompletionText(data).trim();
     if(!text) throw new Error('Hermes returned an empty response.');
+    const returnedSessionId = proxied.headers?.['x-hermes-session-id'] || proxied.headers?.['X-Hermes-Session-Id'];
+    if(returnedSessionId && returnedSessionId !== hermesSessionId){
+      chrome.storage.local.set({ hermesSessionId: returnedSessionId });
+    }
     replaceMessageContent(assistantTs, text, true);
     finalizeStreamingMessage(assistantTs);
     finalizeAssistantMessageContent(assistantTs, text);
@@ -6212,6 +7360,11 @@ async function streamChatCompletion(assistantTs){
   }
 
   streamAbortController=new AbortController();
+  /* 120s fetch timeout to prevent 'signal is aborted without reason' on stalled connections */
+  const FETCH_TIMEOUT_MS = 120000;
+  const fetchTimeoutId = setTimeout(()=>{
+    if(streamAbortController) streamAbortController.abort(new Error('Request timed out after '+FETCH_TIMEOUT_MS/1000+'s'));
+  }, FETCH_TIMEOUT_MS);
   let resp;
   try{
     resp=await fetch(url,{
@@ -6222,8 +7375,10 @@ async function streamChatCompletion(assistantTs){
       body:JSON.stringify(requestBody),
       signal:streamAbortController.signal
     });
+    clearTimeout(fetchTimeoutId);
     console.log('[SP] Fetch response status:', resp.status);
   }catch(e){
+    clearTimeout(fetchTimeoutId);
     console.error('[SP] Fetch error:', e);
     hideThinkingDots(assistantTs);
     if(modelProvider === 'hermes'){
@@ -6700,6 +7855,7 @@ function updateStreamingMessage(ts, text){
         const latest = state.latest;
         const isMd = state.isMarkdown;
         streamUpdateTimers.delete(ts);
+        isolateMessageContentElement(node, latest);
         if(isMd){
           const existingThinking = node.querySelector('.reasoning-block');
           if(existingThinking && /<think>[\s\S]*$/i.test(latest)){
@@ -6715,9 +7871,7 @@ function updateStreamingMessage(ts, text){
             node.innerHTML=renderStreamingMarkdown(latest);
           }
     }else{
-          const zh=(awaitGetZhVariant.cached)||_defaultLang();
-          const converted=(typeof window.__zhConvert==='function' && zh)?__zhConvert(String(latest), zh):String(latest);
-          node.textContent=converted;
+          node.textContent=String(latest);
     }
         scheduleAutoFollow();
         updateScrollBtnVisibility();
@@ -6726,7 +7880,15 @@ function updateStreamingMessage(ts, text){
     streamUpdateTimers.set(ts, state);
   }
 }
-function finalizeAssistantMessageContent(ts, content){
+function rerenderMessageByTs(ts){
+  const session = getCurrentSession();
+  const msg = session?.messages.find(m => m.ts === ts);
+  const wrap = els.chatMessages?.querySelector(`.message[data-ts="${ts}"]`);
+  if(!msg || !wrap) return;
+  wrap.replaceWith(renderMessage(msg));
+}
+
+async function finalizeAssistantMessageContent(ts, content){
   const session = getCurrentSession();
   if(session){
     const msg = session.messages.find(m => m.ts === ts);
@@ -6741,7 +7903,13 @@ function finalizeAssistantMessageContent(ts, content){
   streamingContexts.delete(ts);
   const processed = autoWrapThinkingContent(content, ctx);
   const balanced = balanceThinkingTags(processed);
-  replaceMessageContent(ts, balanced, false);
+  const withCachedImages = await cacheAssistantGeneratedImages(ts, balanced);
+  replaceMessageContent(ts, withCachedImages, false);
+  const updated = getCurrentSession()?.messages.find(m => m.ts === ts);
+  if(updated?.generatedImages?.length){
+    rerenderMessageByTs(ts);
+    persistSessions();
+  }
 }
 function replaceMessageContent(ts,newContent,streamingFlag=false){
   const session=getCurrentSession(); if(!session)return;
@@ -6755,6 +7923,7 @@ function replaceMessageContent(ts,newContent,streamingFlag=false){
   const wrap=els.chatMessages.querySelector(`.message[data-ts="${ts}"]`);
   const node=wrap?.querySelector('.message-content');
   if(!node) return;
+  isolateMessageContentElement(node, newContent);
   
   // 確保 CSS 類別與訊息角色匹配
   if(target){
@@ -6776,23 +7945,13 @@ function replaceMessageContent(ts,newContent,streamingFlag=false){
     if(preferMarkdown){
       node.innerHTML=renderStreamingMarkdown(newContent);
     }else{
-      const zh=(awaitGetZhVariant.cached)||_defaultLang();
-      const converted=(typeof window.__zhConvert==='function' && zh)?__zhConvert(String(newContent), zh):String(newContent);
-      node.textContent=converted;
+      node.textContent=String(newContent);
     }
   } else if (preferMarkdown && target.role!=='system'){
-    console.log('[replaceMessageContent] preferMarkdown render', { preferMarkdown, role: target.role, preview: String(newContent).slice(0,120) });
-    const zh=(awaitGetZhVariant.cached)||_defaultLang();
-    const converted=(typeof window.__zhConvert==='function' && zh)?__zhConvert(String(newContent), zh):String(newContent);
-    console.log('[replaceMessageContent] converted preview', converted.slice(0,120));
-    node.innerHTML=renderMarkdownBlocks(converted);
+    node.innerHTML=renderMarkdownBlocks(String(newContent));
     wrap?.classList.remove('streaming');
-    // *** 移除自動滾動 - 讓用戶自己控制滾動 ***
   } else {
-    const zh=(awaitGetZhVariant.cached)||_defaultLang();
-    const converted=(typeof window.__zhConvert==='function' && zh)?__zhConvert(String(newContent), zh):String(newContent);
-    node.textContent=converted;
-    // *** 移除自動滾動 - 讓用戶自己控制滾動 ***
+    node.textContent=String(newContent);
   }
 }
 

@@ -97,7 +97,18 @@
 <div class="callout warning"><strong>⚠️ 檔案大小限制</strong>單張圖片最大 5MB。超過限制的圖片會被自動跳過。</div>
 <div class="callout warning"><strong>⚠️ 模型能力</strong>不支援視覺的模型可能無法正確處理圖片內容。</div>
 
-<h2>技術細節</h2>
+<h2 id="ai-reply-images">AI 回覆中的圖片</h2>
+<p>除了你上傳圖片給 AI，Momo 也會自動處理 <strong>AI 回覆裡帶出的圖片</strong>（常見於 Hermes、OpenClaw 等 Agent 生成圖片的場景）。</p>
+<p>當回覆文字包含下列任一形式時，Momo 會嘗試下載並在對話泡泡內直接顯示：</p>
+<ul>
+  <li><code>MEDIA:&lt;https-url&gt;</code> 標記</li>
+  <li>Markdown 圖片語法 <code>![...](https://...)</code></li>
+  <li>以 <code>.png</code>、<code>.jpg</code>、<code>.jpeg</code>、<code>.webp</code>、<code>.gif</code> 結尾的 HTTP/HTTPS 圖片 URL</li>
+</ul>
+<p>下載成功的圖片會存入本機 <strong>IndexedDB</strong>（AttachmentStore），之後在同一對話中直接渲染，不只保留外部連結。OpenClaw 若以 <code>image</code> / <code>image_url</code> content part 回傳 HTTP 圖片，也會走同一流程。</p>
+<div class="callout warning"><strong>⚠️ 下載限制</strong>若圖片 URL 已過期、需要登入、或無法以 HTTP/HTTPS 存取，Momo 可能無法下載，此時仍可能只看到連結或空白。此為暫行方案，日後若 Agent 提供正式 media endpoint，行為可能調整。</div>
+
+<h2>技術細節（上傳）</h2>
 <p>圖片以 Base64 編碼傳送；請求格式採用 OpenAI Vision API 慣例之 <code>image_url</code> 內容區塊。</p>
 
 <nav class="page-nav">

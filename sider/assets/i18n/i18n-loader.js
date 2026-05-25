@@ -98,9 +98,21 @@
       console.warn('[i18n] No translations available for:', lang);
       return;
     }
+
+    // UI 語系切換只更新介面文案，絕不碰使用者/AI 對話內容。
+    const isConversationContent = el => !!el.closest?.('.message-content');
     
-    // 遍歷所有帶有 data-i18n 屬性的元素
+    // 含簡單 HTML（<code>、<strong> 等）的翻譯 — 僅用於自家 i18n JSON，勿用於使用者輸入
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      if (isConversationContent(el)) return;
+      const key = el.getAttribute('data-i18n-html');
+      if (t[key]) el.innerHTML = t[key];
+    });
+
+    // 遍歷所有帶有 data-i18n 屬性的元素（純文字）
     document.querySelectorAll('[data-i18n]').forEach(el => {
+      if (isConversationContent(el)) return;
+      if (el.hasAttribute('data-i18n-html')) return;
       const key = el.getAttribute('data-i18n');
       if (t[key]) {
         if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
@@ -115,17 +127,20 @@
 
     // 更新 title 和 placeholder 屬性
     document.querySelectorAll('[data-i18n-title]').forEach(el => {
+      if (isConversationContent(el)) return;
       const key = el.getAttribute('data-i18n-title');
       if (t[key]) el.title = t[key];
     });
 
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      if (isConversationContent(el)) return;
       const key = el.getAttribute('data-i18n-placeholder');
       if (t[key]) el.placeholder = t[key];
     });
 
     // 更新 tooltip (data-tooltip)
     document.querySelectorAll('[data-i18n-tooltip]').forEach(el => {
+      if (isConversationContent(el)) return;
       const key = el.getAttribute('data-i18n-tooltip');
       if (t[key]) {
         el.setAttribute('data-tooltip', t[key]);
@@ -137,6 +152,7 @@
 
     // 更新 aria-label
     document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+      if (isConversationContent(el)) return;
       const key = el.getAttribute('data-i18n-aria-label');
       if (t[key]) el.setAttribute('aria-label', t[key]);
     });

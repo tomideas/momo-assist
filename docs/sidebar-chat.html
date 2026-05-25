@@ -80,6 +80,14 @@
 <h2>歡迎畫面</h2>
 <p>尚未開始對話時會顯示歡迎畫面，並提供<strong>建議話題</strong>，可一鍵開始聊天。</p>
 
+<h2 id="edit-messages">編輯訊息</h2>
+<p>在 user 訊息的操作列點<strong>編輯</strong>，可修改文字或附加圖片後重新送出。</p>
+<ul>
+  <li><strong>一般模型</strong>（OpenAI、Gemini 等）：編輯會<strong>替換</strong>該則 user 訊息，並<strong>刪除其後</strong>的本地對話，再重新生成 assistant 回覆。</li>
+  <li><strong>Hermes / OpenClaw</strong>：編輯後會<strong>追加一則新 user 訊息</strong>（保留原訊息與完整本地歷史），再送給 agent / gateway。這是因為遠端 agent session 已接收的歷史無法由 Momo 回退。</li>
+  <li>串流生成中無法編輯；請先停止生成。</li>
+</ul>
+
 <nav class="page-nav">
   <a href="getting-started.html"><span class="label">上一頁</span><span class="title">← 快速開始</span></a>
   <a href="ai-providers.html"><span class="label">下一頁</span><span class="title">AI 模型供應商 →</span></a>

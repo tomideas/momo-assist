@@ -51,7 +51,9 @@ class OpenClawGateway {
     if (this.closed) return;
     const config = this._config;
     try {
-      this.ws = new WebSocket(config.url);
+      const wsUrl = normalizeOpenClawGatewayUrl(config.url);
+      if (!wsUrl) throw new Error('Invalid OpenClaw Gateway URL');
+      this.ws = new WebSocket(wsUrl);
     } catch (e) {
       this._connectReject?.(new Error('Failed to create WebSocket: ' + e.message));
       return;
@@ -106,7 +108,7 @@ class OpenClawGateway {
       : undefined;
 
     const params = {
-      minProtocol: 3, maxProtocol: 3,
+      minProtocol: OPENCLAW_PROTOCOL_MIN, maxProtocol: OPENCLAW_PROTOCOL_MAX,
       client: {
         id: 'openclaw-control-ui',
         version: '1.0.0',
@@ -224,7 +226,12 @@ function extractOpenClawText(msg) {
   if (typeof content === 'string') return content;
   if (Array.isArray(content)) {
     const parts = content
-      .map(c => (c && c.type === 'text' && typeof c.text === 'string') ? c.text : null)
+      .map(c => {
+        if (c && c.type === 'text' && typeof c.text === 'string') return c.text;
+        const url = c?.image_url?.url || c?.url || c?.src || '';
+        if ((c?.type === 'image_url' || c?.type === 'image') && /^https?:\/\//i.test(url)) return `MEDIA:${url}`;
+        return null;
+      })
       .filter(t => typeof t === 'string');
     if (parts.length > 0) return parts.join('\n');
   }

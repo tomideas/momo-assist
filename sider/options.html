@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-  <title>Settings - Momo AI Bud</title>
+  <title>Settings - Hii~ Momo: AI Assist</title>
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <meta id="metaColorScheme" name="color-scheme" content="light" />
   <link rel="stylesheet" href="options.css" />
@@ -55,9 +55,9 @@
         <h2 class="section-title" data-i18n="language">語言設定</h2>
         <p class="hint" data-i18n="languageHint">選擇介面顯示語言。</p>
         <div id="languageSegment" class="seg-group">
-          <button class="seg-btn" data-lang="hant" data-i18n="langHant">繁體中文</button>
-          <button class="seg-btn" data-lang="hans" data-i18n="langHans">简体中文</button>
-          <button class="seg-btn" data-lang="en" data-i18n="langEn">English</button>
+          <button type="button" class="seg-btn" data-lang="hant" data-i18n="langHant">繁體中文</button>
+          <button type="button" class="seg-btn" data-lang="hans" data-i18n="langHans">简体中文</button>
+          <button type="button" class="seg-btn" data-lang="en" data-i18n="langEn">English</button>
         </div>
       </section>
 
@@ -110,6 +110,17 @@
           </label>
         </div>
         <p class="hint" data-i18n="floatBallHint">顯示在側欄右下角，點擊可快速開啟設定。</p>
+      </section>
+
+      <section id="sec-sidebar-behavior" class="section section-compact">
+        <div class="section-header">
+          <h2 class="section-title" data-i18n="sidebarBehavior">側邊欄行為</h2>
+          <label class="switch" data-i18n-aria-label="freshChatOnPanelOpenToggle" aria-label="Fresh chat on panel open toggle">
+            <input type="checkbox" id="freshChatOnPanelOpen">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <p class="hint" data-i18n="freshChatOnPanelOpenHint">重新打開側邊欄時自動開始新對話；關閉後會延續上次對話。</p>
       </section>
 
       <!-- Open Sidebar Shortcut -->
@@ -224,7 +235,7 @@
 
         <!-- OpenClaw Session Select (only shown for OpenClaw provider) -->
         <div id="openclawSessionKeyField" class="form-field hidden">
-          <label class="field-label" for="openclawSessionKey">Session</label>
+          <label class="field-label" for="openclawSessionKey" data-i18n="openclawSessionLabel">Session</label>
           <div class="inline-row">
             <select id="openclawSessionKey" class="input">
               <option value="">-- Connect to load Sessions --</option>
@@ -235,6 +246,16 @@
           </div>
           <p class="hint" id="openclawSessionKeyHint" data-i18n="openclawSessionKeyHint">選擇 OpenClaw Gateway Session 以路由到指定 Agent。</p>
           <span id="sessionSwitchStatus" class="inline-status" aria-live="polite"></span>
+        </div>
+
+        <!-- Hermes Session Controls (only shown for Hermes provider) -->
+        <div id="hermesSessionField" class="form-field hidden">
+          <label class="field-label" data-i18n="hermesSessionLabel">Hermes Session</label>
+          <div class="inline-row">
+            <button id="btnNewHermesSession" class="btn btn-outline small" data-i18n="hermesNewSession">New Session</button>
+          </div>
+          <p class="hint" id="hermesSessionHint" data-i18n="hermesSessionHint">建立新的 Hermes server session，並清空 Momo 本地 Hermes 對話記錄。</p>
+          <span id="hermesSessionStatus" class="inline-status" aria-live="polite"></span>
         </div>
 
         <!-- Thinking Mode Toggle (per-model, moved to model row) -->
@@ -360,8 +381,10 @@
         <div class="form-grid">
           <label class="field-label" for="captureModeSelect" data-i18n="captureMode">擷取模式</label>
           <select id="captureModeSelect" class="input capture-select">
-            <option value="full" data-i18n="captureFull">整個頁面</option>
+            <option value="smart" data-i18n="captureSmart">Smart Capture</option>
             <option value="reader" data-i18n="captureReader">Markdown 智能提取</option>
+            <option value="visible" data-i18n="captureVisible">可見文字</option>
+            <option value="full" data-i18n="captureFull">整個頁面</option>
             <option value="custom" data-i18n="captureCustom">自訂 CSS 選擇器</option>
           </select>
         </div>
@@ -457,8 +480,8 @@
   <template id="tplModelRow">
     <div class="model-row">
       <input type="text" class="model-name-input" data-i18n-placeholder="modelName" placeholder="Model Name">
-      <input type="text" class="model-thinking-params" title="Custom API 參數（選填）&#10;空白 = 預設開啟思考&#10;填入 JSON 覆蓋，例如：{&quot;enable_thinking&quot;:false}" placeholder='Custom (JSON)'>
-      <input type="text" class="model-prefix-prompt" title="Prefix Prompt（選填）&#10;自動貼在每條訊息前面&#10;例如：/no_think" placeholder='Prefix'>
+      <input type="text" class="model-thinking-params" data-i18n-title="modelThinkingParamsTitle" title="Custom API Parameters (Optional)&#10;Blank = default enable thinking&#10;Fill in JSON to override, for example:&#10;{&quot;enable_thinking&quot;:false}" placeholder='Custom (JSON)'>
+      <input type="text" class="model-prefix-prompt" data-i18n-title="modelPrefixPromptTitle" title="Prefix Prompt (Optional)&#10;Automatically prepended to each message&#10;e.g. /no_think" placeholder='Prefix'>
       <label class="switch" data-i18n-title="enableDisable" title="Enable/Disable">
         <input type="checkbox" class="model-enabled" checked>
         <span class="slider"></span>
@@ -508,7 +531,7 @@
       <div class="sp-field">
         <label><span data-i18n="promptContent">提示詞內容</span> <span class="req" data-i18n="required">*</span></label>
         <textarea class="sp-field-input sp-edit-text" data-i18n-placeholder="promptContentPlaceholder" placeholder="輸入系統提示詞內容..."></textarea>
-        <div class="sp-foot-note" data-i18n="promptFootNote">Define the AI's role, personality, and rules here. User input and page content are handled automatically.</div>
+        <div class="sp-foot-note" data-i18n="promptVariables">Define the AI's role, personality, and rules here. User input and page content are handled automatically.</div>
       </div>
       <div class="sp-editor-actions">
         <button class="btn btn-primary sp-update" data-i18n="updatePrompt">儲存</button>
@@ -522,7 +545,7 @@
     <div class="prompt-modal-box openclaw-tutorial-box">
       <div class="sp-editor-head">
         <h3 class="sp-editor-title" id="agentTutorialTitle">OpenClaw <span class="beta-text">(beta)</span></h3>
-        <button class="sp-editor-close openclaw-tutorial-close" title="關閉">
+        <button class="sp-editor-close openclaw-tutorial-close" data-i18n-title="close" title="Close">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -534,47 +557,39 @@
           <span class="tutorial-icon">⚙️</span>
           <h4 data-i18n="tutorialServerSetup">Server setup (required for remote gateway)</h4>
         </div>
-        <p class="tutorial-text" data-i18n="tutorialServerDesc">Chrome extensions send <code>Origin: null</code> for WebSocket connections (not the extension URL). Your gateway must allow this.</p>
+        <p class="tutorial-text" data-i18n-html="tutorialServerDesc">Momo connects with <strong>Token Only</strong> (no device pairing). For remote gateways, configure <code>~/.openclaw/openclaw.json</code> like below — then use the same token in Momo.</p>
         <ol class="tutorial-steps">
           <li>
-            <span data-i18n="tutorialStep1">Open <code>~/.openclaw/openclaw.json</code> and set:</span>
+            <span data-i18n-html="tutorialStep1">Edit <code>~/.openclaw/openclaw.json</code> (example — replace placeholders):</span>
             <div class="tutorial-code-block">
-              <code>{ "gateway": { "controlUi": { "allowedOrigins": ["null"] } } }</code>
+              <pre><code>{
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "lan",
+    "controlUi": {
+      "allowedOrigins": [
+        "http://YOUR_HOST:PORT",
+        "null"
+      ],
+      "allowInsecureAuth": true,
+      "dangerouslyDisableDeviceAuth": true
+    }
+  },
+  "auth": {
+    "mode": "token",
+    "token": "&lt;your-gateway-token&gt;"
+  }
+}</code></pre>
             </div>
-            <p class="tutorial-note" data-i18n="tutorialStep1Note">The value must be the string <code>"null"</code> — not a blank array or the extension URL.</p>
+            <p class="tutorial-note" data-i18n-html="tutorialConfigNote"><code>YOUR_HOST:PORT</code> — use the same host/port as Momo’s Gateway URL (<code>ws://YOUR_HOST:PORT</code>; Momo sends <code>http://YOUR_HOST:PORT</code> as Origin). Include <code>"null"</code> for Chrome extension fallback. <code>gateway.port</code> must match your listen port. Set <code>auth.token</code> to your secret; paste the same value into Momo <strong>Gateway Token</strong>.</p>
           </li>
-          <li data-i18n="tutorialStep2">Restart or reload your gateway for the change to take effect.</li>
+          <li data-i18n="tutorialStep2">Restart or reload the gateway for changes to take effect.</li>
+          <li data-i18n-html="tutorialStep3">In Momo: Gateway URL <code>ws://YOUR_HOST:PORT</code> (or <code>http://</code>, auto-converted), same <strong>Gateway Token</strong>, then <strong>Connect</strong> → pick a Session.</li>
         </ol>
-        <div class="tutorial-warning">
-          <span class="tutorial-warning-icon">▲</span>
-          <p data-i18n="tutorialWarning">Without this, the WebSocket connection will be rejected with <em>"origin not allowed"</em> before eventually succeeding on retry — or failing entirely.</p>
-        </div>
-      </div>
-
-      <!-- Authentication Mode -->
-      <div class="tutorial-section">
-        <div class="tutorial-section-header">
-          <h4 data-i18n="tutorialAuthMode">Authentication Mode</h4>
-        </div>
-        <div class="tutorial-auth-card">
-          <div class="tutorial-auth-header">
-            <span class="tutorial-radio-active"></span>
-            <span class="tutorial-auth-icon">🛡️</span>
-            <strong>Device Auth</strong>
-            <span class="tutorial-recommended-badge">RECOMMENDED</span>
-          </div>
-          <p class="tutorial-text" data-i18n="tutorialDeviceAuthDesc">Cryptographic device identity (Ed25519). Used by all official OpenClaw clients.</p>
-          <ol class="tutorial-steps">
-            <li data-i18n="tutorialAuth1">Enter your gateway URL and token above, then click <strong>Save & Connect</strong>.</li>
-            <li data-i18n="tutorialAuth2">OpenClaw Copilot auto-generates an Ed25519 keypair on first connect.</li>
-            <li data-i18n="tutorialAuth3"><strong>Local</strong> gateway (127.0.0.1) — pairing is automatic, you're done.</li>
-            <li>
-              <span data-i18n="tutorialAuth4"><strong>Remote</strong> — approve <em>ClawClip</em> in the Gateway UI device list, or run:</span>
-              <div class="tutorial-code-block">
-                <code>openclaw device approve</code>
-              </div>
-            </li>
-          </ol>
+        <div class="tutorial-caution">
+          <span class="tutorial-caution-icon" aria-hidden="true">▲</span>
+          <p data-i18n="tutorialTokenWarning">Anyone with the token gets full access. Only use on local/trusted networks. Gateway must support protocol v4.</p>
         </div>
       </div>
       </div>
@@ -584,27 +599,27 @@
       <div class="tutorial-section">
         <div class="tutorial-section-header">
           <span class="tutorial-icon">⚙️</span>
-          <h4>Hermes API Server setup</h4>
+          <h4 data-i18n="hermesTutorialServerSetup">Hermes API Server setup</h4>
         </div>
-        <p class="tutorial-text">和 OpenClaw 一樣，Hermes 需要先在 Hermes 的 <code>.env</code> 開啟 API Server，然後重啟 Hermes gateway。</p>
+        <p class="tutorial-text" data-i18n-html="hermesTutorialServerDesc">和 OpenClaw 一樣，Hermes 需要先在 Hermes 的 <code>.env</code> 開啟 API Server，然後重啟 Hermes gateway。</p>
         <ol class="tutorial-steps">
           <li>
-            <span>在 Hermes <code>.env</code> 修改：</span>
+            <span data-i18n-html="hermesTutorialStep1">在 Hermes <code>.env</code> 修改：</span>
             <div class="tutorial-code-block">
-              <code>API_SERVER_ENABLED=true
+              <pre><code>API_SERVER_ENABLED=true
 API_SERVER_HOST=0.0.0.0
 API_SERVER_PORT=8642
 API_SERVER_KEY=&lt;your-secret-key&gt;
-API_SERVER_CORS_ORIGINS=*</code>
+API_SERVER_CORS_ORIGINS=*</code></pre>
             </div>
-            <p class="tutorial-note">請把 <code>&lt;your-secret-key&gt;</code> 換成你自己的密碼，並在 Momo 的 API Server Key 欄填入同一個值。</p>
+            <p class="tutorial-note" data-i18n-html="hermesTutorialStep1Note">請把 <code>&lt;your-secret-key&gt;</code> 換成你自己的密碼，並在 Momo 的 API Server Key 欄填入同一個值。</p>
           </li>
-          <li>重啟 Hermes gateway，讓 <code>.env</code> 變更生效。</li>
-          <li>在 Momo 填入 Base URL，例如 <code>http://127.0.0.1:8642/v1</code> 或你的遠端 URL，然後按 <strong>Connect</strong>。</li>
+          <li data-i18n-html="hermesTutorialStep2">重啟 Hermes gateway，讓 <code>.env</code> 變更生效。</li>
+          <li data-i18n-html="hermesTutorialStep3">在 Momo 填入 Base URL，例如 <code>http://127.0.0.1:8642/v1</code> 或你的遠端 URL，然後按 <strong>Connect</strong>。</li>
         </ol>
         <div class="tutorial-warning">
           <span class="tutorial-warning-icon">▲</span>
-          <p><code>API_SERVER_CORS_ORIGINS=*</code> 是 Chrome extension / 遠端連線最簡單可用設定；公開服務請改用更嚴格的可信任 origin。</p>
+          <p data-i18n-html="hermesTutorialWarning"><code>API_SERVER_CORS_ORIGINS=*</code> 是 Chrome extension / 遠端連線最簡單可用設定；公開服務請改用更嚴格的可信任 origin。</p>
         </div>
       </div>
       </div>
@@ -615,14 +630,13 @@ API_SERVER_CORS_ORIGINS=*</code>
     </div>
   </div>
 
-  <script src="assets/zh-conv.js"></script>
-  <script src="assets/i18n/i18n-loader.js"></script>
-  <script src="prompt-defaults.js"></script>
+  <script defer src="assets/i18n/i18n-loader.js"></script>
+  <script defer src="prompt-defaults.js"></script>
   <!-- Shared modules (loaded before options.js) -->
-  <script src="js/utils.js"></script>
-  <script src="js/storage.js"></script>
-  <script src="js/web-search.js"></script>
-  <script src="options.js"></script>
+  <script defer src="js/utils.js"></script>
+  <script defer src="js/storage.js"></script>
+  <script defer src="js/web-search.js"></script>
+  <script defer src="options.js"></script>
   <script>
     (function () {
       const sections = document.querySelectorAll('section[id]');

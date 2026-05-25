@@ -243,12 +243,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
         syncUpdates.showFloatBall = true;
       }
 
-      // 根據瀏覽器語言自動設定語言（僅首次安裝時）
       if (syncRes.zhVariant === undefined) {
         const detectedLang = detectBrowserLanguage();
         syncUpdates.zhVariant = detectedLang;
         localUpdates.zhVariant = detectedLang;
-        console.log('[background] Auto-detected language from browser:', detectedLang);
       }
 
       const hasLegacyConfig = Boolean(localRes.apiKey || localRes.apiEndpoint);
@@ -391,9 +389,30 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse)=>{
     (async ()=>{
       try {
         const { url, options } = msg;
-        const resp = await fetch(url, options || {});
-        const text = await resp.text();
-        sendResponse({ ok: resp.ok, status: resp.status, text });
+        const fetchOptions = options || {};
+        const responseType = fetchOptions.responseType || '';
+        const requestOptions = { ...fetchOptions };
+        delete requestOptions.responseType;
+        const resp = await fetch(url, requestOptions);
+        const headers = {};
+        try{
+          resp.headers.forEach((value, key) => { headers[key.toLowerCase()] = value; });
+        }catch(e){}
+        if(responseType === 'dataUrl'){
+          const blob = await resp.blob();
+          const bytes = new Uint8Array(await blob.arrayBuffer());
+          let binary = '';
+          const chunkSize = 0x8000;
+          for(let i = 0; i < bytes.length; i += chunkSize){
+            binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+          }
+          const mime = blob.type || headers['content-type'] || 'application/octet-stream';
+          const dataUrl = `data:${mime};base64,${btoa(binary)}`;
+          sendResponse({ ok: resp.ok, status: resp.status, dataUrl, headers });
+        }else{
+          const text = await resp.text();
+          sendResponse({ ok: resp.ok, status: resp.status, text, headers });
+        }
       } catch(e) {
         sendResponse({ ok: false, status: 0, text: '', error: e.message });
       }

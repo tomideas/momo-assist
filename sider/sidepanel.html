@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <title>Momo AI Bud</title>
+  <title>Hii~ Momo: AI Assist</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="sidepanel.css" />
 </head>
@@ -174,20 +174,16 @@
     </aside>
   </div>
 
-  <!-- 內容提取和轉換庫 -->
-  <script src="libs/Readability.js"></script>
-  <script src="libs/turndown.js"></script>
-  <script src="libs/turndown-plugin-gfm.js"></script>
-  
-  <script src="assets/zh-conv.js"></script>
-  <script src="assets/i18n/i18n-loader.js"></script>
-  <script src="prompt-defaults.js"></script>
+  <!-- 內容提取和轉換庫：按需動態載入（見 ensurePageCaptureLibs） -->
+  <!-- defer：讓 V8 在背景執行緒解析腳本，不阻塞主執行緒；執行順序不變 -->
+  <script defer src="assets/i18n/i18n-loader.js"></script>
+  <script defer src="prompt-defaults.js"></script>
   <!-- Shared modules (loaded before sidepanel.js) -->
-  <script src="js/utils.js"></script>
-  <script src="js/storage.js"></script>
-  <script src="js/openclaw.js"></script>
-  <script src="js/markdown.js"></script>
-  <script src="js/web-search.js"></script>
-  <script src="sidepanel.js"></script>
+  <script defer src="js/utils.js"></script>
+  <script defer src="js/storage.js"></script>
+  <script defer src="js/openclaw.js"></script>
+  <script defer src="js/markdown.js"></script>
+  <script defer src="js/web-search.js"></script>
+  <script defer src="sidepanel.js"></script>
 </body>
 </html>

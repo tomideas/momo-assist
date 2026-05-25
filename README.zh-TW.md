@@ -1,8 +1,8 @@
-# 🐹 Momo AI Bud
+# 🐹 Hii~ Momo: AI Assist
 
 繁體中文 | [English](README.md)
 
-🐹 **嘿，夥伴！來認識 Momo** — 你的瀏覽器裡，住著一隻溫暖的小夥伴。Momo AI Bud 是一款由設計師打造的 Chrome 側邊欄，相信 AI 工具不該只有功能，更該有溫度、有個性、有陪伴感 ✨。可選 **12+ AI 供應商** 🤖（含 Groq、Hermes Beta、OpenClaw Beta 等）、**聯網搜尋** 🔍、**頁面擷取與引用** 📄、**圖片上傳與理解** 🖼️、**系統 TTS 語音朗讀** 🔊，並能 **自調字體大小與字粗、方便閱讀** 👁️；介面支援 **繁中 / 簡中 / English** 🌐，還有 **浮球快捷** 🎈、**自訂提示詞**、**聊天記錄** 與 **快捷鍵** — 一切都在一個小小的側邊欄裡，像跟朋友聊天一樣自然 💬
+🐹 **嘿，夥伴！來認識 Momo** — 你的瀏覽器裡，住著一隻溫暖的小夥伴。Hii~ Momo: AI Assist 是一款由設計師打造的 Chrome 側邊欄，相信 AI 工具不該只有功能，更該有溫度、有個性、有陪伴感 ✨。可選 **12+ AI 供應商** 🤖（含 Groq、Hermes Beta、OpenClaw Beta 等）、**聯網搜尋** 🔍、**頁面擷取與引用** 📄、**圖片上傳與理解** 🖼️、**系統 TTS 語音朗讀** 🔊，並能 **自調字體大小與字粗、方便閱讀** 👁️；介面支援 **繁中 / 簡中 / English** 🌐，還有 **浮球快捷** 🎈、**自訂提示詞**、**聊天記錄** 與 **快捷鍵** — 一切都在一個小小的側邊欄裡，像跟朋友聊天一樣自然 💬
 
 ![Momo AI 截圖](docs/momo-preview.png)
 
@@ -25,7 +25,7 @@
 ## 🧪 Hermes Agent（Beta）介紹
 
 Hermes Agent 是一個可本地運行的 AI Agent 伺服器。  
-在 Momo AI Bud 中，你可以把它當作「本地專屬助理」來用：資料可留在自己的環境、延遲低、可自管 gateway 與金鑰。
+在 Hii~ Momo: AI Assist 中，你可以把它當作「本地專屬助理」來用：資料可留在自己的環境、延遲低、可自管 gateway 與金鑰。
 
 - 預設 Base URL：`http://127.0.0.1:8642/v1`
 - 預設模型：`hermes-agent`
@@ -65,7 +65,7 @@ API_SERVER_CORS_ORIGINS=*
 
 ### 從 Release 下載
 
-1. 📥 到 [Releases](https://github.com/designkidd/momo-bud/releases) 下載最新的 `momo-ai-*-chrome.zip`
+1. 📥 到 [Releases](https://github.com/tomideas/momo-bud/releases) 下載最新的 `momo-ai-*-chrome.zip`
 2. 📂 解壓縮
 3. 🌐 開啟 Chrome，前往 `chrome://extensions/`
 4. 🔧 開啟「開發人員模式」
@@ -81,7 +81,11 @@ API_SERVER_CORS_ORIGINS=*
 
 ## 📖 說明文件
 
-👉 [tomideas.github.io](https://tomideas.github.io)
+使用者說明書（HTML，由 GitHub Pages 發佈）：
+
+👉 [tomideas.github.io/momo-bud](https://tomideas.github.io/momo-bud/)
+
+原始檔在 [`docs/`](docs/)。本機預覽見 [`docs/README.md`](docs/README.md)。
 
 ## 🗂️ 專案結構
 
