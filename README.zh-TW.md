@@ -65,7 +65,7 @@ API_SERVER_CORS_ORIGINS=*
 
 ### 從 Release 下載
 
-1. 📥 到 [Releases](https://github.com/tomideas/momo-bud/releases) 下載最新的 `momo-ai-*-chrome.zip`
+1. 📥 到 [Releases](https://github.com/tomideas/hii-momo/releases) 下載最新的 `momo-ai-*-chrome.zip`
 2. 📂 解壓縮
 3. 🌐 開啟 Chrome，前往 `chrome://extensions/`
 4. 🔧 開啟「開發人員模式」
@@ -83,7 +83,7 @@ API_SERVER_CORS_ORIGINS=*
 
 使用者說明書（HTML，由 GitHub Pages 發佈）：
 
-👉 [tomideas.github.io/momo-bud](https://tomideas.github.io/momo-bud/)
+👉 [tomideas.github.io/hii-momo](https://tomideas.github.io/hii-momo/)
 
 原始檔在 [`docs/`](docs/)。本機預覽見 [`docs/README.md`](docs/README.md)。
 

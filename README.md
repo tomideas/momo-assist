@@ -65,7 +65,7 @@ No credit card needed. Get started in minutes:
 
 ### From Release
 
-1. 📥 Download the latest `momo-ai-*-chrome.zip` from [Releases](https://github.com/tomideas/momo-bud/releases)
+1. 📥 Download the latest `momo-ai-*-chrome.zip` from [Releases](https://github.com/tomideas/hii-momo/releases)
 2. 📂 Unzip the file
 3. 🌐 Open Chrome, go to `chrome://extensions/`
 4. 🔧 Enable "Developer mode"
@@ -83,7 +83,7 @@ No credit card needed. Get started in minutes:
 
 User guide (HTML, hosted via GitHub Pages):
 
-👉 [tomideas.github.io/momo-bud](https://tomideas.github.io/momo-bud/)
+👉 [tomideas.github.io/hii-momo](https://tomideas.github.io/hii-momo/)
 
 Source files live in [`docs/`](docs/). See [`docs/README.md`](docs/README.md) for local preview.
 

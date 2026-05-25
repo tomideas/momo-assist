@@ -1,4 +1,4 @@
-# Publish docs/ as GitHub Pages (https://tomideas.github.io/momo-bud/)
+# Publish docs/ as GitHub Pages (https://tomideas.github.io/hii-momo/)
 # Repo Settings → Pages → Source: GitHub Actions (first-time setup)
 
 name: Deploy docs

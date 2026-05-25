@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [2.21.66] - 2026-05-25
+### Changed — GitHub repo 與說明書網址
+- GitHub repository 由 `momo-bud` 更名為 **`hii-momo`**。
+- 正式說明書網址改為 **https://tomideas.github.io/hii-momo/**（舊 `/momo-bud/` 由 GitHub 轉址）。
+
+---
+
 ## [2.21.65] - 2026-05-25
 ### Changed — OpenClaw Setup Guide 設定範例
 - Server setup 改為完整 `openclaw.json` 範例（`allowedOrigins`、`allowInsecureAuth`、`dangerouslyDisableDeviceAuth`、`auth.mode: token`），以 `YOUR_HOST:PORT` 與 `<your-gateway-token>` 佔位，不含真實 IP 或密鑰。
