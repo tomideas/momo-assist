@@ -50,6 +50,21 @@
 <main class="main-content">
 <h1>Changelog</h1>
 
+<h2>v2.21.76 (2026-06-06)</h2>
+<p><strong>User guide:</strong> Updated the <code>site/</code> manual with the product name <strong>Hii~ Momo: AI Assist</strong>, 20+ AI provider list, auto-generated chat titles, TTS auto-read, and settings-page notes. Traditional Chinese and English pages were updated together.</p>
+
+<h2>v2.21.75 (2026-06-06)</h2>
+<p><strong>AI Providers:</strong> Added Custom, Anthropic (Claude), xAI, Vercel AI Gateway, Together AI, Hugging Face, Mistral, Novita AI, Chutes, and BigModel (Zhipu). Added default Base URLs, common models, test models, and API key links. Custom supports user-defined Base URLs and model names. Anthropic uses a Messages API adapter; the other new providers use OpenAI-compatible chat completions.</p>
+
+<h2>v2.21.74 (2026-06-06)</h2>
+<p><strong>Auto-generated chat titles:</strong> Added an instant fallback plus background AI naming flow for chat history titles. The first user message creates a clean fallback title immediately, then the first completed AI reply can rename it to a short summary. A new settings toggle is enabled by default. Manual renames are never overwritten, and Hermes / OpenClaw fixed local sessions skip auto-title generation.</p>
+
+<h2>v2.21.73 (2026-06-06)</h2>
+<p><strong>Text-to-Speech settings:</strong> Fixed the "Auto-read AI replies" setting layout in narrow windows so the label stays on the left and the switch stays on the right. The auto-read label now uses the smaller settings subtitle size instead of matching the main Text-to-Speech title. Updated the UI-SPEC toggle section guidance accordingly.</p>
+
+<h2>v2.21.72 (2026-06-06)</h2>
+<p><strong>Text-to-Speech:</strong> Added an "Auto-read AI replies" setting, off by default. When enabled, AI replies are read aloud after they finish. Speech text now removes Markdown, emoji, decorative symbols, and Chinese / English punctuation before playback so system voices do not read quotes, commas, periods, and similar symbols aloud. Preview text is cleaned the same way.</p>
+
 <h2>v2.21.70 (2026-06-06)</h2>
 <p><strong>Model switching:</strong> Fixed standard AI model switches incorrectly starting a fresh sidebar chat, which made chat history look cleared. Hermes still uses its fixed local session, and OpenClaw now uses an isolated <code>momo-openclaw-main</code> session so Agent history does not overwrite standard model conversations. Switching back from Hermes / OpenClaw restores the previous standard Momo conversation first.</p>
 
@@ -144,10 +159,10 @@
 <p><strong>Web search — short follow-ups and conversation context:</strong> Search keywords used to be built only from the <strong>last user message</strong>, so follow-ups like &quot;price in China&quot; after discussing iPhone could become overly generic queries. The extension now extracts topic hints (e.g. product/model names) from <strong>earlier turns</strong> and, when appropriate, merges them into the actual search string. For API requests, a one-line English context prefix may be added before the last plain-text user message so server-side search (e.g. OpenRouter <code>:online</code>) stays aligned with the ongoing topic.</p>
 
 <h2>v2.21.6 (2026-04-08)</h2>
-<p>Renamed the design-system preview doc from <code>dev-notes/ui-preview.html</code> to <code>dev-notes/design-system-preview.html</code>; in-doc version label updated to v2.21.6.</p>
+<p>Renamed the design-system preview doc from <code>ui-preview.html</code> to <code>design-system-preview.html</code>; in-doc version label updated to v2.21.6.</p>
 
 <h2>v2.21.5 (2026-04-08)</h2>
-<p><code>dev-notes/design-system-preview.html</code>: expanded button interaction notes (Primary / Outline / Danger / Disabled, segmented controls and theme mapping); version label v2.21.5.</p>
+<p><code>design-system-preview.html</code>: expanded button interaction notes (Primary / Outline / Danger / Disabled, segmented controls and theme mapping); version label v2.21.5.</p>
 
 <h2>v2.21.4 (2026-04-06)</h2>
 <p>Product name unified to <strong>Momo AI Bud</strong> (manifest, toolbar, float ball, default sidebar/settings titles). Settings tab title now follows UI language (e.g. English <code>Settings - Momo AI Bud</code>) instead of a fixed Chinese string.</p>

@@ -50,6 +50,21 @@
 <main class="main-content">
 <h1>更新日誌</h1>
 
+<h2>v2.21.76（2026-06-06）</h2>
+<p><strong>使用者說明書：</strong>更新 <code>site/</code> 指南，同步產品名稱 <strong>Hii~ Momo: AI Assist</strong>、20+ AI 供應商清單、自動生成對話標題、TTS 自動朗讀與設定頁說明；中英文頁面一併更新。</p>
+
+<h2>v2.21.75（2026-06-06）</h2>
+<p><strong>AI Provider：</strong>新增 Custom、Anthropic (Claude)、xAI、Vercel AI Gateway、Together AI、Hugging Face、Mistral、Novita AI、Chutes、BigModel (Zhipu)。同步補上預設 Base URL、常用模型、測試模型與 API key 申請連結；Custom 支援自填 Base URL 和模型名稱。Anthropic 走 Messages API adapter，其他新增 provider 走 OpenAI-compatible chat completions。</p>
+
+<h2>v2.21.74（2026-06-06）</h2>
+<p><strong>自動生成對話標題：</strong>歷史對話標題新增「即時 fallback + 背景 AI 命名」流程。送出第一條訊息時先產生乾淨 fallback 標題，AI 第一輪回覆完成後自動改成簡短摘要；設定頁新增開關且預設開啟。手動重新命名後不會再被自動覆蓋，Hermes / OpenClaw 固定本地 session 會跳過自動標題生成。</p>
+
+<h2>v2.21.73（2026-06-06）</h2>
+<p><strong>語音朗讀設定：</strong>修正窄視窗下「自動朗讀 AI 回覆」被泛用 responsive 規則改為置中直排的問題，現在維持標題左、switch 右；auto-read 標題固定為較小的設定副標題尺寸，避免與 Text-to-Speech 主標題同級。同步更新 UI-SPEC 的 toggle section 規範。</p>
+
+<h2>v2.21.72（2026-06-06）</h2>
+<p><strong>語音朗讀：</strong>設定頁新增「自動朗讀 AI 回覆」開關，預設關閉；啟用後 AI 回覆完成會自動播放。朗讀前會移除 Markdown、emoji、裝飾符號與中英文標點，避免系統語音把引號、逗號、句號等符號讀出來；試聽文字也會先清理標點再播放。</p>
+
 <h2>v2.21.70（2026-06-06）</h2>
 <p><strong>模型切換：</strong>修正普通 AI 模型之間切換時，側邊欄會誤開新對話、看起來像聊天記錄被清除的問題。Hermes 仍使用固定本地 session，OpenClaw 現在也使用獨立的 <code>momo-openclaw-main</code> session，避免 Agent history 覆蓋普通模型對話；從 Hermes / OpenClaw 切回普通模型時，會優先恢復原本的普通 Momo 對話。</p>
 
@@ -144,10 +159,10 @@
 <p><strong>聯網搜尋 — 簡短追問與對話脈絡：</strong>先前若只依<strong>最後一則使用者訊息</strong>組搜尋關鍵字，承接語（例如上一輪談 iPhone、本輪只問「中國的價錢」）容易變成過於籠統的查詢。現在會從<strong>先前對話</strong>擷取主題關鍵字（如產品／型號），在符合條件時併入實際搜尋字串；送 API 時亦可在最後一則純文字 user 訊息前加上一行英文主題提示，協助 OpenRouter <code>:online</code> 等情境對齊上下文。</p>
 
 <h2>v2.21.6（2026-04-08）</h2>
-<p>將設計系統預覽文件由 <code>dev-notes/ui-preview.html</code> 重新命名為 <code>dev-notes/design-system-preview.html</code>；文件內版本字樣同步為 v2.21.6。</p>
+<p>將設計系統預覽文件由 <code>ui-preview.html</code> 重新命名為 <code>design-system-preview.html</code>；文件內版本字樣同步為 v2.21.6。</p>
 
 <h2>v2.21.5（2026-04-08）</h2>
-<p><code>dev-notes/design-system-preview.html</code> 補齊按鍵交互說明（Primary／Outline／Danger／Disabled、分段按鈕與主題映射等）；文件版本字樣同步為 v2.21.5。</p>
+<p><code>design-system-preview.html</code> 補齊按鍵交互說明（Primary／Outline／Danger／Disabled、分段按鈕與主題映射等）；文件版本字樣同步為 v2.21.5。</p>
 
 <h2>v2.21.4（2026-04-06）</h2>
 <p>產品名稱統一為 <strong>Momo AI Bud</strong>（manifest、工具列、懸浮球、側欄／設定頁預設標題）。修正設定頁分頁標題：改為依介面語系顯示（例如英文為 <code>Settings - Momo AI Bud</code>），不再固定為中文「設定 - AI Sidebar」。</p>

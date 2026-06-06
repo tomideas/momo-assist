@@ -61,14 +61,28 @@
 <h3>雲端供應商</h3>
 <ul>
   <li><strong>OpenAI</strong>：<code>api.openai.com/v1</code> — 例如 GPT-5.4、GPT-5.4-mini 等；需 API 金鑰。</li>
-  <li><strong>Google AI (Gemini)</strong>：<code>generativelanguage.googleapis.com</code> — Gemini 2.5 系列；支援思考模式。</li>
+  <li><strong>Anthropic (Claude)</strong>：<code>api.anthropic.com/v1</code> — 使用 Messages API adapter；例如 claude-sonnet-4-5、claude-opus-4-1。</li>
+  <li><strong>Google AI (Gemini)</strong>：<code>generativelanguage.googleapis.com/v1beta/openai</code> — Gemini 3 Flash 系列；支援思考模式。</li>
   <li><strong>DeepSeek</strong>：<code>api.deepseek.com/v1</code> — <code>deepseek-chat</code> / <code>deepseek-reasoner</code>；Reasoner 始終進行推理。</li>
-  <li><strong>Qwen</strong>：<code>dashscope.aliyuncs.com</code> — 如 qwen3-max、qwen-flash 等；支援 <code>enable_thinking</code>。</li>
+  <li><strong>Qwen</strong>：<code>dashscope.aliyuncs.com/compatible-mode/v1</code> — 如 qwen3.5-plus、qwen3.5-flash 等；支援 <code>enable_thinking</code>。</li>
+  <li><strong>xAI</strong>：<code>api.x.ai/v1</code> — grok-4、grok-4-fast 等。</li>
+  <li><strong>Mistral</strong>：<code>api.mistral.ai/v1</code> — mistral-large-latest、mistral-small-latest 等。</li>
   <li><strong>OpenRouter</strong>：<code>openrouter.ai/api/v1</code> — 聚合多模型；支援 <code>:online</code> 伺服器端搜尋。</li>
+  <li><strong>Together AI</strong>：<code>api.together.xyz/v1</code></li>
+  <li><strong>Hugging Face</strong>：<code>router.huggingface.co/v1</code></li>
+  <li><strong>Vercel AI Gateway</strong>：<code>ai-gateway.vercel.sh/v1</code></li>
+  <li><strong>Novita AI</strong>：<code>api.novita.ai/v3/openai</code></li>
+  <li><strong>Chutes</strong>：<code>llm.chutes.ai/v1</code></li>
+  <li><strong>BigModel (Zhipu)</strong>：<code>open.bigmodel.cn/api/paas/v4</code></li>
   <li><strong>Moonshot (Kimi)</strong>：<code>api.moonshot.cn/v1</code> — kimi-k2.5、kimi-k2 等。</li>
   <li><strong>MiniMax</strong>：<code>api.minimaxi.chat/v1</code> — MiniMax-Text-01 等。</li>
   <li><strong>Groq</strong>：<code>api.groq.com/openai/v1</code> — 高速推理；預設如 <code>openai/gpt-oss-120b</code>、<code>meta-llama/llama-4-scout-17b-16e-instruct</code>；需 API 金鑰。</li>
   <li><strong>NVIDIA NIM</strong>：<code>integrate.api.nvidia.com/v1</code></li>
+</ul>
+
+<h3>自訂供應商</h3>
+<ul>
+  <li><strong>Custom</strong> — 自行填寫 Base URL 與模型名稱，適用於自架 OpenAI 相容服務、企業閘道或代理。</li>
 </ul>
 
 <h3>本地供應商</h3>
@@ -85,14 +99,23 @@
   <thead><tr><th>供應商</th><th>申請連結</th></tr></thead>
   <tbody>
     <tr><td>OpenAI</td><td><a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a></td></tr>
-    <tr><td>Google AI</td><td><a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></td></tr>
+    <tr><td>Anthropic</td><td><a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com/settings/keys</a></td></tr>
+    <tr><td>Google AI</td><td><a href="https://aistudio.google.com/api-keys" target="_blank">aistudio.google.com/api-keys</a></td></tr>
     <tr><td>DeepSeek</td><td><a href="https://platform.deepseek.com/api_keys" target="_blank">platform.deepseek.com/api_keys</a></td></tr>
-    <tr><td>Qwen</td><td><a href="https://dashscope.console.aliyun.com/apiKey" target="_blank">dashscope.console.aliyun.com</a></td></tr>
+    <tr><td>Qwen</td><td><a href="https://dashscope.console.aliyun.com/apiKeys" target="_blank">dashscope.console.aliyun.com</a></td></tr>
+    <tr><td>xAI</td><td><a href="https://console.x.ai/" target="_blank">console.x.ai</a></td></tr>
+    <tr><td>Mistral</td><td><a href="https://console.mistral.ai/api-keys" target="_blank">console.mistral.ai/api-keys</a></td></tr>
     <tr><td>OpenRouter</td><td><a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a></td></tr>
-    <tr><td>Moonshot</td><td><a href="https://platform.moonshot.cn/console/api-keys" target="_blank">platform.moonshot.cn</a></td></tr>
-    <tr><td>MiniMax</td><td><a href="https://platform.minimaxi.com/user-center/basic-information/interface-key" target="_blank">platform.minimaxi.com</a></td></tr>
+    <tr><td>Together AI</td><td><a href="https://api.together.xyz/settings/api-keys" target="_blank">api.together.xyz/settings/api-keys</a></td></tr>
+    <tr><td>Hugging Face</td><td><a href="https://huggingface.co/settings/tokens" target="_blank">huggingface.co/settings/tokens</a></td></tr>
+    <tr><td>Vercel AI Gateway</td><td><a href="https://vercel.com/account/ai" target="_blank">vercel.com/account/ai</a></td></tr>
+    <tr><td>Novita AI</td><td><a href="https://novita.ai/settings/key-management" target="_blank">novita.ai/settings/key-management</a></td></tr>
+    <tr><td>Chutes</td><td><a href="https://chutes.ai/app/api" target="_blank">chutes.ai/app/api</a></td></tr>
+    <tr><td>BigModel (Zhipu)</td><td><a href="https://bigmodel.cn/usercenter/proj-mgmt/apikeys" target="_blank">bigmodel.cn/usercenter/proj-mgmt/apikeys</a></td></tr>
+    <tr><td>Moonshot</td><td><a href="https://platform.moonshot.ai/console/api-keys" target="_blank">platform.moonshot.ai</a></td></tr>
+    <tr><td>MiniMax</td><td><a href="https://platform.minimax.io/user-center/basic-information/interface-key" target="_blank">platform.minimax.io</a></td></tr>
     <tr><td>Groq</td><td><a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a></td></tr>
-    <tr><td>NVIDIA</td><td><a href="https://build.nvidia.com/" target="_blank">build.nvidia.com</a></td></tr>
+    <tr><td>NVIDIA</td><td><a href="https://build.nvidia.com/settings/api-keys" target="_blank">build.nvidia.com/settings/api-keys</a></td></tr>
   </tbody>
 </table>
 <p>本地供應商（Ollama、LM Studio、OpenClaw）不需要 API 金鑰。Hermes 通常需要填入本地 API Server 的 <code>API_SERVER_KEY</code>。</p>

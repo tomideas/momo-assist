@@ -4,6 +4,49 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [2.21.76] — 2026-06-06
+### Changed — 使用者說明書更新
+- 更新 `site/` 指南：產品名稱、20+ AI 供應商、自動對話標題、TTS 自動朗讀、設定頁說明。
+- 同步更新中英文說明頁（index、ai-providers、chat-history、tts、settings、changelog）。
+
+---
+
+## [2.21.75] - 2026-06-06
+### Added — AI Provider 清單擴充
+- 新增主流 AI provider：Custom、Anthropic (Claude)、xAI、Vercel AI Gateway、Together AI、Hugging Face、Mistral、Novita AI、Chutes、BigModel (Zhipu)。
+- 為新增 provider 補預設 Base URL、常用模型、測試模型與 API key 申請連結。
+- Custom provider 支援使用者自填 Base URL 並自行新增模型名稱。
+- Anthropic (Claude) 走 Messages API adapter；其他新增 provider 走 OpenAI-compatible chat completions。
+
+---
+
+## [2.21.74] - 2026-06-06
+### Added — 自動生成對話標題
+- 歷史對話標題新增「即時 fallback + 背景 AI 命名」流程：送出第一條訊息時先產生乾淨 fallback 標題，AI 第一輪回覆完成後自動改成簡短摘要。
+- 設定頁新增「自動生成對話標題」開關，預設開啟；使用者手動重新命名後不會再被自動標題覆蓋。
+- Hermes / OpenClaw 固定本地 session 會跳過自動標題生成，避免影響 Agent session。
+- 更新 `docs/UI-SPEC.md`，補充 Auto-generate Chat Titles toggle section 規範。
+
+---
+
+## [2.21.73] - 2026-06-06
+### Fixed — TTS 自動朗讀設定窄版排版
+- 修正設定頁窄視窗下「自動朗讀 AI 回覆」被泛用 `.section-header` responsive 規則改為置中直排的問題，現在維持標題左、switch 右。
+- 將 auto-read 標題固定為 15px `.section-subtitle`，低於 18px TTS section title，符合 UI-SPEC。
+- 更新 `docs/UI-SPEC.md`，補充 TTS Auto-read toggle section 規範。
+
+---
+
+## [2.21.72] - 2026-06-06
+### Added — TTS 自動朗讀
+- 設定頁「語音朗讀」新增「自動朗讀 AI 回覆」開關，預設關閉；啟用後 AI 回覆完成會自動播放。
+
+### Changed — TTS 朗讀文字清理
+- 朗讀前會移除 Markdown、emoji、裝飾符號與中英文標點，避免系統語音把引號、逗號、句號等符號讀出來。
+- 試聽文字同樣會先清理標點再播放。
+
+---
+
 ## [2.21.71] — 2026-06-06
 ### Changed — 工作區改為直接 git repo
 - Workspace 根目錄直接 `git init`，連接 `github.com/tomideas/momo-assist`。

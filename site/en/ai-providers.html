@@ -60,15 +60,29 @@
 
 <h3>Cloud Providers</h3>
 <ul>
-  <li><strong>OpenAI</strong>: <code>api.openai.com/v1</code> — e.g. o3-mini, o1, GPT-4o, etc.; API key required.</li>
-  <li><strong>Google AI (Gemini)</strong>: <code>generativelanguage.googleapis.com</code> — Gemini 2.5 series; supports thinking mode.</li>
+  <li><strong>OpenAI</strong>: <code>api.openai.com/v1</code> — e.g. GPT-5.4, GPT-5.4-mini, etc.; API key required.</li>
+  <li><strong>Anthropic (Claude)</strong>: <code>api.anthropic.com/v1</code> — uses a Messages API adapter; e.g. claude-sonnet-4-5, claude-opus-4-1.</li>
+  <li><strong>Google AI (Gemini)</strong>: <code>generativelanguage.googleapis.com/v1beta/openai</code> — Gemini 3 Flash series; supports thinking mode.</li>
   <li><strong>DeepSeek</strong>: <code>api.deepseek.com/v1</code> — <code>deepseek-chat</code> / <code>deepseek-reasoner</code>; Reasoner always performs reasoning.</li>
-  <li><strong>Qwen</strong>: <code>dashscope.aliyuncs.com</code> — e.g. qwen3-max, qwen-flash, etc.; supports <code>enable_thinking</code>.</li>
+  <li><strong>Qwen</strong>: <code>dashscope.aliyuncs.com/compatible-mode/v1</code> — e.g. qwen3.5-plus, qwen3.5-flash, etc.; supports <code>enable_thinking</code>.</li>
+  <li><strong>xAI</strong>: <code>api.x.ai/v1</code> — grok-4, grok-4-fast, etc.</li>
+  <li><strong>Mistral</strong>: <code>api.mistral.ai/v1</code> — mistral-large-latest, mistral-small-latest, etc.</li>
   <li><strong>OpenRouter</strong>: <code>openrouter.ai/api/v1</code> — Multi-model aggregation; supports <code>:online</code> server-side search.</li>
-  <li><strong>Moonshot (Kimi)</strong>: <code>api.moonshot.cn/v1</code> — moonshot-v1 series, kimi-k2, etc.</li>
+  <li><strong>Together AI</strong>: <code>api.together.xyz/v1</code></li>
+  <li><strong>Hugging Face</strong>: <code>router.huggingface.co/v1</code></li>
+  <li><strong>Vercel AI Gateway</strong>: <code>ai-gateway.vercel.sh/v1</code></li>
+  <li><strong>Novita AI</strong>: <code>api.novita.ai/v3/openai</code></li>
+  <li><strong>Chutes</strong>: <code>llm.chutes.ai/v1</code></li>
+  <li><strong>BigModel (Zhipu)</strong>: <code>open.bigmodel.cn/api/paas/v4</code></li>
+  <li><strong>Moonshot (Kimi)</strong>: <code>api.moonshot.cn/v1</code> — kimi-k2.5, kimi-k2, etc.</li>
   <li><strong>MiniMax</strong>: <code>api.minimaxi.chat/v1</code> — MiniMax-Text-01, etc.</li>
   <li><strong>Groq</strong>: <code>api.groq.com/openai/v1</code> — Fast inference; default models include <code>openai/gpt-oss-120b</code>, <code>meta-llama/llama-4-scout-17b-16e-instruct</code>; API key from <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>.</li>
   <li><strong>NVIDIA NIM</strong>: <code>integrate.api.nvidia.com/v1</code></li>
+</ul>
+
+<h3>Custom Provider</h3>
+<ul>
+  <li><strong>Custom</strong> — Enter your own Base URL and model names for self-hosted OpenAI-compatible services, enterprise gateways, or proxies.</li>
 </ul>
 
 <h3>Local Providers</h3>
