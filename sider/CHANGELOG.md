@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [2.21.71] — 2026-06-06
+### Changed — 工作區改為直接 git repo
+- Workspace 根目錄直接 `git init`，連接 `github.com/tomideas/momo-assist`。
+- 移除 rsync + `temp/momo-assist-repo/` 中間層，push 流程大幅簡化。
+- 新增 `.gitignore`：排除 `temp/`、`keys/`、`dist/`、`icon/`、`dev-notes/` 等。
+- 更新 `instructions.md` §2 目錄結構與 §13 發版流程，反映新 push 方式。
+
+---
+
 ## [2.21.70] - 2026-06-06
 ### Fixed — 模型切換不再清空普通對話
 - 修正普通 AI 模型之間切換時，側邊欄會誤開新對話、看起來像聊天記錄被清除的問題。
