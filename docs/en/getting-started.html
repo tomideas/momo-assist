@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Quick Start — Momo AI Docs</title>
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">Guide</a>
+    <a href="sidebar-chat.html" class="hide-mobile">Features</a>
+    <a href="changelog.html" class="hide-mobile">Changelog</a>
+    <button class="menu-toggle" aria-label="Menu">☰</button>
+  </nav>
+</header>
+
+<div class="backdrop"></div>
+<div class="page-wrapper">
+
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search...">
+  </div>
+  <div class="group-title">Getting Started</div>
+  <a href="index.html">Introduction</a>
+  <a href="installation.html">Installation</a>
+  <a href="getting-started.html">Quick Start</a>
+  <div class="group-title">Features</div>
+  <a href="sidebar-chat.html">Sidebar Chat</a>
+  <a href="ai-providers.html">AI Providers</a>
+  <a href="web-search.html">Web Search</a>
+  <a href="page-capture.html">Page Capture</a>
+  <a href="image-upload.html">Image Upload</a>
+  <a href="thinking-mode.html">Thinking Mode</a>
+  <a href="tts.html">Text-to-Speech (TTS)</a>
+  <a href="system-prompts.html">System Prompts</a>
+  <a href="chat-history.html">Chat History</a>
+  <a href="float-ball.html">Float Ball</a>
+  <div class="group-title">Settings</div>
+  <a href="settings.html">Settings Overview</a>
+  <a href="shortcuts.html">Shortcuts</a>
+  <a href="i18n.html">Multi-language</a>
+  <div class="group-title">Others</div>
+  <a href="changelog.html">Changelog</a>
+  <a href="privacy.html">Privacy Policy</a>
+</aside>
+
+<main class="main-content">
+
+<h1>Quick Start</h1>
+<p>After installation, follow these steps to start using Momo AI in minutes.</p>
+
+<h2>Step 1: Open the Sidebar</h2>
+
+<img src="../quick-start-demo.gif" alt="Momo AI Open Sidebar Demo" style="border:1px solid var(--c-border);border-radius:8px;margin:16px auto 28px;box-shadow:0 4px 24px rgba(0,0,0,.18);max-height:520px;max-width:100%;width:auto;height:auto;display:block">
+<p>There are three ways to open the Momo AI sidebar:</p>
+<ol>
+  <li><strong>Click the toolbar icon</strong> — Click the Momo AI icon in the Chrome toolbar</li>
+  <li><strong>Keyboard shortcut</strong> — You need to set this up first at <code>chrome://extensions/shortcuts</code>, see the <a href="shortcuts.html">Shortcuts</a> page for details</li>
+  <li><strong>Float ball</strong> — If the float ball feature is enabled, simply click the floating button on the page</li>
+</ol>
+
+<h2>Step 2: Set Up AI Provider</h2>
+
+<img src="../setup-provider-demo.gif" alt="Set Up AI Provider Demo" style="border:1px solid var(--c-border);border-radius:8px;margin:16px auto 28px;box-shadow:0 4px 24px rgba(0,0,0,.18);max-height:520px;max-width:100%;width:auto;height:auto;display:block">
+<ol>
+  <li>Click the ⚙️ <strong>Settings</strong> button in the top-right corner of the sidebar</li>
+  <li>Select <strong>AI Models</strong> from the left navigation</li>
+  <li>Choose the provider you want to use from the list (e.g. OpenAI, Google AI, DeepSeek)</li>
+  <li>Enter the corresponding <strong>API key</strong> (some local providers like Ollama don't require a key)</li>
+  <li>Click <strong>Test Connection</strong> to verify the configuration</li>
+</ol>
+
+<div class="callout tip">
+  <strong>💡 No API Key Needed?</strong>
+  If you're using <strong>Ollama</strong> or <strong>LM Studio</strong>, just make sure the local service is running — no API key is required.
+</div>
+
+<h2>Step 3: Start Chatting</h2>
+
+<img src="../start-chat-demo.gif" alt="Start Chatting Demo" style="border:1px solid var(--c-border);border-radius:8px;margin:16px auto 28px;box-shadow:0 4px 24px rgba(0,0,0,.18);max-height:520px;max-width:100%;width:auto;height:auto;display:block">
+<p>Go back to the sidebar, type your question in the input box at the bottom, then press <strong>Enter</strong> or click the send button.</p>
+<p>You can also try clicking the <strong>suggested topics</strong> on the welcome screen to quickly start a conversation.</p>
+
+<h2>Advanced Features Overview</h2>
+<p>The toolbar at the bottom of the sidebar provides several useful features:</p>
+<table>
+  <thead><tr><th>Button</th><th>Feature</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td>📄</td><td>Page Capture</td><td>Smart Capture extracts the current page; page content is sent only with that turn, not on every follow-up</td></tr>
+    <tr><td>🖼️</td><td>Image Upload</td><td>Attach images for AI analysis</td></tr>
+    <tr><td>🔍</td><td>Web Search</td><td>Let AI search the web for real-time information</td></tr>
+    <tr><td>💡</td><td>Thinking Mode</td><td>Enable deep reasoning, showing the thinking process</td></tr>
+  </tbody>
+</table>
+
+<nav class="page-nav">
+  <a href="installation.html"><span class="label">Previous</span><span class="title">← Installation</span></a>
+  <a href="sidebar-chat.html"><span class="label">Next</span><span class="title">Sidebar Chat →</span></a>
+</nav>
+
+</main>
+</div>
+</body>
+</html>

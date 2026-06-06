@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>隱私政策 — Momo AI Docs</title>
+  <link rel="stylesheet" href="docs.css">
+  <script src="docs.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">指南</a>
+    <a href="sidebar-chat.html" class="hide-mobile">功能</a>
+    <a href="changelog.html" class="hide-mobile">更新日誌</a>
+    <button class="menu-toggle" aria-label="選單">☰</button>
+  </nav>
+</header>
+<div class="backdrop"></div>
+<div class="page-wrapper">
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="搜尋...">
+  </div>
+  <div class="group-title">入門</div>
+  <a href="index.html">介紹</a>
+  <a href="installation.html">安裝</a>
+  <a href="getting-started.html">快速開始</a>
+  <div class="group-title">功能</div>
+  <a href="sidebar-chat.html">側邊欄聊天</a>
+  <a href="ai-providers.html">AI 模型供應商</a>
+  <a href="web-search.html">聯網搜尋</a>
+  <a href="page-capture.html">引用頁面內容</a>
+  <a href="image-upload.html">圖片上傳</a>
+  <a href="thinking-mode.html">思考模式</a>
+  <a href="tts.html">語音朗讀 (TTS)</a>
+  <a href="system-prompts.html">系統提示詞</a>
+  <a href="chat-history.html">聊天記錄</a>
+  <a href="float-ball.html">懸浮球</a>
+  <div class="group-title">設定</div>
+  <a href="settings.html">設定總覽</a>
+  <a href="shortcuts.html">快捷鍵</a>
+  <a href="i18n.html">多語言支援</a>
+  <div class="group-title">其他</div>
+  <a href="changelog.html">更新日誌</a>
+  <a href="privacy.html">隱私政策</a>
+</aside>
+<main class="main-content">
+<h1>隱私政策</h1>
+
+<h2>資料收集</h2>
+<p>本擴充功能<strong>不收集任何個人資料</strong>：不追蹤使用行為、不內建分析、不向第三方傳送你的對話內容作廣告或建檔用途，亦不含廣告。</p>
+
+<h2>資料儲存</h2>
+<table>
+  <thead>
+    <tr>
+      <th>資料</th>
+      <th>儲存位置</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>設定</td>
+      <td><code>chrome.storage.sync</code></td>
+    </tr>
+    <tr>
+      <td>聊天記錄</td>
+      <td><code>chrome.storage.local</code></td>
+    </tr>
+    <tr>
+      <td>提示詞</td>
+      <td><code>chrome.storage.local</code></td>
+    </tr>
+    <tr>
+      <td>上傳／AI 回覆快取圖片</td>
+      <td>IndexedDB（AttachmentStore）</td>
+    </tr>
+    <tr>
+      <td>Hermes / OpenClaw 連線狀態</td>
+      <td><code>chrome.storage.local</code>（<code>agentProviderConnections</code>）</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>API 金鑰</h2>
+<p>金鑰儲存在 <code>chrome.storage.sync</code>，僅供本機擴充功能讀取以呼叫你所選的 AI 供應商；<strong>不會</strong>傳送給擴充功能開發者。</p>
+
+<h2>網路通訊</h2>
+<ul>
+  <li><strong>AI 對話</strong>：訊息與設定中的端點直接傳送至你所指定的 AI 服務。</li>
+  <li><strong>聯網搜尋</strong>：查詢會送往你設定的搜尋引擎或相關 API。</li>
+  <li><strong>頁面擷取</strong>：在瀏覽器內本地處理，用於組合提示內容。</li>
+  <li><strong>AI 回覆圖片</strong>：若 AI 回覆包含 HTTP/HTTPS 圖片 URL，擴充功能會代為下載該 URL 以便在對話中顯示並快取至本機 IndexedDB；請求只發往該 URL 所指的主機，不會傳給 Momo 開發者。</li>
+</ul>
+
+<h2>權限使用</h2>
+<table>
+  <thead>
+    <tr>
+      <th>權限</th>
+      <th>用途</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>sidePanel</code></td>
+      <td>顯示側邊欄</td>
+    </tr>
+    <tr>
+      <td><code>storage</code></td>
+      <td>儲存設定與對話等資料</td>
+    </tr>
+    <tr>
+      <td><code>activeTab</code></td>
+      <td>擷取目前分頁內容（引用頁面）</td>
+    </tr>
+    <tr>
+      <td><code>scripting</code></td>
+      <td>在網頁注入懸浮球等腳本</td>
+    </tr>
+    <tr>
+      <td><code>tabs</code></td>
+      <td>偵測與關聯分頁狀態</td>
+    </tr>
+  </tbody>
+</table>
+
+<nav class="page-nav">
+  <a href="changelog.html"><span class="label">上一頁</span><span class="title">← 更新日誌</span></a>
+  <span></span>
+</nav>
+</main>
+</div>
+</body>
+</html>

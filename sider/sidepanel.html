@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hii~ Momo: AI Assist</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <div class="sidebar-frame" data-theme="auto">
+    <!-- Top Toolbar -->
+    <header class="top-toolbar">
+      <!-- 系統提示詞 -->
+      <div class="select-wrap prompt-select">
+        <select id="promptSelector" data-i18n-aria-label="systemPrompts" aria-label="System Prompts"></select>
+        <span class="select-arrow" aria-hidden="true"></span>
+      </div>
+
+      <div class="toolbar-right">
+        <!-- 歷史 (時鐘) -->
+        <button id="historyButton" class="plain-icon-btn tooltip-btn" data-i18n-tooltip="chatHistory" data-tooltip="聊天記錄" data-i18n-aria-label="chatHistory" aria-label="歷史對話">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <polyline points="12 7 12 12 16 12"></polyline>
+          </svg>
+        </button>
+        <!-- 新對話 (加號) -->
+        <button id="newChatButton" class="plain-icon-btn tooltip-btn" data-i18n-tooltip="newChat" data-tooltip="新對話" data-i18n-aria-label="newChat" aria-label="新對話">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+        <!-- 設定 (純 icon) -->
+        <button id="settingsButton" class="plain-icon-btn tooltip-btn" data-i18n-tooltip="settings" data-tooltip="設定" data-i18n-aria-label="settings" aria-label="設定">
+          <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true">
+            <path d="M8.932.727c-.243-.97-1.62-.97-1.864 0l-.071.286a.96.96 0 0 1-1.622.434l-.205-.211c-.695-.719-1.888-.03-1.613.931l.08.284a.96.96 0 0 1-1.186 1.187l-.284-.081c-.96-.275-1.65.918-.931 1.613l.211.205a.96.96 0 0 1-.434 1.622l-.286.071c-.97.243-.97 1.62 0 1.864l.286.071a.96.96 0 0 1 .434 1.622l-.211.205c-.719.695-.03 1.888.931 1.613l.284-.08a.96.96 0 0 1 1.187 1.187l-.081.283c-.275.96.918 1.65 1.613.931l.205-.211a.96.96 0 0 1 1.622.434l.071.286c.243.97 1.62.97 1.864 0l.071-.286a.96.96 0 0 1 1.622-.434l.205.211c.695.719 1.888.03 1.613-.931l-.08-.284a.96.96 0 0 1 1.187-1.187l.283.081c.96.275 1.65-.918.931-1.613l-.211-.205a.96.96 0 0 1 .434-1.622l.286-.071c.97-.243.97-1.62 0-1.864l-.286-.071a.96.96 0 0 1-.434-1.622l.211-.205c.719-.695.03-1.888-.931-1.613l-.284.08a.96.96 0 0 1-1.187-1.186l.081-.284c.275-.96-.918-1.65-1.613-.931l-.205.211a.96.96 0 0 1-1.622-.434zM8 12.997a4.998 4.998 0 1 1 0-9.995 4.998 4.998 0 0 1 0 9.996z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- 全局提示框 -->
+    <div id="globalToast" class="global-toast" style="display:none;">
+      <div class="toast-icon">
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
+          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+          <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+        </svg>
+      </div>
+      <span id="globalToastMessage" class="toast-message"></span>
+    </div>
+
+    <!-- 主體 -->
+    <main class="chat-region" aria-label="Chat">
+      <img src="assets/momo.png" alt="" class="momo-sticker" aria-hidden="true">
+      <section id="welcomeSection" class="welcome" aria-label="Welcome">
+        <h1 class="hero-title" data-i18n="hiBoss">Hi,老闆</h1>
+        <p class="hero-subtitle" data-i18n="whatPlan">請問今日☀️有何大計❓</p>
+        <div id="suggestionList" class="suggestion-list" aria-label="Suggestions"></div>
+      </section>
+      <div id="chatMessages" class="messages" aria-live="polite" aria-relevant="additions"></div>
+    </main>
+
+    <button id="scrollToBottomBtn" class="scroll-bottom-btn tooltip-btn" data-i18n-tooltip="scrollToBottom" data-tooltip="跳到底部" data-i18n-aria-label="scrollToBottom" aria-label="跳到底部">↓</button>
+
+    <!-- 底部：模型選擇 + 輸入 -->
+    <footer class="composer-area" aria-label="Input">
+      <div class="model-row-wrap">
+        <div class="model-row-left">
+          <div class="select-wrap model-select">
+            <select id="modelSelector" aria-label="Model"></select>
+            <span class="select-arrow" aria-hidden="true"></span>
+          </div>
+          <!-- 圖片上傳按鈕 -->
+          <button id="imageUploadButton" class="plain-icon-btn tooltip-btn" data-i18n-tooltip="uploadImage" data-tooltip="上傳圖片" data-i18n-aria-label="uploadImage" aria-label="上傳圖片" type="button">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+          </button>
+          <input id="imageFileInput" type="file" accept="image/*" multiple hidden aria-label="Upload Image">
+          <!-- 頁面內容切換（引用頁面） -->
+          <button id="screenshotUploadButton" class="plain-icon-btn tooltip-btn" data-i18n-tooltip="screenshotUpload" data-tooltip="截圖上傳" data-i18n-aria-label="screenshotUpload" aria-label="截圖上傳" type="button">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 7h3l2-3h6l2 3h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"></path>
+              <circle cx="12" cy="13" r="3.5"></circle>
+            </svg>
+          </button>
+          <button id="pageContextButton" class="plain-icon-btn toggle-icon-btn tooltip-btn" data-i18n-tooltip="referencePage" data-tooltip="引用頁面" data-i18n-aria-label="referencePage" aria-label="引用頁面" aria-pressed="false">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="5" y="3" width="14" height="18" rx="2"></rect>
+              <path d="M9 8h6"></path>
+              <path d="M9 12h6"></path>
+              <path d="M9 16h3"></path>
+            </svg>
+          </button>
+          <!-- 聯網搜尋開關 -->
+          <button id="webSearchButton" class="plain-icon-btn toggle-icon-btn tooltip-btn" data-i18n-tooltip="webSearch" data-tooltip="聯網搜尋" data-i18n-aria-label="webSearch" aria-label="聯網搜尋" aria-pressed="false">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 圖片預覽區 -->
+      <div id="imagePreviewContainer" class="image-preview-container" style="display:none;"></div>
+
+      <!-- 頁面內容預覽區 -->
+      <div id="pageContentPreview" class="page-content-preview" style="display:none;">
+        <div class="page-content-card" id="pageContentCard">
+          <div class="page-content-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </div>
+          <div class="page-content-info">
+            <div class="page-content-title" id="pageContentTitle"></div>
+            <div class="page-content-meta" id="pageContentMeta"></div>
+          </div>
+          <button class="page-content-remove" id="pageContentRemove" title="Remove" aria-label="Remove">✕</button>
+        </div>
+        <!-- 展開的內容區域 -->
+        <div class="page-content-expanded" id="pageContentExpanded" style="display:none;">
+          <div class="page-content-body" id="pageContentBody"></div>
+        </div>
+      </div>
+
+      <div class="textarea-wrapper">
+        <label for="messageInput" class="visually-hidden" data-i18n="enterMessage">訊息輸入</label>
+        <textarea id="messageInput" data-i18n-placeholder="enterMessage" placeholder="輸入訊息（Shift+Enter 換行）" data-i18n-aria-label="enterMessage" aria-label="輸入訊息"></textarea>
+        <span id="charCount" class="char-count" aria-live="polite"></span>
+        <button id="sendButton" class="send-btn tooltip-btn" data-i18n-tooltip="send" data-tooltip="送出訊息" data-i18n-aria-label="send" aria-label="送出訊息">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </footer>
+
+    <!-- 歷史面板遮罩 -->
+    <div id="historyBackdrop" class="history-backdrop"></div>
+    <!-- 歷史面板 -->
+    <aside id="historyPanel" class="history-panel" aria-label="Chat History">
+      <div class="history-head">
+        <div class="history-title-row">
+          <h3 data-i18n="historyTitle">Chat History</h3>
+          <div class="history-actions">
+            <button id="selectAllSessionsBtn" class="hist-icon-btn tooltip-btn" data-i18n-tooltip="selectAll" data-tooltip="Select All" data-i18n-aria-label="selectAll" aria-label="Select All">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </button>
+            <button id="clearAllSessionsBtn" class="hist-icon-btn danger tooltip-btn" data-i18n-tooltip="delete" data-tooltip="Delete" data-i18n-aria-label="delete" aria-label="Delete">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+            <button id="exportSessionsBtn" class="hist-icon-btn tooltip-btn" data-i18n-tooltip="export" data-tooltip="Export" data-i18n-aria-label="export" aria-label="Export">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+            <button id="closeHistoryBtn" class="hist-icon-btn close-panel-btn tooltip-btn" data-i18n-tooltip="close" data-tooltip="Close" data-i18n-aria-label="close" aria-label="Close">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="sessionList" class="session-list" aria-label="Sessions"></div>
+    </aside>
+  </div>
+
+  <!-- 內容提取和轉換庫：按需動態載入（見 ensurePageCaptureLibs） -->
+  <!-- defer：讓 V8 在背景執行緒解析腳本，不阻塞主執行緒；執行順序不變 -->
+  <script defer src="assets/i18n/i18n-loader.js"></script>
+  <script defer src="prompt-defaults.js"></script>
+  <!-- Shared modules (loaded before sidepanel.js) -->
+  <script defer src="js/utils.js"></script>
+  <script defer src="js/storage.js"></script>
+  <script defer src="js/openclaw.js"></script>
+  <script defer src="js/markdown.js"></script>
+  <script defer src="js/web-search.js"></script>
+  <script defer src="sidepanel.js"></script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>AI Providers — Momo AI Docs</title>
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">Guide</a>
+    <a href="sidebar-chat.html" class="hide-mobile">Features</a>
+    <a href="changelog.html" class="hide-mobile">Changelog</a>
+    <button class="menu-toggle" aria-label="Menu">☰</button>
+  </nav>
+</header>
+
+<div class="backdrop"></div>
+<div class="page-wrapper">
+
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search...">
+  </div>
+  <div class="group-title">Getting Started</div>
+  <a href="index.html">Introduction</a>
+  <a href="installation.html">Installation</a>
+  <a href="getting-started.html">Quick Start</a>
+  <div class="group-title">Features</div>
+  <a href="sidebar-chat.html">Sidebar Chat</a>
+  <a href="ai-providers.html">AI Providers</a>
+  <a href="web-search.html">Web Search</a>
+  <a href="page-capture.html">Page Capture</a>
+  <a href="image-upload.html">Image Upload</a>
+  <a href="thinking-mode.html">Thinking Mode</a>
+  <a href="tts.html">Text-to-Speech (TTS)</a>
+  <a href="system-prompts.html">System Prompts</a>
+  <a href="chat-history.html">Chat History</a>
+  <a href="float-ball.html">Float Ball</a>
+  <div class="group-title">Settings</div>
+  <a href="settings.html">Settings Overview</a>
+  <a href="shortcuts.html">Shortcuts</a>
+  <a href="i18n.html">Multi-language</a>
+  <div class="group-title">Others</div>
+  <a href="changelog.html">Changelog</a>
+  <a href="privacy.html">Privacy Policy</a>
+</aside>
+
+<main class="main-content">
+
+<h1>AI Providers</h1>
+<p>Momo AI supports multiple AI model providers, using the <strong>OpenAI-compatible</strong> API format for requests and response parsing.</p>
+
+<h2>Supported Providers</h2>
+
+<h3>Cloud Providers</h3>
+<ul>
+  <li><strong>OpenAI</strong>: <code>api.openai.com/v1</code> — e.g. o3-mini, o1, GPT-4o, etc.; API key required.</li>
+  <li><strong>Google AI (Gemini)</strong>: <code>generativelanguage.googleapis.com</code> — Gemini 2.5 series; supports thinking mode.</li>
+  <li><strong>DeepSeek</strong>: <code>api.deepseek.com/v1</code> — <code>deepseek-chat</code> / <code>deepseek-reasoner</code>; Reasoner always performs reasoning.</li>
+  <li><strong>Qwen</strong>: <code>dashscope.aliyuncs.com</code> — e.g. qwen3-max, qwen-flash, etc.; supports <code>enable_thinking</code>.</li>
+  <li><strong>OpenRouter</strong>: <code>openrouter.ai/api/v1</code> — Multi-model aggregation; supports <code>:online</code> server-side search.</li>
+  <li><strong>Moonshot (Kimi)</strong>: <code>api.moonshot.cn/v1</code> — moonshot-v1 series, kimi-k2, etc.</li>
+  <li><strong>MiniMax</strong>: <code>api.minimaxi.chat/v1</code> — MiniMax-Text-01, etc.</li>
+  <li><strong>Groq</strong>: <code>api.groq.com/openai/v1</code> — Fast inference; default models include <code>openai/gpt-oss-120b</code>, <code>meta-llama/llama-4-scout-17b-16e-instruct</code>; API key from <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>.</li>
+  <li><strong>NVIDIA NIM</strong>: <code>integrate.api.nvidia.com/v1</code></li>
+</ul>
+
+<h3>Local Providers</h3>
+<ul>
+  <li><strong>Ollama</strong>: <code>localhost:11434/v1</code> — Free local models.</li>
+  <li><strong>LM Studio</strong>: <code>localhost:1234/v1</code> — GUI for managing local models.</li>
+  <li><strong>Hermes (Beta)</strong>: <code>127.0.0.1:8642/v1</code> — OpenAI-compatible API Server for a local agent; default model is <code>hermes-agent</code>.</li>
+  <li><strong>OpenClaw (Beta)</strong>: <code>ws://127.0.0.1:18789</code> — WebSocket protocol.</li>
+</ul>
+
+<h2>Hermes (Beta) Setup</h2>
+<p>Hermes connects through its OpenAI-compatible HTTP API. Like OpenClaw, it needs gateway / API Server values in the Hermes <code>.env</code> before Momo can connect.</p>
+<pre><code>API_SERVER_ENABLED=true
+API_SERVER_HOST=0.0.0.0
+API_SERVER_PORT=8642
+API_SERVER_KEY=&lt;your-secret-key&gt;
+API_SERVER_CORS_ORIGINS=*</code></pre>
+<ol>
+  <li>Edit the Hermes <code>.env</code> values above. Use your own secret for <code>API_SERVER_KEY</code>; do not use the placeholder.</li>
+  <li>For remote access or direct Chrome extension access, <code>API_SERVER_CORS_ORIGINS=*</code> is the simplest working setting. For stricter deployments, replace it with trusted origins only.</li>
+  <li>Restart the Hermes Gateway. By default it listens on <code>http://127.0.0.1:8642</code>.</li>
+  <li>Select <strong>Hermes (beta)</strong> in Momo, keep the default Base URL or enter your remote URL, then enable the <code>hermes-agent</code> model.</li>
+  <li>After Connect succeeds, connection state is saved locally and restores after refreshing settings or switching theme (Base URL and API key must match the last Connect).</li>
+</ol>
+
+<h3>Recommended Hermes Workflow in Momo</h3>
+<ul>
+  <li>Click <strong>Connect</strong> first to verify gateway availability before sending messages, so you can avoid immediate 401/403 failures.</li>
+  <li>When switching from another provider to Hermes, starting a new chat is recommended to keep agent context clean.</li>
+  <li>For remote Hermes servers, confirm firewall rules and port exposure (default: 8642) before debugging app-side settings.</li>
+  <li>If the agent reply includes HTTP images (for example <code>MEDIA:&lt;url&gt;</code> or Markdown images), Momo downloads and displays them inline; see <a href="image-upload.html#ai-reply-images">Image Upload — Images in AI Replies</a>.</li>
+  <li>When editing an old user message, Hermes <strong>appends a new message</strong> and resends it to the agent instead of truncating local history; see <a href="sidebar-chat.html#edit-messages">Sidebar Chat — Edit Messages</a>.</li>
+</ul>
+
+<h2>OpenClaw (Beta) Setup</h2>
+<p>OpenClaw is a WebSocket-based local AI gateway. The setup flow differs from other providers:</p>
+<ol>
+  <li>Click <strong>Connect</strong> to connect to the OpenClaw gateway.</li>
+  <li>After a successful connection, the button shows <strong>Connected</strong>; hover or focus to reveal <strong>Disconnect</strong>.</li>
+  <li>Connection state is saved locally; it restores after refreshing settings or switching theme (Base URL, API key, and session key must match the last Connect).</li>
+  <li>Sessions load automatically after connecting.</li>
+  <li>Select a session to load its chat history in the sidebar.</li>
+  <li>The model toggle enables automatically as <code>openclaw</code>.</li>
+</ol>
+<p>Click <strong>Setup Guide</strong> for full server setup and device authentication instructions.</p>
+<p>If the gateway reply includes HTTP images (<code>image</code> / <code>image_url</code> content parts, or <code>MEDIA:&lt;url&gt;</code> in text), Momo downloads and displays them inline; see <a href="image-upload.html#ai-reply-images">Image Upload — Images in AI Replies</a>.</p>
+<p>When editing an old user message, OpenClaw <strong>appends a new message</strong> and resends it to the gateway instead of truncating local history; see <a href="sidebar-chat.html#edit-messages">Sidebar Chat — Edit Messages</a>.</p>
+<div class="callout tip">
+  <strong>💡 Note</strong>
+  Web search and page capture are disabled in OpenClaw mode (OpenClaw has native search capabilities).
+</div>
+
+<h2>Configuring a Provider</h2>
+<ol>
+  <li>Open the sidebar and click <strong>Settings</strong> (⚙️) in the top-right corner.</li>
+  <li>Select <strong>AI Models</strong> or the corresponding provider section from the left navigation.</li>
+  <li>Choose the provider you want to use and enter the <strong>API key</strong> (cloud providers typically require one; local Ollama / LM Studio usually don't).</li>
+  <li>If you need a custom URL, fill in the <strong>API endpoint</strong> (see "Custom API Endpoint" below).</li>
+  <li>Use <strong>Test Connection</strong> to verify the key and network connectivity before starting a conversation.</li>
+</ol>
+
+<h2>Model Management</h2>
+<p>In settings, you can fully manage your models:</p>
+<ul>
+  <li><strong>Add</strong> / <strong>Delete</strong> model entries</li>
+  <li><strong>Rename</strong> display names</li>
+  <li><strong>Enable</strong> / <strong>Disable</strong> individual models</li>
+  <li><strong>Custom JSON</strong>: Advanced parameters or request overrides</li>
+  <li><strong>Prefix prompt</strong>: Attach a fixed prompt prefix to a model</li>
+</ul>
+
+<div class="callout tip">
+  <strong>💡 Tip</strong>
+  All enabled models are merged into a unified list, available in the model selector at the sidebar input area.
+</div>
+
+<h2>Custom API Endpoint</h2>
+<p>If you're using a proxy, enterprise gateway, or self-hosted compatible service, you can override the default Base URL in the provider settings to route requests to your <strong>custom API endpoint</strong> (must still follow OpenAI-compatible path and response format). For local providers, the default port is used, but you can change it to another machine or port.</p>
+
+<nav class="page-nav">
+  <a href="sidebar-chat.html"><span class="label">Previous</span><span class="title">← Sidebar Chat</span></a>
+  <a href="web-search.html"><span class="label">Next</span><span class="title">Web Search →</span></a>
+</nav>
+
+</main>
+</div>
+</body>
+</html>

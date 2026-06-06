@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>聯網搜尋 — Momo AI Docs</title>
+  <link rel="stylesheet" href="docs.css">
+  <script src="docs.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">指南</a>
+    <a href="sidebar-chat.html" class="hide-mobile">功能</a>
+    <a href="changelog.html" class="hide-mobile">更新日誌</a>
+    <button class="menu-toggle" aria-label="選單">☰</button>
+  </nav>
+</header>
+
+<div class="backdrop"></div>
+<div class="page-wrapper">
+
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="搜尋...">
+  </div>
+  <div class="group-title">入門</div>
+  <a href="index.html">介紹</a>
+  <a href="installation.html">安裝</a>
+  <a href="getting-started.html">快速開始</a>
+  <div class="group-title">功能</div>
+  <a href="sidebar-chat.html">側邊欄聊天</a>
+  <a href="ai-providers.html">AI 模型供應商</a>
+  <a href="web-search.html">聯網搜尋</a>
+  <a href="page-capture.html">引用頁面內容</a>
+  <a href="image-upload.html">圖片上傳</a>
+  <a href="thinking-mode.html">思考模式</a>
+  <a href="tts.html">語音朗讀 (TTS)</a>
+  <a href="system-prompts.html">系統提示詞</a>
+  <a href="chat-history.html">聊天記錄</a>
+  <a href="float-ball.html">懸浮球</a>
+  <div class="group-title">設定</div>
+  <a href="settings.html">設定總覽</a>
+  <a href="shortcuts.html">快捷鍵</a>
+  <a href="i18n.html">多語言支援</a>
+  <div class="group-title">其他</div>
+  <a href="changelog.html">更新日誌</a>
+  <a href="privacy.html">隱私政策</a>
+</aside>
+
+<main class="main-content">
+
+<h1>聯網搜尋</h1>
+<p>內建聯網搜尋功能，讓 AI 在對話中能即時查詢網路最新資訊。</p>
+
+<h2>啟用搜尋</h2>
+<p>點擊 🔍 搜尋圖示開關；開啟後，擴充功能會依<strong>訊號智慧判斷</strong>是否搜尋（例如新聞、價格、天氣、明確「上網查／搜尋」、訊息內網址等），<strong>不會每則訊息都搜</strong>，以節省時間與用量。</p>
+
+<div class="callout tip"><strong>💡 自動觸發</strong>即使搜尋關閉，以「查一下」「搜尋」「search for」開頭的訊息也會自動觸發聯網搜尋。</div>
+
+<h2>搜尋引擎</h2>
+<table>
+  <thead>
+    <tr>
+      <th>引擎</th>
+      <th>費用</th>
+      <th>API 金鑰</th>
+      <th>說明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>DuckDuckGo（預設）</td>
+      <td>免費</td>
+      <td>不需要</td>
+      <td>透過 HTML 擷取，無需註冊</td>
+    </tr>
+    <tr>
+      <td>Brave</td>
+      <td>免費額度</td>
+      <td>需要</td>
+      <td>高品質搜尋結果</td>
+    </tr>
+    <tr>
+      <td>Tavily</td>
+      <td>免費額度</td>
+      <td>需要</td>
+      <td>專為 AI 設計的搜尋 API</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>OpenRouter 伺服器端搜尋</h3>
+<p>使用 OpenRouter 時會自動啟用 <code>:online</code> 功能，由 Exa 引擎驅動。</p>
+
+<h2>搜尋模式</h2>
+<ul>
+  <li><strong>簡易搜尋</strong>：僅摘要，快速。</li>
+  <li><strong>關閉</strong>：造訪頁面取得內容，較慢但較精確。</li>
+</ul>
+
+<h2>搜尋設定</h2>
+<p>於設定中可調整：搜尋引擎、結果數量（1–20）、簡易搜尋模式、自動造訪 URL、預設開啟搜尋，以及測試搜尋。</p>
+
+<h2>搜尋來源查看</h2>
+<p>點擊 🔍 按鈕可查看來源的標題、URL 與摘要。</p>
+
+<nav class="page-nav">
+  <a href="ai-providers.html"><span class="label">上一頁</span><span class="title">← AI 模型供應商</span></a>
+  <a href="page-capture.html"><span class="label">下一頁</span><span class="title">引用頁面內容 →</span></a>
+</nav>
+
+</main>
+</div>
+</body>
+</html>

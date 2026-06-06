@@ -1,0 +1,88 @@
+
+{
+  "name": "Hii~ Momo: AI Assist",
+  "description": "Friendly AI chat sidebar — Hii~ Momo: AI Assist",
+  "version": "2.21.70",
+  "manifest_version": 3,
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage",
+    "sidePanel",
+    "unlimitedStorage",
+    "activeTab",
+    "scripting",
+    "tabs",
+    "declarativeNetRequest"
+  ],
+  "host_permissions": [
+    "https://api.openai.com/*",
+    "https://api.deepseek.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.groq.com/*",
+    "https://api.minimaxi.chat/*",
+    "https://api.moonshot.cn/*",
+    "https://integrate.api.nvidia.com/*",
+    "https://openrouter.ai/*",
+    "https://dashscope.aliyuncs.com/*",
+    "https://html.duckduckgo.com/*",
+    "https://api.search.brave.com/*",
+    "https://api.tavily.com/*"
+  ],
+  "optional_host_permissions": [
+    "<all_urls>",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content-floatball.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Hii~ Momo: AI Assist"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/*",
+        "libs/*",
+        "js/*",
+        "sidepanel.html",
+        "sidepanel.css",
+        "sidepanel.js",
+        "iframe-sidebar.css",
+        "assets/icons/*",
+        "assets/i18n/*",
+        "floatball-frame.html",
+        "floatball-frame.js"
+      ],
+      "matches": ["http://*/*", "https://*/*"]
+    }
+  ],
+  "commands": {
+    "toggle-sidebar": {
+      "suggested_key": {
+        "default": "Alt+Shift+Y",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "Open Hii~ Momo: AI Assist"
+    }
+  }
+}

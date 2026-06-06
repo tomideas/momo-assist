@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Page Capture — Momo AI Docs</title>
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">Guide</a>
+    <a href="sidebar-chat.html" class="hide-mobile">Features</a>
+    <a href="changelog.html" class="hide-mobile">Changelog</a>
+    <button class="menu-toggle" aria-label="Menu">☰</button>
+  </nav>
+</header>
+
+<div class="backdrop"></div>
+<div class="page-wrapper">
+
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search...">
+  </div>
+  <div class="group-title">Getting Started</div>
+  <a href="index.html">Introduction</a>
+  <a href="installation.html">Installation</a>
+  <a href="getting-started.html">Quick Start</a>
+  <div class="group-title">Features</div>
+  <a href="sidebar-chat.html">Sidebar Chat</a>
+  <a href="ai-providers.html">AI Providers</a>
+  <a href="web-search.html">Web Search</a>
+  <a href="page-capture.html">Page Capture</a>
+  <a href="image-upload.html">Image Upload</a>
+  <a href="thinking-mode.html">Thinking Mode</a>
+  <a href="tts.html">Text-to-Speech (TTS)</a>
+  <a href="system-prompts.html">System Prompts</a>
+  <a href="chat-history.html">Chat History</a>
+  <a href="float-ball.html">Float Ball</a>
+  <div class="group-title">Settings</div>
+  <a href="settings.html">Settings Overview</a>
+  <a href="shortcuts.html">Shortcuts</a>
+  <a href="i18n.html">Multi-language</a>
+  <div class="group-title">Others</div>
+  <a href="changelog.html">Changelog</a>
+  <a href="privacy.html">Privacy Policy</a>
+</aside>
+
+<main class="main-content">
+
+<h1>Page Capture</h1>
+<p>Capture the current webpage as context for your AI conversation. After clicking 📄, the user message shows a <strong>Page Referenced</strong> label. Page content is attached to <strong>that user message's API payload</strong>, not inserted as a mid-conversation system message in chat history.</p>
+
+<h2>How to Use</h2>
+<p>Click the 📄 button → the system captures the page → a preview card appears → type your question and send. You can expand the preview or cancel the reference.</p>
+<p>If you send with only a page reference and an empty input, the chat still shows only the reference label. Momo adds a default user query at API time (for example, asking the model to answer based on the referenced page) so local stacks such as LM Studio / Qwen do not fail on an empty user message.</p>
+
+<h2>Multi-turn Conversations and Tokens</h2>
+<ul>
+  <li>Page content is injected into the API payload <strong>only for the latest user message that itself has Page Referenced</strong>.</li>
+  <li>Follow-up turns without clicking 📄 again send only the visible conversation text and <strong>do not resend the full page</strong>.</li>
+  <li>To ask another question with the full page attached again, click 📄 to reference the page and send a new message.</li>
+  <li>The 📄 icon in the assistant action bar appears only when the user message immediately before that reply has Page Referenced, and it opens only the page context bound to that turn.</li>
+</ul>
+<div class="callout tip"><strong>💡 Web search</strong> is decided from your <strong>original typed input</strong>, not from the full referenced page content.</div>
+
+<h2>Capture Modes</h2>
+<p>Go to <strong>Settings → Page Capture</strong> to choose a capture mode. <strong>Smart Capture (Recommended) is the default for new installs and unset profiles.</strong></p>
+
+<h3>Smart Capture (Recommended)</h3>
+<p>Automatically chooses a token-saving strategy by page type: articles, docs, and blogs use Markdown Smart Extraction; product pages, pricing pages, dashboards, settings pages, tables, and card-heavy pages use visible text extraction.</p>
+
+<h3>Markdown Smart Extraction</h3>
+<p>Uses Mozilla Readability and Turndown to convert the page into Markdown, preserving structure for easier reading. Capture <strong>clones the page first</strong> and processes only the clone, so the live site layout is not mutated.</p>
+<p>If the Readability result clearly mismatches the current page title / H1 keywords (common on product pages and SPAs), that result is discarded and replaced with a fallback DOM plus visible text so hidden templates or unrelated article fragments are not captured.</p>
+<div class="callout tip"><strong>💡 Best for</strong> Articles and long-text summarization. It reduces noise while preserving headings and paragraph structure.</div>
+
+<h3>Visible Text</h3>
+<p>Collects and deduplicates actually visible headings, paragraphs, lists, tables, buttons, and price / plan / feature blocks. Best for product pages, pricing pages, and app-like pages. If the trimmed result is too short, it falls back to <code>document.body.innerText</code>.</p>
+
+<h3>Full Page</h3>
+<p>Converts the full HTML into plain text and sends it to the conversation. Use this only when cleaner modes miss important content, as it costs more tokens.</p>
+
+<h3>Custom Mode</h3>
+<p>Use CSS selectors to specify which sections to include or exclude, capturing only the content you need.</p>
+
+<h2>Character Limit</h2>
+<p>A single capture is approximately 1,000–200,000 characters (depending on settings and the page).</p>
+<div class="callout warning"><strong>⚠️ Long Context Costs</strong> The longer the content, the more context and API costs it may consume. Adjust the capture scope or mode as needed.</div>
+
+<h2>Smart Scrolling</h2>
+<p>Supports virtual scrolling and lazy-load detection, capturing as much visible or expandable content as possible.</p>
+
+<h2>Capture State Tracking</h2>
+<p>The system records the URL to avoid redundant captures on the same page.</p>
+
+<nav class="page-nav">
+  <a href="web-search.html"><span class="label">Previous</span><span class="title">← Web Search</span></a>
+  <a href="image-upload.html"><span class="label">Next</span><span class="title">Image Upload →</span></a>
+</nav>
+
+</main>
+</div>
+</body>
+</html>

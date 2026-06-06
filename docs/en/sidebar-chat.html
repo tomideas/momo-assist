@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Sidebar Chat — Momo AI Docs</title>
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">Guide</a>
+    <a href="sidebar-chat.html" class="hide-mobile">Features</a>
+    <a href="changelog.html" class="hide-mobile">Changelog</a>
+    <button class="menu-toggle" aria-label="Menu">☰</button>
+  </nav>
+</header>
+
+<div class="backdrop"></div>
+<div class="page-wrapper">
+
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search...">
+  </div>
+  <div class="group-title">Getting Started</div>
+  <a href="index.html">Introduction</a>
+  <a href="installation.html">Installation</a>
+  <a href="getting-started.html">Quick Start</a>
+  <div class="group-title">Features</div>
+  <a href="sidebar-chat.html">Sidebar Chat</a>
+  <a href="ai-providers.html">AI Providers</a>
+  <a href="web-search.html">Web Search</a>
+  <a href="page-capture.html">Page Capture</a>
+  <a href="image-upload.html">Image Upload</a>
+  <a href="thinking-mode.html">Thinking Mode</a>
+  <a href="tts.html">Text-to-Speech (TTS)</a>
+  <a href="system-prompts.html">System Prompts</a>
+  <a href="chat-history.html">Chat History</a>
+  <a href="float-ball.html">Float Ball</a>
+  <div class="group-title">Settings</div>
+  <a href="settings.html">Settings Overview</a>
+  <a href="shortcuts.html">Shortcuts</a>
+  <a href="i18n.html">Multi-language</a>
+  <div class="group-title">Others</div>
+  <a href="changelog.html">Changelog</a>
+  <a href="privacy.html">Privacy Policy</a>
+</aside>
+
+<main class="main-content">
+
+<h1>Sidebar Chat</h1>
+<p>The core feature of Momo AI is the sidebar chat interface built with the Chrome Side Panel API.</p>
+
+<h2>Interface Overview</h2>
+<ul>
+  <li><strong>Top toolbar</strong>: System prompt selector, chat history, new conversation, settings</li>
+  <li><strong>Message area</strong>: Markdown rendering, collapsible thinking process, action buttons</li>
+  <li><strong>Input area</strong>: Model selector, feature button bar (📄🖼️🔍💡), text input box, character counter, send button</li>
+</ul>
+
+<h2>Chat Controls</h2>
+<ul>
+  <li><strong>Enter</strong>: Send message</li>
+  <li><strong>Cmd+Enter</strong> (macOS): Also sends message</li>
+  <li><strong>Shift+Enter</strong>: New line (without sending)</li>
+  <li><strong>Escape</strong>: Stop generation</li>
+</ul>
+
+<h2>Auto-Scroll</h2>
+<p>The conversation automatically follows the latest content. If you manually scroll up to view earlier messages, auto-scroll will pause. Click the <strong>⬇</strong> button to resume following the latest content.</p>
+
+<h2>Streaming Responses</h2>
+<p>Responses are streamed via SSE (Server-Sent Events). Different update frequencies are used based on response length: <strong>short responses</strong> update approximately every 80ms, <strong>medium</strong> every 300ms, and <strong>long</strong> every 800ms, balancing smoothness and performance.</p>
+
+<h2>Welcome Screen</h2>
+<p>When no conversation has started, a welcome screen is displayed with <strong>suggested topics</strong> for one-click conversation starters.</p>
+
+<h2 id="edit-messages">Edit Messages</h2>
+<p>Click <strong>Edit</strong> on a user message to change its text or attachments and resend.</p>
+<ul>
+  <li><strong>Standard models</strong> (OpenAI, Gemini, etc.): editing <strong>replaces</strong> that user message, <strong>removes</strong> all later local messages, and regenerates the assistant reply.</li>
+  <li><strong>Hermes / OpenClaw</strong>: editing <strong>appends a new user message</strong> (keeping the original and full local history) and sends it to the agent / gateway. Remote agent sessions cannot be rolled back by Momo.</li>
+  <li>Editing is blocked while a response is streaming; stop generation first.</li>
+</ul>
+
+<nav class="page-nav">
+  <a href="getting-started.html"><span class="label">Previous</span><span class="title">← Quick Start</span></a>
+  <a href="ai-providers.html"><span class="label">Next</span><span class="title">AI Providers →</span></a>
+</nav>
+
+</main>
+</div>
+</body>
+</html>

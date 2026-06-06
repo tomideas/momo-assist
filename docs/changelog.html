@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>更新日誌 — Momo AI Docs</title>
+  <link rel="stylesheet" href="docs.css">
+  <script src="docs.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">指南</a>
+    <a href="sidebar-chat.html" class="hide-mobile">功能</a>
+    <a href="changelog.html" class="hide-mobile">更新日誌</a>
+    <button class="menu-toggle" aria-label="選單">☰</button>
+  </nav>
+</header>
+<div class="backdrop"></div>
+<div class="page-wrapper">
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="搜尋...">
+  </div>
+  <div class="group-title">入門</div>
+  <a href="index.html">介紹</a>
+  <a href="installation.html">安裝</a>
+  <a href="getting-started.html">快速開始</a>
+  <div class="group-title">功能</div>
+  <a href="sidebar-chat.html">側邊欄聊天</a>
+  <a href="ai-providers.html">AI 模型供應商</a>
+  <a href="web-search.html">聯網搜尋</a>
+  <a href="page-capture.html">引用頁面內容</a>
+  <a href="image-upload.html">圖片上傳</a>
+  <a href="thinking-mode.html">思考模式</a>
+  <a href="tts.html">語音朗讀 (TTS)</a>
+  <a href="system-prompts.html">系統提示詞</a>
+  <a href="chat-history.html">聊天記錄</a>
+  <a href="float-ball.html">懸浮球</a>
+  <div class="group-title">設定</div>
+  <a href="settings.html">設定總覽</a>
+  <a href="shortcuts.html">快捷鍵</a>
+  <a href="i18n.html">多語言支援</a>
+  <div class="group-title">其他</div>
+  <a href="changelog.html">更新日誌</a>
+  <a href="privacy.html">隱私政策</a>
+</aside>
+<main class="main-content">
+<h1>更新日誌</h1>
+
+<h2>v2.21.70（2026-06-06）</h2>
+<p><strong>模型切換：</strong>修正普通 AI 模型之間切換時，側邊欄會誤開新對話、看起來像聊天記錄被清除的問題。Hermes 仍使用固定本地 session，OpenClaw 現在也使用獨立的 <code>momo-openclaw-main</code> session，避免 Agent history 覆蓋普通模型對話；從 Hermes / OpenClaw 切回普通模型時，會優先恢復原本的普通 Momo 對話。</p>
+
+<h2>v2.21.61（2026-05-25）</h2>
+<p><strong>OpenClaw 連線：</strong>WebSocket 握手協定升級為 v3–v4，修正新版 Gateway 回報 <code>protocol mismatch</code>（<code>expected=4</code>）而無法 Connect / 載入 Session。Gateway URL 支援 <code>http(s)://</code> 與 <code>ws(s)://</code>，<code>http(s)</code> 會自動轉為 <code>ws(s)</code>。</p>
+
+<h2>v2.21.60（2026-05-25）</h2>
+<p><strong>產品名稱：</strong>Extension 顯示名稱由 <strong>Momo AI Bud</strong> 更新為 <strong>Hii~ Momo: AI Assist</strong>。同步更新 manifest、側邊欄 / 設定頁標題、多語系文件標題、浮球 tooltip、web search 標記與 README。</p>
+
+<h2>v2.21.59（2026-05-25）</h2>
+<p><strong>引用頁面圖示：</strong>修正 assistant action bar 只要整個 session 曾有引用頁面，就會在後續 AI 回覆也顯示 reference page icon 的問題。現在只有該 assistant 回覆前一條 user message 本身帶有 <code>Page Referenced</code> 時才顯示圖示，並只開啟該輪綁定的頁面內容。</p>
+
+<h2>v2.21.58（2026-05-25）</h2>
+<p><strong>引用頁面 token 成本：</strong>修正引用頁面內容綁定到 user message 後，後續多輪對話仍可能因歷史訊息一起送出而重複注入整頁內容的問題。現在只有最新一條 user message 本身帶有 <code>Page Referenced</code> 時，才會把頁面內容注入 API payload；後續追問不再重送整份頁面。</p>
+
+<h2>v2.21.57（2026-05-25）</h2>
+<p><strong>Smart Capture：</strong>引用頁面擷取模式新增 <code>Smart Capture (Recommended)</code> 與 <code>Visible Text</code>。Smart Capture 會依頁型自動選擇較省 token 的策略：文章 / 文件頁走 Markdown 智能提取，產品頁、定價頁、dashboard、settings、表格 / 卡片 / 按鈕密集頁走可見文字擷取。Visible Text 只收集實際可見的標題、段落、列表、表格、按鈕與價格 / plan / feature 類區塊並去重。</p>
+
+<h2>v2.21.56（2026-05-25）</h2>
+<p><strong>Markdown 智能提取：</strong>修正產品頁 / SPA 頁面可能被 Mozilla Readability 誤判，導致引用 URL 正確但內容抓到隱藏模板或其他文章片段的問題。擷取結果現在會與目前頁面的 title / H1 關鍵字比對；若不一致，會改用 fallback DOM 與實際可見文字 <code>document.body.innerText</code> 作保底。</p>
+
+<h2>v2.21.55（2026-05-25）</h2>
+<p><strong>引用頁面送出穩定性：</strong>修正畫面已顯示 <code>Page Referenced</code>，但部分 OpenAI-compatible provider（例如 Qwen 類模型）回覆仍像沒有看到頁面內容的問題。引用頁面內容現在會直接綁定到當次 user message 的 API payload，不再依賴對話中途插入的 system message；聯網搜尋判斷也改用原始使用者輸入，避免整份頁面內容被誤當成搜尋 query。</p>
+
+<h2>v2.21.54（2026-05-24）</h2>
+<p><strong>Hermes / OpenClaw 連線狀態：</strong>設定頁刷新或切換外觀主題後，Hermes / OpenClaw 的 Connect 狀態與模型開關會正確恢復，不再要求重新 Connect。連線狀態依 Base URL、API key、OpenClaw session key 比對；手動 Disconnect 仍會清除。側邊欄亦會同步設定頁的模型選擇。</p>
+
+<h2>v2.21.53（2026-05-24）</h2>
+<p><strong>Agent 編輯捲動：</strong>Hermes / OpenClaw 編輯舊訊息後重新發送時，對話會穩定捲至最新 user / assistant 訊息，不再出現先跳到底再彈回的問題。</p>
+
+<h2>v2.21.52（2026-05-24）</h2>
+<p><strong>Agent 編輯行為：</strong>在 Hermes 或 OpenClaw 下編輯 user message 時，Momo 會將編輯後內容作為<strong>新訊息追加</strong>並重新送給 agent，不會截斷本地對話歷史（因遠端 session 無法由 Momo 假裝回退）。一般 OpenAI-compatible provider 仍維持原本「替換並截斷後續訊息」的行為。</p>
+
+<h2>v2.21.51（2026-05-24）</h2>
+<p><strong>AI 回覆圖片去重：</strong>修正 Hermes / ComfyUI 回傳 <code>MEDIA:</code> 與 query 內裸圖片 URL 被當成兩張圖重複顯示的問題；<code>MEDIA:</code> 行只取完整 URL，ComfyUI <code>/view</code> 連結會正規化去重。</p>
+
+<h2>v2.21.50（2026-05-24）</h2>
+<p><strong>AI 回覆圖片：</strong>AI 回覆若包含 <code>MEDIA:&lt;url&gt;</code>、Markdown 圖片或 HTTP/HTTPS 圖片 URL，Momo 會自動下載並在對話中內嵌顯示，成功時存入本機 IndexedDB，不只保留外部連結。Hermes / OpenClaw 的 HTTP 圖片回覆（含 OpenClaw <code>image</code> / <code>image_url</code> content part）亦支援。詳見<a href="image-upload.html#ai-reply-images">圖片上傳 — AI 回覆中的圖片</a>。</p>
+
+<h2>v2.21.24（2026-05-07）</h2>
+<p><strong>側邊欄輸入啟動：</strong>修正打開 Momo AI Bud sidepanel 後，初始化完成才清空輸入框，導致使用者剛輸入的文字可能被清掉、體感像需要等待才能打字的問題。輸入框 reset 現在會在載入模型、語言與歷史前先完成，開啟後可立即輸入。</p>
+
+<h2>v2.21.23（2026-05-05）</h2>
+<p><strong>Hermes Setup Guide i18n：</strong>Hermes Setup Guide modal 改用 i18n key，補齊繁中、簡中、英文三套文案；<code>.env</code> 範例改為真正多行 code block，避免在 modal 內被壓成單行難以閱讀。README 與 AI Providers 文件亦補充 Hermes Agent 介紹與使用建議。</p>
+
+<h2>v2.21.22（2026-05-05）</h2>
+<p><strong>Hermes Setup Guide：</strong>Hermes (beta) 現在和 OpenClaw (beta) 一樣，在 Connect row 右側顯示 <code>Setup Guide</code> 按鈕。Setup Guide modal 會依目前 provider 切換內容；Hermes 會顯示 <code>.env</code> 範例與重啟 Hermes gateway 的步驟，包含 <code>API_SERVER_CORS_ORIGINS=*</code> 說明與 <code>API_SERVER_KEY=&lt;your-secret-key&gt;</code> 佔位。</p>
+
+<h2>v2.21.21（2026-05-05）</h2>
+<p><strong>Hermes .env 說明：</strong>設定頁與 AI Providers 文件補充 Hermes Agent <code>.env</code> 範例，說明需像 OpenClaw gateway 一樣修改 <code>API_SERVER_ENABLED</code>、<code>API_SERVER_HOST</code>、<code>API_SERVER_PORT</code>、<code>API_SERVER_KEY</code> 與 <code>API_SERVER_CORS_ORIGINS</code>。範例 key 改用 <code>&lt;your-secret-key&gt;</code> 佔位，並標明 <code>API_SERVER_CORS_ORIGINS=*</code> 是 Chrome extension / 遠端連線最簡單可用設定。</p>
+
+<h2>v2.21.20（2026-05-05）</h2>
+<p><strong>Hermes Chat 403：</strong>Hermes chat request 改由 background <code>proxy_fetch</code> 代發，避免 sidepanel 直接 <code>fetch</code> 時與 curl 不一致的 browser Origin / CORS / preflight 差異造成 <code>HTTP 403</code>。Hermes <code>/v1/chat/completions</code> 也改用最小 OpenAI-compatible payload：<code>model: "hermes-agent"</code>、<code>messages</code>、<code>stream: false</code>。</p>
+
+<h2>v2.21.19（2026-05-05）</h2>
+<p><strong>Hermes 連線與切換：</strong>Hermes 發生 <code>HTTP 401/403</code> 或 browser fetch 失敗時，錯誤訊息會直接顯示目前 Chrome extension origin，方便在 Hermes host 設定 <code>API_SERVER_CORS_ORIGINS=chrome-extension://&lt;extension-id&gt;</code> 後重啟 gateway。從其他模型切換到 Hermes 時會自動開新對話並清掉目前畫面的舊上下文；送出 API 前也會過濾本地 system message，確保 agent provider 不使用自訂 system prompt。</p>
+
+<h2>v2.21.18（2026-05-05）</h2>
+<p><strong>OpenClaw 回覆穩定性：</strong>修正發送訊息後可能先重覆上一輪 assistant 回覆的問題。OpenClaw <code>chat.send</code> 改回 <code>deliver: true</code>，並用本次 <code>runId</code> 與發送前 history snapshot 過濾舊事件／舊 history，後備輪詢只接受本次新增訊息之後的新 assistant 回覆。</p>
+
+<h2>v2.21.17（2026-05-05）</h2>
+<p><strong>Hermes Provider：</strong>新增 Hermes (beta) AI 服務提供商，預設 Base URL 為 <code>http://127.0.0.1:8642/v1</code>，預設模型為 <code>hermes-agent</code>。此 provider 透過 Hermes 官方 OpenAI 相容 API Server 接入，沿用現有 Chat Completions 串流路徑，不使用 OpenClaw WebSocket RPC。設定頁新增 Hermes (beta) 選項、官方 favicon 風格 icon、API Server 提示與官方文件連結；Hermes 改為跟 OpenClaw 一樣先 Connect，成功後才自動啟用模型，並在側邊欄禁用自訂 system prompt、聊天歷史/新對話、聯網搜尋與引用頁面。</p>
+
+<h2>v2.21.16（2026-05-05）</h2>
+<p><strong>串流回覆：</strong>修正 AI 回覆尚未完成時，在輸入框按 <code>Enter</code> 或 <code>Cmd/Ctrl+Enter</code> 會誤觸發停止生成，造成 <code>BodyStreamBuffer was aborted</code> 的問題。現在串流中輸入框快捷鍵會被忽略，停止生成仍保留在送出按鈕切換出的停止按鈕上。</p>
+
+<h2>v2.21.15（2026-05-05）</h2>
+<p><strong>截圖框選：</strong>截圖框選遮罩新增操作提示，支援拖曳選區、雙擊截取整個可見頁面、按 <code>Esc</code> 取消。單擊或過小拖曳不再直接取消，避免誤觸。</p>
+
+<h2>v2.21.14（2026-05-05）</h2>
+<p><strong>截圖上傳：</strong>「截圖上傳」改為先顯示框選遮罩，拖選區域後只裁剪該區域並自動送出；支援 <code>Esc</code> 或右鍵取消，並依實際截圖尺寸與 viewport 比例換算座標。</p>
+
+<h2>v2.21.13（2026-05-05）</h2>
+<p><strong>截圖上傳自動送出：</strong>在輸入區工具列新增「截圖上傳」按鈕，可截取目前活動分頁可見畫面，加入圖片訊息並自動送出；首次使用會請求必要權限，圖片過大時會自動壓縮或提示縮小視窗。</p>
+
+<h2>v2.21.12（2026-05-05）</h2>
+<p><strong>引用頁面：</strong>修正 Readability 抓取流程會改動原網站 DOM 的問題。現在會先 clone 整份頁面，只在 clone 內加入 <code>&lt;base&gt;</code> 與清理 hidden/script/style 元素，不再對原頁插入節點或移除元素，避免 <code>linux.do</code> / Discourse 類站點抓取後排版變成未套樣式狀態。</p>
+
+<h2>v2.21.11（2026-05-05）</h2>
+<p><strong>聊天穩定性與聯網搜尋：</strong>修正打字與 AI 串流輸出時的介面抖動，聊天區會保留穩定 scrollbar gutter，串流自動捲動也改為每個 animation frame 最多執行一次。聯網搜尋維持智慧觸發：開啟時僅在訊息看起來需要即時網路資訊時搜尋，未開啟時仍會對明確「上網查／搜尋」自動觸發；搜尋上下文同時注入 system prompt 與最後一則 user message，降低模型回覆「我沒有連網」的機率。Brave / Tavily 失敗或 0 結果時會 fallback 到 DuckDuckGo，OpenRouter <code>:online</code> 僅作為後備。</p>
+
+<h2>v2.21.10（2026-05-04）</h2>
+<p><strong>引用頁面：</strong>調整 LM Studio 相容修正。空白引用頁面送出時，預設 user query 只會在送 API 前補入，不再寫進對話記錄，也不會顯示在聊天畫面；畫面仍只顯示「引用頁面」標籤，同時避免 Qwen Jinja template 報錯。</p>
+
+<h2>v2.21.9（2026-05-04）</h2>
+<p><strong>LM Studio 引用頁面：</strong>修正只附加「引用頁面」但輸入框空白時，送出空白 user 訊息導致 LM Studio / Qwen Jinja prompt template 報錯 <code>No user query found in messages</code> 的問題。現在會自動補上「請根據引用頁面內容回答。」作為 user query；送出按鈕也只依等待送出的頁面引用啟用，避免舊引用誤判可送。</p>
+
+<h2>v2.21.8（2026-04-12）</h2>
+<p><strong>聯網搜尋：</strong>側邊欄開啟聯網後改為<strong>智慧觸發</strong>（僅在訊息帶有價格／新聞／天氣、明確「上網查」、網址等訊號時才搜尋），不再每則訊息都搜。將「今年／去年」觸發時機調整到創作／翻譯等略過規則之後，避免「幫我寫一篇 2026 年的故事」誤觸發搜尋。說明文字與 i18n 已同步更新。</p>
+
+<h2>v2.21.7（2026-04-12）</h2>
+<p><strong>聯網搜尋 — 簡短追問與對話脈絡：</strong>先前若只依<strong>最後一則使用者訊息</strong>組搜尋關鍵字，承接語（例如上一輪談 iPhone、本輪只問「中國的價錢」）容易變成過於籠統的查詢。現在會從<strong>先前對話</strong>擷取主題關鍵字（如產品／型號），在符合條件時併入實際搜尋字串；送 API 時亦可在最後一則純文字 user 訊息前加上一行英文主題提示，協助 OpenRouter <code>:online</code> 等情境對齊上下文。</p>
+
+<h2>v2.21.6（2026-04-08）</h2>
+<p>將設計系統預覽文件由 <code>dev-notes/ui-preview.html</code> 重新命名為 <code>dev-notes/design-system-preview.html</code>；文件內版本字樣同步為 v2.21.6。</p>
+
+<h2>v2.21.5（2026-04-08）</h2>
+<p><code>dev-notes/design-system-preview.html</code> 補齊按鍵交互說明（Primary／Outline／Danger／Disabled、分段按鈕與主題映射等）；文件版本字樣同步為 v2.21.5。</p>
+
+<h2>v2.21.4（2026-04-06）</h2>
+<p>產品名稱統一為 <strong>Momo AI Bud</strong>（manifest、工具列、懸浮球、側欄／設定頁預設標題）。修正設定頁分頁標題：改為依介面語系顯示（例如英文為 <code>Settings - Momo AI Bud</code>），不再固定為中文「設定 - AI Sidebar」。</p>
+
+<h2>v2.21.3（2026-04-06）</h2>
+<p>README／README.zh-TW 開頭賣點與功能列表對齊（Groq、OpenClaw、系統 TTS、字體可調、多語言、浮球等）；移除「深度思考／think deeper」舊描述。</p>
+
+<h2>v2.21.2（2026-04-06）</h2>
+<p>同名模型下拉選單不再加 Provider 文字標籤（如 <code>(Ollama)</code>），僅靠 Provider 圖示區分。</p>
+
+<h2>v2.21.1（2026-04-06）</h2>
+<p>修正本地 Provider（Ollama / LM Studio 等）手動新增的模型若與雲端預設模型同名時被誤刪的問題。</p>
+
+<h2>v2.21.0（2026-04-06）</h2>
+<p>新增 <strong>Groq</strong> AI 供應商；預設模型 <code>openai/gpt-oss-120b</code>、<code>meta-llama/llama-4-scout-17b-16e-instruct</code>；API Key 於 <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a> 申請；設定頁顯示免費方案說明；<code>host_permissions</code> 加入 <code>api.groq.com</code>。</p>
+
+<h2>v2.20.1（2026-04-06）</h2>
+<p>Google AI 預設模型更新為 <code>gemini-3.1-flash-lite-preview</code> 與 <code>gemini-3-flash-preview</code>。</p>
+
+<h2>v2.20.0（2026-04-06）</h2>
+<p>修正同名模型跨 Provider 共存：模型唯一識別改用 <code>provider::name</code> 組合 uid；不同 Provider 下的同名模型可同時啟用並出現在下拉選單；同名模型在下拉選單中自動加上 Provider 名稱標籤；舊格式的模型選擇會自動遷移為新 uid。</p>
+
+<h2>v2.19.5（2026-04-06）</h2>
+<p>測試連線不再彈出權限請求：將所有內建 AI Provider 的 API 域名加入 <code>host_permissions</code>，Start Test 不再觸發 Chrome 權限彈窗；自訂 URL 或 localhost 仍透過 <code>optional_host_permissions</code> 動態請求。</p>
+
+<h2>v2.19.4（2026-04-05）</h2>
+<p>OpenClaw 設定頁 UX 重構：Connect / Disconnect 按鈕、連線後自動載入 Session、Session 切換自動載入對話記錄、Enabled Models 預設 off（連線後自動開啟）、Load 按鈕改為 Refresh icon、Setup Guide 移到右側、模型名稱簡化為 <code>openclaw</code>。</p>
+
+<h2>v2.18.1（2026-04-05）</h2>
+<p>OpenClaw 設定頁簡化：不再顯示完整模型列表，改為單一 <code>openclaw</code> 開關。</p>
+
+<h2>v2.17.9（2026-04-05）</h2>
+<p>Provider hint i18n 完整修復：移除動態內容的 <code>data-i18n</code>、修正 <code>currentLang</code> 設定時序、語言切換觸發 hint 更新、<code>applyLanguageConversion</code> 改用 Promise API。</p>
+
+<h2>v2.17.3（2026-04-05）</h2>
+<p>所有雲端 Provider 加入 API Key 申請連結（Moonshot、NVIDIA、MiniMax、OpenRouter）。</p>
+
+<h2>v2.17.2（2026-04-05）</h2>
+<p>所有 AI Provider 預設模型精簡為 2 個主流模型（全部預設關閉）。</p>
+
+<h2>v2.17.1（2026-04-05）</h2>
+<p>OpenClaw Session「載入」按鈕 i18n 修正。</p>
+
+<h2>v2.17.0（2026-04-05）</h2>
+<p>全面 i18n 國際化：移除所有 JS 中約 50+ 處 hardcoded 中文字串，改用 i18n key 或英文 fallback；新增 25 個 i18n key（三語同步）。</p>
+
+<h2>v2.16.5（2026-04-05）</h2>
+<p>OpenClaw 回覆超時改善：<code>chat.send</code> 超時從 30 秒增加到 60 秒；新增輪詢穩定檢查（15 秒無新內容自動完成）。</p>
+
+<h2>v2.16.4（2026-04-05）</h2>
+<p>移除 hardcoded API Key（NVIDIA、Ollama、Qwen），所有模型預設關閉。</p>
+
+<h2>v2.16.3（2026-04-05）</h2>
+<p>模型選擇器固定寬度 160px。</p>
+
+<h2>v2.16.2（2026-04-05）</h2>
+<p>Upload Image 和 Reference Page 按鈕位置互換（圖片上傳在前）。</p>
+
+<h2>v2.16.1（2026-04-05）</h2>
+<p>OpenClaw 模式禁用聯網搜尋與引用頁面按鈕。</p>
+
+<h2>v2.16.0（2026-04-05）</h2>
+<p>UI Design System Specification、Cursor Rule、UI Preview Page、跨檔案 token 別名；iframe-sidebar.css dark mode 遷移至 <code>[data-theme="dark"]</code>；表單元素寬度對齊。</p>
+
+<h2>v2.15.0（2026-04-04）</h2>
+<p>OpenRouter 伺服器端聯網搜尋（<code>:online</code> + Exa）、<code>url_citation</code> 標注、自動觸發搜尋（「查一下」「搜尋」「search for」）、DDG 代理備援；搜尋上下文預算由 2000 提升至 6000 字元。</p>
+
+<h2>v2.14.3（2026-04-04）</h2>
+<p>提示詞顯示開關（on/off switch）。</p>
+
+<h2>v2.14.2（2026-04-04）</h2>
+<p>設定頁錨點滾動修正、串流自動捲動重寫（<code>requestAnimationFrame</code>）。</p>
+
+<h2>v2.14.1（2026-04-04）</h2>
+<p>首次安裝語言偵測、dark mode provider icon 反色處理。</p>
+
+<h2>v2.14.0（2026-04-04）</h2>
+<p>設定頁側邊導覽列重新設計（7 項 + SVG 圖示）、TTS 區塊移位、scroll spy 更新。</p>
+
+<h2>v2.13.3（2026-04-04）</h2>
+<p><code>shouldSearch</code> CJK word boundary 修正。</p>
+
+<h2>v2.13.2（2026-04-04）</h2>
+<p>保守搜尋策略（預設不搜尋）、聊天記錄面板寬度調整、自訂對話框 dark mode 改善。</p>
+
+<h2>v2.13.1（2026-04-04）</h2>
+<p>Theme <code>auto</code> 模式修正（<code>prefers-color-scheme</code> + 即時監聽）。</p>
+
+<h2>v2.13.0（2026-04-04）</h2>
+<p>Google HTML 搜尋（新預設）、DDG HTML 搜尋、簡易搜尋模式、搜尋結果數量 1–20、URL 自動造訪、預設開啟搜尋、SearXNG（10 個備援實例）。</p>
+
+<h2>v2.10.7（2026-04-04）</h2>
+<p>搜尋來源查看器（🔍 按鈕）、搜尋查詢優化（去除指令前綴）。</p>
+
+<h2>v2.10.6（2026-04-04）</h2>
+<p>搜尋結果注入改為獨立系統訊息。</p>
+
+<h2>v2.10.5（2026-04-04）</h2>
+<p>Provider 切換即時生效、DDG 代理路由、預設搜尋引擎改為 Tavily、搜尋開關 toast 通知。</p>
+
+<h2>v2.10.4（2026-04-04）</h2>
+<p>Tavily API 認證更新（Bearer header）、DDG 三重重試策略。</p>
+
+<h2>v2.10.0（2026-04-04）</h2>
+<p>聯網搜尋功能上線：DuckDuckGo（免費）+ Tavily（可選）、搜尋狀態持久化、設定頁搜尋區塊、i18n 支援。</p>
+
+<h2>v2.9.33（2026-03-31）</h2>
+<p>設定頁 hardcoded 中文替換為英文、Provider thinking hints 三語本地化、hover 效果統一、系統提示詞卡片互動簡化。</p>
+
+<h2>v2.9.16（2026-03-30）</h2>
+<p>思考模式三種狀態（toggleable / always_on / unsupported）、各供應商正確 API 參數。</p>
+
+<h2>v2.9.15（2026-03-30）</h2>
+<p>全域思考模式切換按鈕（💡 燈泡圖示）。</p>
+
+<h2>v2.9.14（2026-03-30）</h2>
+<p>語言切換修正、設定同步 local + sync 雙寫。</p>
+
+<h2>v2.9.13（2026-03-30）</h2>
+<p>NVIDIA icon 替換為 LobeHub 官方 SVG。</p>
+
+<h2>v2.9.12（2026-03-30）</h2>
+<p>所有設定透過 <code>chrome.storage.sync</code> 跨裝置同步。</p>
+
+<h2>v2.9.11（2026-03-30）</h2>
+<p>所有 provider 模型完全可編輯（可刪除/重新命名預設模型）。</p>
+
+<h2>v2.9.10（2026-03-30）</h2>
+<p>Provider icon 解析修正。</p>
+
+<h2>v2.9.9（2026-03-30）</h2>
+<p>Provider 列表按字母排序。</p>
+
+<h2>v2.9.8（2026-03-30）</h2>
+<p>新增 MiniMax、Moonshot、OpenRouter 供應商。</p>
+
+<h2>v2.9.7（2026-03-30）</h2>
+<p>NVIDIA icon 更新。</p>
+
+<h2>v2.9.6（2026-03-30）</h2>
+<p>所有原生 <code>confirm()</code> / <code>alert()</code> 替換為自訂樣式 modal。</p>
+
+<h2>v2.9.5（2026-03-29）</h2>
+<p>空 session 不再出現在聊天記錄中。</p>
+
+<h2>v2.9.4（2026-03-29）</h2>
+<p>歡迎畫面建議文字更新。</p>
+
+<h2>v2.9.2（2026-03-29）</h2>
+<p>新增 NVIDIA provider。</p>
+
+<h2>v2.9.1（2026-03-29）</h2>
+<p>設定頁左側導覽列、scroll spy、響應式自動隱藏。</p>
+
+<h2>v2.9.0（2026-03-29）</h2>
+<p>OpenClaw provider（Beta）、Google AI provider、思考模式切換、圖片上傳、頁面擷取增強、自適應串流渲染、字數計數器、捲動到底部按鈕、i18n 系統、模組化重構。</p>
+
+<h2>v2.8.0（2026-03-28）</h2>
+<p>懸浮球 iframe、背景 service worker 重構、首次安裝語言偵測。</p>
+
+<h2>更早版本</h2>
+<p>基礎功能集：串流聊天、多供應商支援、Markdown 渲染、聊天記錄、頁面擷取、系統提示詞、深色/淺色主題。</p>
+
+<nav class="page-nav">
+  <a href="i18n.html"><span class="label">上一頁</span><span class="title">← 多語言支援</span></a>
+  <a href="privacy.html"><span class="label">下一頁</span><span class="title">隱私政策 →</span></a>
+</nav>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>設定總覽 — Momo AI Docs</title>
+  <link rel="stylesheet" href="docs.css">
+  <script src="docs.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">指南</a>
+    <a href="sidebar-chat.html" class="hide-mobile">功能</a>
+    <a href="changelog.html" class="hide-mobile">更新日誌</a>
+    <button class="menu-toggle" aria-label="選單">☰</button>
+  </nav>
+</header>
+<div class="backdrop"></div>
+<div class="page-wrapper">
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="搜尋...">
+  </div>
+  <div class="group-title">入門</div>
+  <a href="index.html">介紹</a>
+  <a href="installation.html">安裝</a>
+  <a href="getting-started.html">快速開始</a>
+  <div class="group-title">功能</div>
+  <a href="sidebar-chat.html">側邊欄聊天</a>
+  <a href="ai-providers.html">AI 模型供應商</a>
+  <a href="web-search.html">聯網搜尋</a>
+  <a href="page-capture.html">引用頁面內容</a>
+  <a href="image-upload.html">圖片上傳</a>
+  <a href="thinking-mode.html">思考模式</a>
+  <a href="tts.html">語音朗讀 (TTS)</a>
+  <a href="system-prompts.html">系統提示詞</a>
+  <a href="chat-history.html">聊天記錄</a>
+  <a href="float-ball.html">懸浮球</a>
+  <div class="group-title">設定</div>
+  <a href="settings.html">設定總覽</a>
+  <a href="shortcuts.html">快捷鍵</a>
+  <a href="i18n.html">多語言支援</a>
+  <div class="group-title">其他</div>
+  <a href="changelog.html">更新日誌</a>
+  <a href="privacy.html">隱私政策</a>
+</aside>
+<main class="main-content">
+<h1>設定總覽</h1>
+
+<h2>開啟設定</h2>
+<p>可從側邊欄頂部的 <strong>⚙️</strong> 進入，或在擴充功能圖示上<strong>右鍵 → 選項</strong>開啟完整設定頁。</p>
+
+<h2>設定分類</h2>
+
+<h3>一般設定</h3>
+<p>介面語言、主題、字體大小（12–20）與字重（200–700）。語言與介面相關說明見 <a href="i18n.html">多語言支援</a>。</p>
+
+<h3>側邊欄</h3>
+<p>是否顯示 <a href="float-ball.html">懸浮球</a>、側邊欄相關選項與 <a href="shortcuts.html">快捷鍵</a> 提示。</p>
+
+<h3>AI 模型</h3>
+<p>供應商、API 端點、金鑰、模型清單與測試連線。詳見 <a href="ai-providers.html">AI 模型供應商</a>。</p>
+
+<h3>聯網搜尋</h3>
+<p>搜尋引擎、結果數量與進階選項。詳見 <a href="web-search.html">聯網搜尋</a>。</p>
+
+<h3>引用頁面</h3>
+<p>擷取模式（預設 <strong>Smart Capture</strong>）、字元上限與自訂 CSS 選擇器。詳見 <a href="page-capture.html">引用頁面內容</a>。</p>
+
+<h3>語音朗讀</h3>
+<p>TTS 語音與播放行為。詳見 <a href="tts.html">語音朗讀 (TTS)</a>。</p>
+
+<h3>提示詞</h3>
+<p>自訂與管理系統提示詞。詳見 <a href="system-prompts.html">系統提示詞</a>。</p>
+
+<h2>資料同步</h2>
+<table>
+  <thead>
+    <tr>
+      <th>資料類型</th>
+      <th><code>sync</code>（跨裝置）</th>
+      <th><code>local</code>（本機）</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>供應商設定</td>
+      <td>✅</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>介面設定</td>
+      <td>✅</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>模型清單</td>
+      <td>✅</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>聊天記錄</td>
+      <td>❌</td>
+      <td>✅</td>
+    </tr>
+    <tr>
+      <td>系統提示詞</td>
+      <td>❌</td>
+      <td>✅</td>
+    </tr>
+  </tbody>
+</table>
+<p>聊天記錄與系統提示詞僅存於本機，不會透過 Chrome 帳號同步至其他裝置。</p>
+
+<nav class="page-nav">
+  <a href="float-ball.html"><span class="label">上一頁</span><span class="title">← 懸浮球</span></a>
+  <a href="shortcuts.html"><span class="label">下一頁</span><span class="title">快捷鍵 →</span></a>
+</nav>
+</main>
+</div>
+</body>
+</html>

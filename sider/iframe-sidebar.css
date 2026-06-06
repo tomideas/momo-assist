@@ -1,0 +1,101 @@
+/* iframe 側邊欄樣式 - 參考 Monica 的實現 */
+.momo-iframe-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 450px; /* 將由內聯 style 覆蓋,用於保存用戶調整寬度 */
+  height: 100vh;
+  z-index: 2147483645;
+  background: white;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border: none;
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  will-change: transform;
+}
+
+.momo-iframe-sidebar.open {
+  transform: translateX(0);
+}
+
+.momo-iframe-sidebar iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  background: white;
+}
+
+/* 移除遮罩: 不再使用 overlay 樣式 */
+
+/* 深色模式支持 — 由 content script 根據 storage theme 設定 data-theme */
+.momo-iframe-sidebar[data-theme="dark"] {
+  background: #202223;
+  border-left-color: rgba(255, 255, 255, 0.08);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.35);
+}
+
+.momo-iframe-sidebar[data-theme="dark"] iframe {
+  background: #202223;
+}
+
+/* 響應式設計 - 小屏幕全屏顯示 */
+@media (max-width: 768px) {
+  .momo-iframe-sidebar {
+    width: 100%;
+    border-left: none;
+  }
+}
+
+/* 拖拽調整寬度的把手 */
+.momo-sidebar-resizer {
+  position: absolute;
+  left: -6px;
+  top: 0;
+  width: 6px;
+  height: 100%;
+  cursor: ew-resize;
+  background: transparent;
+}
+
+.momo-sidebar-resizer::after {
+  content: '';
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 48px;
+  border-radius: 2px;
+  background: rgba(0,0,0,0.08);
+}
+
+.momo-iframe-sidebar[data-theme="dark"] .momo-sidebar-resizer::after {
+  background: rgba(255,255,255,0.12);
+}
+
+/* 關閉按鈕 */
+.momo-sidebar-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.momo-iframe-sidebar[data-theme="dark"] .momo-sidebar-close {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+}
+
+.momo-sidebar-close:hover { filter: brightness(1.05); }
+

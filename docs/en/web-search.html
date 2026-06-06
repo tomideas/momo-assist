@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Web Search — Momo AI Docs</title>
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">Guide</a>
+    <a href="sidebar-chat.html" class="hide-mobile">Features</a>
+    <a href="changelog.html" class="hide-mobile">Changelog</a>
+    <button class="menu-toggle" aria-label="Menu">☰</button>
+  </nav>
+</header>
+
+<div class="backdrop"></div>
+<div class="page-wrapper">
+
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search...">
+  </div>
+  <div class="group-title">Getting Started</div>
+  <a href="index.html">Introduction</a>
+  <a href="installation.html">Installation</a>
+  <a href="getting-started.html">Quick Start</a>
+  <div class="group-title">Features</div>
+  <a href="sidebar-chat.html">Sidebar Chat</a>
+  <a href="ai-providers.html">AI Providers</a>
+  <a href="web-search.html">Web Search</a>
+  <a href="page-capture.html">Page Capture</a>
+  <a href="image-upload.html">Image Upload</a>
+  <a href="thinking-mode.html">Thinking Mode</a>
+  <a href="tts.html">Text-to-Speech (TTS)</a>
+  <a href="system-prompts.html">System Prompts</a>
+  <a href="chat-history.html">Chat History</a>
+  <a href="float-ball.html">Float Ball</a>
+  <div class="group-title">Settings</div>
+  <a href="settings.html">Settings Overview</a>
+  <a href="shortcuts.html">Shortcuts</a>
+  <a href="i18n.html">Multi-language</a>
+  <div class="group-title">Others</div>
+  <a href="changelog.html">Changelog</a>
+  <a href="privacy.html">Privacy Policy</a>
+</aside>
+
+<main class="main-content">
+
+<h1>Web Search</h1>
+<p>Built-in web search lets AI query the latest information from the internet during conversations.</p>
+
+<h2>Enabling Search</h2>
+<p>Click the 🔍 search icon to toggle; when enabled, the extension <strong>searches only when the message looks like it needs the web</strong> (news, prices, weather, explicit &quot;search the web&quot;, URLs in the text, and similar signals)—not on every message.</p>
+
+<div class="callout tip"><strong>💡 Auto-Trigger</strong> Even when search is turned off, messages starting with "look up", "search", or "search for" will automatically trigger a web search.</div>
+
+<h2>Search Engines</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Engine</th>
+      <th>Cost</th>
+      <th>API Key</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Google</td>
+      <td>Free</td>
+      <td>Not required</td>
+      <td>Default</td>
+    </tr>
+    <tr>
+      <td>DuckDuckGo</td>
+      <td>Free</td>
+      <td>Not required</td>
+      <td>HTML scraping</td>
+    </tr>
+    <tr>
+      <td>SearXNG</td>
+      <td>Free</td>
+      <td>Not required</td>
+      <td>Open-source meta search</td>
+    </tr>
+    <tr>
+      <td>Brave</td>
+      <td>Free tier</td>
+      <td>Required</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>Tavily</td>
+      <td>Free tier</td>
+      <td>Required</td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>OpenRouter Server-Side Search</h3>
+<p>When using OpenRouter, the <code>:online</code> feature is automatically enabled, powered by the Exa engine.</p>
+
+<h2>Search Modes</h2>
+<ul>
+  <li><strong>Quick Search</strong>: Summaries only, fast.</li>
+  <li><strong>Off</strong>: Visits pages to retrieve content, slower but more accurate.</li>
+</ul>
+
+<h2>Search Settings</h2>
+<p>In settings you can adjust: search engine, number of results (1–20), quick search mode, auto-visit URLs, default search on, and test search.</p>
+
+<h2>Viewing Search Sources</h2>
+<p>Click the 🔍 button to view source titles, URLs, and summaries.</p>
+
+<nav class="page-nav">
+  <a href="ai-providers.html"><span class="label">Previous</span><span class="title">← AI Providers</span></a>
+  <a href="page-capture.html"><span class="label">Next</span><span class="title">Page Capture →</span></a>
+</nav>
+
+</main>
+</div>
+</body>
+</html>

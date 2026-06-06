@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>快速開始 — Momo AI Docs</title>
+  <link rel="stylesheet" href="docs.css">
+  <script src="docs.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">指南</a>
+    <a href="sidebar-chat.html" class="hide-mobile">功能</a>
+    <a href="changelog.html" class="hide-mobile">更新日誌</a>
+    <button class="menu-toggle" aria-label="選單">☰</button>
+  </nav>
+</header>
+
+<div class="backdrop"></div>
+<div class="page-wrapper">
+
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="搜尋...">
+  </div>
+  <div class="group-title">入門</div>
+  <a href="index.html">介紹</a>
+  <a href="installation.html">安裝</a>
+  <a href="getting-started.html">快速開始</a>
+  <div class="group-title">功能</div>
+  <a href="sidebar-chat.html">側邊欄聊天</a>
+  <a href="ai-providers.html">AI 模型供應商</a>
+  <a href="web-search.html">聯網搜尋</a>
+  <a href="page-capture.html">引用頁面內容</a>
+  <a href="image-upload.html">圖片上傳</a>
+  <a href="thinking-mode.html">思考模式</a>
+  <a href="tts.html">語音朗讀 (TTS)</a>
+  <a href="system-prompts.html">系統提示詞</a>
+  <a href="chat-history.html">聊天記錄</a>
+  <a href="float-ball.html">懸浮球</a>
+  <div class="group-title">設定</div>
+  <a href="settings.html">設定總覽</a>
+  <a href="shortcuts.html">快捷鍵</a>
+  <a href="i18n.html">多語言支援</a>
+  <div class="group-title">其他</div>
+  <a href="changelog.html">更新日誌</a>
+  <a href="privacy.html">隱私政策</a>
+</aside>
+
+<main class="main-content">
+
+<h1>快速開始</h1>
+<p>安裝完成後，跟著以下步驟，幾分鐘內就能開始使用 Momo AI。</p>
+
+<h2>第一步：開啟側邊欄</h2>
+
+<img src="quick-start-demo.gif" alt="Momo AI 開啟側邊欄示範" style="border:1px solid var(--c-border);border-radius:8px;margin:16px auto 28px;box-shadow:0 4px 24px rgba(0,0,0,.18);max-height:520px;max-width:100%;width:auto;height:auto;display:block">
+<p>有三種方式可以開啟 Momo AI 側邊欄：</p>
+<ol>
+  <li><strong>點擊工具列圖示</strong> — 點擊 Chrome 工具列上的 Momo AI 圖示</li>
+  <li><strong>鍵盤快捷鍵</strong> — 需先至 <code>chrome://extensions/shortcuts</code> 自行設定，詳見<a href="shortcuts.html">快捷鍵</a>頁面</li>
+  <li><strong>懸浮球</strong> — 如果啟用了懸浮球功能，直接點擊頁面上的浮動按鈕</li>
+</ol>
+
+<h2>第二步：設定 AI 供應商</h2>
+
+<img src="setup-provider-demo.gif" alt="設定 AI 供應商示範" style="border:1px solid var(--c-border);border-radius:8px;margin:16px auto 28px;box-shadow:0 4px 24px rgba(0,0,0,.18);max-height:520px;max-width:100%;width:auto;height:auto;display:block">
+<ol>
+  <li>在側邊欄右上角點擊 ⚙️ <strong>設定</strong> 按鈕</li>
+  <li>在左側導覽選擇 <strong>AI 模型</strong></li>
+  <li>從供應商列表中選擇你要使用的服務（例如 OpenAI、Google AI、DeepSeek）</li>
+  <li>輸入對應的 <strong>API 金鑰</strong>（部分本地供應商如 Ollama 無需金鑰）</li>
+  <li>點擊 <strong>測試連線</strong> 確認設定正確</li>
+</ol>
+
+<div class="callout tip">
+  <strong>💡 不需要 API 金鑰？</strong>
+  如果你使用 <strong>Ollama</strong> 或 <strong>LM Studio</strong>，只需確保本地服務已啟動，不需要輸入 API 金鑰。
+</div>
+
+<h2>第三步：開始對話</h2>
+
+<img src="start-chat-demo.gif" alt="開始對話示範" style="border:1px solid var(--c-border);border-radius:8px;margin:16px auto 28px;box-shadow:0 4px 24px rgba(0,0,0,.18);max-height:520px;max-width:100%;width:auto;height:auto;display:block">
+<p>回到側邊欄，在底部的輸入框中輸入你的問題，然後按下 <strong>Enter</strong> 或點擊送出按鈕。</p>
+<p>你也可以嘗試點擊歡迎畫面中的<strong>建議話題</strong>快速開始對話。</p>
+
+<h2>進階功能速覽</h2>
+<p>側邊欄底部的工具列提供了多個實用功能：</p>
+<table>
+  <thead><tr><th>按鈕</th><th>功能</th><th>說明</th></tr></thead>
+  <tbody>
+    <tr><td>📄</td><td>引用頁面</td><td>Smart Capture 擷取當前網頁；只在該輪訊息送 API，後續追問不重送整頁</td></tr>
+    <tr><td>🖼️</td><td>上傳圖片</td><td>附加圖片讓 AI 分析</td></tr>
+    <tr><td>🔍</td><td>聯網搜尋</td><td>讓 AI 搜尋網路即時資訊</td></tr>
+    <tr><td>💡</td><td>思考模式</td><td>啟用深度推理，顯示思考過程</td></tr>
+  </tbody>
+</table>
+
+<nav class="page-nav">
+  <a href="installation.html"><span class="label">上一頁</span><span class="title">← 安裝</span></a>
+  <a href="sidebar-chat.html"><span class="label">下一頁</span><span class="title">側邊欄聊天 →</span></a>
+</nav>
+
+</main>
+</div>
+</body>
+</html>

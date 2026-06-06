@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>AI 模型供應商 — Momo AI Docs</title>
+  <link rel="stylesheet" href="docs.css">
+  <script src="docs.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">指南</a>
+    <a href="sidebar-chat.html" class="hide-mobile">功能</a>
+    <a href="changelog.html" class="hide-mobile">更新日誌</a>
+    <button class="menu-toggle" aria-label="選單">☰</button>
+  </nav>
+</header>
+
+<div class="backdrop"></div>
+<div class="page-wrapper">
+
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="搜尋...">
+  </div>
+  <div class="group-title">入門</div>
+  <a href="index.html">介紹</a>
+  <a href="installation.html">安裝</a>
+  <a href="getting-started.html">快速開始</a>
+  <div class="group-title">功能</div>
+  <a href="sidebar-chat.html">側邊欄聊天</a>
+  <a href="ai-providers.html">AI 模型供應商</a>
+  <a href="web-search.html">聯網搜尋</a>
+  <a href="page-capture.html">引用頁面內容</a>
+  <a href="image-upload.html">圖片上傳</a>
+  <a href="thinking-mode.html">思考模式</a>
+  <a href="tts.html">語音朗讀 (TTS)</a>
+  <a href="system-prompts.html">系統提示詞</a>
+  <a href="chat-history.html">聊天記錄</a>
+  <a href="float-ball.html">懸浮球</a>
+  <div class="group-title">設定</div>
+  <a href="settings.html">設定總覽</a>
+  <a href="shortcuts.html">快捷鍵</a>
+  <a href="i18n.html">多語言支援</a>
+  <div class="group-title">其他</div>
+  <a href="changelog.html">更新日誌</a>
+  <a href="privacy.html">隱私政策</a>
+</aside>
+
+<main class="main-content">
+
+<h1>AI 模型供應商</h1>
+<p>Momo AI 支援多種 AI 模型供應商，統一使用 <strong>OpenAI 相容</strong>的 API 格式進行請求與回應解析。</p>
+
+<h2>支援的供應商</h2>
+
+<h3>雲端供應商</h3>
+<ul>
+  <li><strong>OpenAI</strong>：<code>api.openai.com/v1</code> — 例如 GPT-5.4、GPT-5.4-mini 等；需 API 金鑰。</li>
+  <li><strong>Google AI (Gemini)</strong>：<code>generativelanguage.googleapis.com</code> — Gemini 2.5 系列；支援思考模式。</li>
+  <li><strong>DeepSeek</strong>：<code>api.deepseek.com/v1</code> — <code>deepseek-chat</code> / <code>deepseek-reasoner</code>；Reasoner 始終進行推理。</li>
+  <li><strong>Qwen</strong>：<code>dashscope.aliyuncs.com</code> — 如 qwen3-max、qwen-flash 等；支援 <code>enable_thinking</code>。</li>
+  <li><strong>OpenRouter</strong>：<code>openrouter.ai/api/v1</code> — 聚合多模型；支援 <code>:online</code> 伺服器端搜尋。</li>
+  <li><strong>Moonshot (Kimi)</strong>：<code>api.moonshot.cn/v1</code> — kimi-k2.5、kimi-k2 等。</li>
+  <li><strong>MiniMax</strong>：<code>api.minimaxi.chat/v1</code> — MiniMax-Text-01 等。</li>
+  <li><strong>Groq</strong>：<code>api.groq.com/openai/v1</code> — 高速推理；預設如 <code>openai/gpt-oss-120b</code>、<code>meta-llama/llama-4-scout-17b-16e-instruct</code>；需 API 金鑰。</li>
+  <li><strong>NVIDIA NIM</strong>：<code>integrate.api.nvidia.com/v1</code></li>
+</ul>
+
+<h3>本地供應商</h3>
+<ul>
+  <li><strong>Ollama</strong>：<code>localhost:11434/v1</code> — 免費本地模型。</li>
+  <li><strong>LM Studio</strong>：<code>localhost:1234/v1</code> — 圖形化介面管理本地模型。</li>
+  <li><strong>Hermes (Beta)</strong>：<code>127.0.0.1:8642/v1</code> — 本地 Agent 的 OpenAI 相容 API Server；預設模型為 <code>hermes-agent</code>。</li>
+  <li><strong>OpenClaw (Beta)</strong>：<code>ws://127.0.0.1:18789</code> — WebSocket 協定。</li>
+</ul>
+
+<h2>API 金鑰申請</h2>
+<p>雲端供應商需要 API 金鑰才能使用，以下是各供應商的申請連結：</p>
+<table>
+  <thead><tr><th>供應商</th><th>申請連結</th></tr></thead>
+  <tbody>
+    <tr><td>OpenAI</td><td><a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a></td></tr>
+    <tr><td>Google AI</td><td><a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></td></tr>
+    <tr><td>DeepSeek</td><td><a href="https://platform.deepseek.com/api_keys" target="_blank">platform.deepseek.com/api_keys</a></td></tr>
+    <tr><td>Qwen</td><td><a href="https://dashscope.console.aliyun.com/apiKey" target="_blank">dashscope.console.aliyun.com</a></td></tr>
+    <tr><td>OpenRouter</td><td><a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a></td></tr>
+    <tr><td>Moonshot</td><td><a href="https://platform.moonshot.cn/console/api-keys" target="_blank">platform.moonshot.cn</a></td></tr>
+    <tr><td>MiniMax</td><td><a href="https://platform.minimaxi.com/user-center/basic-information/interface-key" target="_blank">platform.minimaxi.com</a></td></tr>
+    <tr><td>Groq</td><td><a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a></td></tr>
+    <tr><td>NVIDIA</td><td><a href="https://build.nvidia.com/" target="_blank">build.nvidia.com</a></td></tr>
+  </tbody>
+</table>
+<p>本地供應商（Ollama、LM Studio、OpenClaw）不需要 API 金鑰。Hermes 通常需要填入本地 API Server 的 <code>API_SERVER_KEY</code>。</p>
+
+<h2>Hermes (Beta) 設定</h2>
+<p>Hermes 透過 OpenAI 相容 HTTP API 接入，和 OpenClaw 一樣需要先在 Hermes 的 <code>.env</code> 開啟 gateway / API Server，再在 Momo 填入相同的 key。</p>
+<pre><code>API_SERVER_ENABLED=true
+API_SERVER_HOST=0.0.0.0
+API_SERVER_PORT=8642
+API_SERVER_KEY=&lt;your-secret-key&gt;
+API_SERVER_CORS_ORIGINS=*</code></pre>
+<ol>
+  <li>在 Hermes <code>.env</code> 修改以上幾項；<code>API_SERVER_KEY</code> 請使用自己的密碼，不要使用範例值。</li>
+  <li>遠端或 Chrome extension 直接連線時，<code>API_SERVER_CORS_ORIGINS=*</code> 是最簡單的可用設定；若要更嚴格，可改成指定可信任 origin。</li>
+  <li>重啟 Hermes Gateway，預設會監聽 <code>http://127.0.0.1:8642</code>。</li>
+  <li>在 Momo 選擇 <strong>Hermes (beta)</strong>，保留預設 Base URL 或填入你的遠端 URL，然後啟用 <code>hermes-agent</code> 模型。</li>
+  <li>Connect 成功後連線狀態會保存在本機；刷新設定頁或切換外觀主題後仍會恢復（Base URL 與 API key 須與上次 Connect 時一致）。</li>
+</ol>
+
+<h3>Hermes 使用建議（Momo 內）</h3>
+<ul>
+  <li>先按 <strong>Connect</strong> 確認 gateway 可用，再開始聊天，可避免未連線直接送出導致 401/403。</li>
+  <li>若你剛切換到 Hermes，建議直接開新對話，避免把其他 provider 的上下文混入 Agent 任務。</li>
+  <li>若使用遠端 Hermes，請優先確認目標機器防火牆與埠號（預設 8642）已開啟。</li>
+  <li>若 Agent 回覆包含 HTTP 圖片（例如 <code>MEDIA:&lt;url&gt;</code> 或 Markdown 圖片），Momo 會自動下載並在對話中內嵌顯示；詳見<a href="image-upload.html#ai-reply-images">圖片上傳 — AI 回覆中的圖片</a>。</li>
+  <li>編輯舊 user message 時，Hermes 會<strong>追加新訊息</strong>重新送給 agent，不截斷本地歷史；詳見<a href="sidebar-chat.html#edit-messages">側邊欄聊天 — 編輯訊息</a>。</li>
+</ul>
+
+<h2>設定供應商</h2>
+<ol>
+  <li>開啟側邊欄，點擊右上角 <strong>設定</strong>（⚙️）。</li>
+  <li>在左側導覽列選擇 <strong>AI 模型</strong>。</li>
+  <li>選擇要使用的供應商，輸入 <strong>API 金鑰</strong>（雲端供應商需要；本地供應商不需要）。</li>
+  <li>若需自訂網址，填寫 <strong>API 端點</strong>（見下方「自訂 API 端點」）。</li>
+  <li>使用 <strong>測試連線</strong> 確認金鑰與網路可正常連線後再開始對話。</li>
+</ol>
+
+<h2>模型管理</h2>
+<p>每個供應商預設提供 2 個主流模型（預設關閉），你可以完整管理：</p>
+<ul>
+  <li><strong>新增</strong> / <strong>刪除</strong> 模型項目（包括預設模型也可刪除或重新命名）</li>
+  <li><strong>啟用</strong> / <strong>停用</strong> 個別模型</li>
+  <li><strong>自訂 JSON</strong>：進階參數或請求覆寫</li>
+  <li><strong>前綴提示</strong>：為該模型附加固定提示前綴</li>
+</ul>
+
+<div class="callout tip">
+  <strong>💡 提示</strong>
+  所有啟用的模型會合併為統一列表，在側邊欄輸入區的模型選擇器中切換使用。
+</div>
+
+<h2>OpenClaw 設定</h2>
+<p>OpenClaw 是 WebSocket 協定的本地 AI 閘道器，設定流程與其他供應商不同：</p>
+<ol>
+  <li>點擊 <strong>Connect</strong> 按鈕連線到 OpenClaw 閘道器。</li>
+  <li>連線成功後按鈕顯示 <strong>Connected</strong>；hover 或 focus 時可看到 <strong>Disconnect</strong> 以斷開。</li>
+  <li>連線狀態會保存在本機；刷新設定頁或切換外觀主題後仍會恢復（Base URL、API key、Session key 須與上次 Connect 時一致）。</li>
+  <li>連線後自動載入可用的 Session 列表。</li>
+  <li>選擇 Session 後，側邊欄會自動載入該 Session 的對話記錄。</li>
+  <li>模型開關會自動啟用，顯示為 <code>openclaw</code>。</li>
+</ol>
+<p>點擊 <strong>Setup Guide</strong> 可查看完整的伺服器架設與裝置認證教學。</p>
+<p>若 Gateway 回覆包含 HTTP 圖片（<code>image</code> / <code>image_url</code> content part，或文字中的 <code>MEDIA:&lt;url&gt;</code>），Momo 會自動下載並在對話中內嵌顯示；詳見<a href="image-upload.html#ai-reply-images">圖片上傳 — AI 回覆中的圖片</a>。</p>
+<p>編輯舊 user message 時，OpenClaw 會<strong>追加新訊息</strong>重新送給 gateway，不截斷本地歷史；詳見<a href="sidebar-chat.html#edit-messages">側邊欄聊天 — 編輯訊息</a>。</p>
+
+<div class="callout tip">
+  <strong>💡 注意</strong>
+  OpenClaw 模式下，聯網搜尋與引用頁面按鈕會自動禁用（OpenClaw 有原生搜尋能力）。
+</div>
+
+<h2>自訂 API 端點</h2>
+<p>若使用代理、企業閘道或自架相容服務，可在供應商設定中覆寫預設 Base URL，將請求導向你的 <strong>自訂 API 端點</strong>（仍須符合 OpenAI 相容的 path 與回應格式）。本地供應商則依預設埠為準，亦可改為其他機器或埠號。</p>
+
+<nav class="page-nav">
+  <a href="sidebar-chat.html"><span class="label">上一頁</span><span class="title">← 側邊欄聊天</span></a>
+  <a href="web-search.html"><span class="label">下一頁</span><span class="title">聯網搜尋 →</span></a>
+</nav>
+
+</main>
+</div>
+</body>
+</html>

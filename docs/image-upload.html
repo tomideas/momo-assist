@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>圖片上傳 — Momo AI Docs</title>
+  <link rel="stylesheet" href="docs.css">
+  <script src="docs.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">指南</a>
+    <a href="sidebar-chat.html" class="hide-mobile">功能</a>
+    <a href="changelog.html" class="hide-mobile">更新日誌</a>
+    <button class="menu-toggle" aria-label="選單">☰</button>
+  </nav>
+</header>
+<div class="backdrop"></div>
+<div class="page-wrapper">
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="搜尋...">
+  </div>
+  <div class="group-title">入門</div>
+  <a href="index.html">介紹</a>
+  <a href="installation.html">安裝</a>
+  <a href="getting-started.html">快速開始</a>
+  <div class="group-title">功能</div>
+  <a href="sidebar-chat.html">側邊欄聊天</a>
+  <a href="ai-providers.html">AI 模型供應商</a>
+  <a href="web-search.html">聯網搜尋</a>
+  <a href="page-capture.html">引用頁面內容</a>
+  <a href="image-upload.html">圖片上傳</a>
+  <a href="thinking-mode.html">思考模式</a>
+  <a href="tts.html">語音朗讀 (TTS)</a>
+  <a href="system-prompts.html">系統提示詞</a>
+  <a href="chat-history.html">聊天記錄</a>
+  <a href="float-ball.html">懸浮球</a>
+  <div class="group-title">設定</div>
+  <a href="settings.html">設定總覽</a>
+  <a href="shortcuts.html">快捷鍵</a>
+  <a href="i18n.html">多語言支援</a>
+  <div class="group-title">其他</div>
+  <a href="changelog.html">更新日誌</a>
+  <a href="privacy.html">隱私政策</a>
+</aside>
+<main class="main-content">
+<h1>圖片上傳</h1>
+
+<h2>使用方式</h2>
+<p>點擊 🖼️ 按鈕上傳，或使用 Cmd+V／Ctrl+V 貼上剪貼簿中的圖片。</p>
+
+<h2>支援格式</h2>
+<p>JPEG、PNG、GIF、WebP。</p>
+
+<h2>圖片預覽</h2>
+<p>上傳後會顯示縮圖預覽；可單張移除，亦支援同時附加多張圖片。</p>
+
+<h2>支援的模型</h2>
+<table>
+  <thead>
+    <tr>
+      <th>供應商／類型</th>
+      <th>說明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>OpenAI</td>
+      <td>GPT-5.4 系列等具視覺能力的模型</td>
+    </tr>
+    <tr>
+      <td>Google</td>
+      <td>Gemini 2.5、Gemini 1.5 系列</td>
+    </tr>
+    <tr>
+      <td>Anthropic</td>
+      <td>Claude 3 系列（claude-3-opus、claude-3-sonnet 等）</td>
+    </tr>
+    <tr>
+      <td>Alibaba</td>
+      <td>Qwen VL</td>
+    </tr>
+    <tr>
+      <td>OpenRouter</td>
+      <td>依所選模型是否支援視覺而定</td>
+    </tr>
+    <tr>
+      <td>Ollama</td>
+      <td>LLaVA 等支援多模態的本機模型</td>
+    </tr>
+  </tbody>
+</table>
+<div class="callout warning"><strong>⚠️ 檔案大小限制</strong>單張圖片最大 5MB。超過限制的圖片會被自動跳過。</div>
+<div class="callout warning"><strong>⚠️ 模型能力</strong>不支援視覺的模型可能無法正確處理圖片內容。</div>
+
+<h2 id="ai-reply-images">AI 回覆中的圖片</h2>
+<p>除了你上傳圖片給 AI，Momo 也會自動處理 <strong>AI 回覆裡帶出的圖片</strong>（常見於 Hermes、OpenClaw 等 Agent 生成圖片的場景）。</p>
+<p>當回覆文字包含下列任一形式時，Momo 會嘗試下載並在對話泡泡內直接顯示：</p>
+<ul>
+  <li><code>MEDIA:&lt;https-url&gt;</code> 標記</li>
+  <li>Markdown 圖片語法 <code>![...](https://...)</code></li>
+  <li>以 <code>.png</code>、<code>.jpg</code>、<code>.jpeg</code>、<code>.webp</code>、<code>.gif</code> 結尾的 HTTP/HTTPS 圖片 URL</li>
+</ul>
+<p>下載成功的圖片會存入本機 <strong>IndexedDB</strong>（AttachmentStore），之後在同一對話中直接渲染，不只保留外部連結。OpenClaw 若以 <code>image</code> / <code>image_url</code> content part 回傳 HTTP 圖片，也會走同一流程。</p>
+<div class="callout warning"><strong>⚠️ 下載限制</strong>若圖片 URL 已過期、需要登入、或無法以 HTTP/HTTPS 存取，Momo 可能無法下載，此時仍可能只看到連結或空白。此為暫行方案，日後若 Agent 提供正式 media endpoint，行為可能調整。</div>
+
+<h2>技術細節（上傳）</h2>
+<p>圖片以 Base64 編碼傳送；請求格式採用 OpenAI Vision API 慣例之 <code>image_url</code> 內容區塊。</p>
+
+<nav class="page-nav">
+  <a href="page-capture.html"><span class="label">上一頁</span><span class="title">← 引用頁面內容</span></a>
+  <a href="thinking-mode.html"><span class="label">下一頁</span><span class="title">思考模式 →</span></a>
+</nav>
+</main>
+</div>
+</body>
+</html>

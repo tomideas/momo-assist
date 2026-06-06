@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Changelog — Momo AI Docs</title>
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">Guide</a>
+    <a href="sidebar-chat.html" class="hide-mobile">Features</a>
+    <a href="changelog.html" class="hide-mobile">Changelog</a>
+    <button class="menu-toggle" aria-label="Menu">☰</button>
+  </nav>
+</header>
+<div class="backdrop"></div>
+<div class="page-wrapper">
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search...">
+  </div>
+  <div class="group-title">Getting Started</div>
+  <a href="index.html">Introduction</a>
+  <a href="installation.html">Installation</a>
+  <a href="getting-started.html">Quick Start</a>
+  <div class="group-title">Features</div>
+  <a href="sidebar-chat.html">Sidebar Chat</a>
+  <a href="ai-providers.html">AI Providers</a>
+  <a href="web-search.html">Web Search</a>
+  <a href="page-capture.html">Page Capture</a>
+  <a href="image-upload.html">Image Upload</a>
+  <a href="thinking-mode.html">Thinking Mode</a>
+  <a href="tts.html">Text-to-Speech (TTS)</a>
+  <a href="system-prompts.html">System Prompts</a>
+  <a href="chat-history.html">Chat History</a>
+  <a href="float-ball.html">Float Ball</a>
+  <div class="group-title">Settings</div>
+  <a href="settings.html">Settings Overview</a>
+  <a href="shortcuts.html">Shortcuts</a>
+  <a href="i18n.html">Multi-language</a>
+  <div class="group-title">Others</div>
+  <a href="changelog.html">Changelog</a>
+  <a href="privacy.html">Privacy Policy</a>
+</aside>
+<main class="main-content">
+<h1>Changelog</h1>
+
+<h2>v2.21.70 (2026-06-06)</h2>
+<p><strong>Model switching:</strong> Fixed standard AI model switches incorrectly starting a fresh sidebar chat, which made chat history look cleared. Hermes still uses its fixed local session, and OpenClaw now uses an isolated <code>momo-openclaw-main</code> session so Agent history does not overwrite standard model conversations. Switching back from Hermes / OpenClaw restores the previous standard Momo conversation first.</p>
+
+<h2>v2.21.61 (2026-05-25)</h2>
+<p><strong>OpenClaw connection:</strong> WebSocket handshake now supports protocol v3–v4, fixing <code>protocol mismatch</code> (<code>expected=4</code>) on newer gateways that blocked Connect / session load. Gateway URL accepts <code>http(s)://</code> and <code>ws(s)://</code>; <code>http(s)</code> is auto-converted to <code>ws(s)</code>.</p>
+
+<h2>v2.21.60 (2026-05-25)</h2>
+<p><strong>Product name:</strong> Updated the extension display name from <strong>Momo AI Bud</strong> to <strong>Hii~ Momo: AI Assist</strong>. This also updates the manifest, sidebar / settings titles, localized document titles, float ball tooltip, web search marker, and README.</p>
+
+<h2>v2.21.59 (2026-05-25)</h2>
+<p><strong>Page reference icon:</strong> Fixed the assistant action bar showing the reference page icon on later replies whenever the session had ever used a page reference. The icon now appears only when the user message immediately before that assistant reply has <code>Page Referenced</code>, and it opens only the page context bound to that turn.</p>
+
+<h2>v2.21.58 (2026-05-25)</h2>
+<p><strong>Page reference token cost:</strong> Fixed an issue where referenced page content could be injected again in later turns because it was stored on an earlier user message that remained in chat history. Page content is now injected into the API payload only when the latest user message itself has <code>Page Referenced</code>; follow-up turns no longer resend the full page.</p>
+
+<h2>v2.21.57 (2026-05-25)</h2>
+<p><strong>Smart Capture:</strong> Added <code>Smart Capture (Recommended)</code> and <code>Visible Text</code> page reference modes. Smart Capture chooses a token-saving strategy by page type: article / documentation pages use Markdown Smart Extraction, while product pages, pricing pages, dashboards, settings pages, and table / card / button-heavy pages use visible text extraction. Visible Text collects and deduplicates visible headings, paragraphs, lists, tables, buttons, and price / plan / feature blocks.</p>
+
+<h2>v2.21.56 (2026-05-25)</h2>
+<p><strong>Markdown Smart Extraction:</strong> Fixed a Readability misclassification on product / SPA pages where the referenced URL was correct but the captured content came from hidden template content or an unrelated article fragment. Extraction results are now checked against the current page title / H1 keywords; mismatches fall back to an untouched fallback DOM plus the page's visible <code>document.body.innerText</code>.</p>
+
+<h2>v2.21.55 (2026-05-25)</h2>
+<p><strong>Page reference delivery:</strong> Fixed an issue where the UI showed <code>Page Referenced</code>, but some OpenAI-compatible providers, such as Qwen-style models, still answered as if the page content was missing. Referenced page content is now attached directly to the current user message API payload instead of relying on a mid-conversation system message. Web-search detection also uses the original user input so the full referenced page is not mistaken for a search query.</p>
+
+<h2>v2.21.54 (2026-05-24)</h2>
+<p><strong>Hermes / OpenClaw connection state:</strong> After refreshing the settings page or switching appearance theme, Hermes / OpenClaw Connect state and the model toggle restore correctly without requiring reconnect. Connection state is matched by Base URL, API key, and OpenClaw session key; manual Disconnect still clears it. The sidebar also syncs model selection from settings.</p>
+
+<h2>v2.21.53 (2026-05-24)</h2>
+<p><strong>Agent edit scroll:</strong> After editing and resending a message on Hermes / OpenClaw, the chat scrolls reliably to the latest user / assistant messages without bouncing back.</p>
+
+<h2>v2.21.52 (2026-05-24)</h2>
+<p><strong>Agent edit behavior:</strong> When editing a user message on Hermes or OpenClaw, Momo appends the edited content as a <strong>new message</strong> and resends it to the agent instead of truncating local history (remote agent sessions cannot be rolled back by Momo). Standard OpenAI-compatible providers keep the original replace-and-truncate behavior.</p>
+
+<h2>v2.21.51 (2026-05-24)</h2>
+<p><strong>AI reply image dedup:</strong> Fixed duplicate images when Hermes / ComfyUI returned both a full <code>MEDIA:</code> URL and a bare image URL from the query string. <code>MEDIA:</code> lines now take only the full URL; ComfyUI <code>/view</code> links are normalized for deduplication.</p>
+
+<h2>v2.21.50 (2026-05-24)</h2>
+<p><strong>AI reply images:</strong> When an AI reply contains <code>MEDIA:&lt;url&gt;</code>, Markdown images, or HTTP/HTTPS image URLs, Momo automatically downloads and displays them inline. Successfully cached images are stored locally in IndexedDB, not just as external links. HTTP image replies from Hermes / OpenClaw (including OpenClaw <code>image</code> / <code>image_url</code> content parts) are supported. See <a href="image-upload.html#ai-reply-images">Image Upload — Images in AI Replies</a>.</p>
+
+<h2>v2.21.24 (2026-05-07)</h2>
+<p><strong>Sidebar input startup:</strong> Fixed an issue where opening the Momo AI Bud sidepanel could clear text typed immediately after the UI appeared, making it feel like users had to wait before typing. The composer reset now runs before model, language, and history initialization, so the input is ready right away.</p>
+
+<h2>v2.21.23 (2026-05-05)</h2>
+<p><strong>Hermes Setup Guide i18n:</strong> Hermes Setup Guide now uses i18n keys with Traditional Chinese, Simplified Chinese, and English text. The Hermes <code>.env</code> example now renders as a real multi-line code block instead of collapsing into one line. README and AI Providers docs also include the Hermes Agent overview and usage guidance.</p>
+
+<h2>v2.21.22 (2026-05-05)</h2>
+<p><strong>Hermes Setup Guide:</strong> Hermes (beta) now shows the same <code>Setup Guide</code> button as OpenClaw (beta) in the Connect row. The modal switches content based on the current provider; Hermes shows the <code>.env</code> example and Hermes gateway restart steps, including <code>API_SERVER_CORS_ORIGINS=*</code> and the placeholder <code>API_SERVER_KEY=&lt;your-secret-key&gt;</code>.</p>
+
+<h2>v2.21.21 (2026-05-05)</h2>
+<p><strong>Hermes .env guidance:</strong> Settings and AI Providers docs now include a Hermes Agent <code>.env</code> example, explaining that Hermes needs <code>API_SERVER_ENABLED</code>, <code>API_SERVER_HOST</code>, <code>API_SERVER_PORT</code>, <code>API_SERVER_KEY</code>, and <code>API_SERVER_CORS_ORIGINS</code> configured like an OpenClaw gateway. The sample key uses <code>&lt;your-secret-key&gt;</code>, and <code>API_SERVER_CORS_ORIGINS=*</code> is documented as the simplest working setting for Chrome extension / remote access.</p>
+
+<h2>v2.21.20 (2026-05-05)</h2>
+<p><strong>Hermes Chat 403:</strong> Hermes chat requests now go through the background <code>proxy_fetch</code> path to avoid browser Origin / CORS / preflight differences from direct sidepanel <code>fetch</code> calls. Hermes <code>/v1/chat/completions</code> now uses a minimal OpenAI-compatible payload: <code>model: "hermes-agent"</code>, <code>messages</code>, and <code>stream: false</code>.</p>
+
+<h2>v2.21.19 (2026-05-05)</h2>
+<p><strong>Hermes connection and switching:</strong> Hermes <code>HTTP 401/403</code> and browser fetch failures now show the current Chrome extension origin so the Hermes host can set <code>API_SERVER_CORS_ORIGINS=chrome-extension://&lt;extension-id&gt;</code> and restart the gateway. Switching from another model to Hermes now starts a fresh visible chat and clears stale images/page references. Agent provider requests also filter out local system messages so custom system prompts are not sent.</p>
+
+<h2>v2.21.18 (2026-05-05)</h2>
+<p><strong>OpenClaw response stability:</strong> Fixed an issue where sending a message could first repeat the previous assistant response. OpenClaw <code>chat.send</code> now uses <code>deliver: true</code>, and streaming/history fallback is filtered by the current <code>runId</code> plus a pre-send history snapshot so only new assistant replies after the current user message are accepted.</p>
+
+<h2>v2.21.17 (2026-05-05)</h2>
+<p><strong>Hermes Provider:</strong> Added Hermes (beta) as an AI service provider. The default Base URL is <code>http://127.0.0.1:8642/v1</code>, and the default model is <code>hermes-agent</code>. This provider connects through Hermes' official OpenAI-compatible API Server, reusing the existing Chat Completions streaming path instead of OpenClaw WebSocket RPC. Settings now include a Hermes (beta) option, official favicon-style icon, API Server hints, and documentation link. Hermes now follows the same connect-first flow as OpenClaw, and the sidebar disables custom system prompt, chat history/new chat, web search, and reference page while Hermes is selected.</p>
+
+<h2>v2.21.16 (2026-05-05)</h2>
+<p><strong>Streaming replies:</strong> Fixed <code>Enter</code> or <code>Cmd/Ctrl+Enter</code> in the input box stopping an in-progress AI response and causing <code>BodyStreamBuffer was aborted</code>. While a response is streaming, input send shortcuts are ignored; stopping generation remains available through the send button's stop state.</p>
+
+<h2>v2.21.15 (2026-05-05)</h2>
+<p><strong>Screenshot selection:</strong> Added instructions to the screenshot overlay. Users can drag to select, double-click for the full visible page, or press <code>Esc</code> to cancel. Single clicks and tiny drags no longer cancel immediately, reducing accidental exits.</p>
+
+<h2>v2.21.14 (2026-05-05)</h2>
+<p><strong>Screenshot upload:</strong> Screenshot upload now shows a selection overlay first, crops only the selected region, and sends it automatically. <code>Esc</code> and right-click cancel selection, and coordinates are mapped against the actual screenshot size for high-DPI displays.</p>
+
+<h2>v2.21.13 (2026-05-05)</h2>
+<p><strong>Auto-send screenshot upload:</strong> Added a screenshot upload button to the input toolbar. It captures the visible area of the active Chrome tab, attaches it as an image message, and sends it automatically. First use requests the required permission; oversized PNGs are compressed or rejected with a resize-window hint.</p>
+
+<h2>v2.21.12 (2026-05-05)</h2>
+<p><strong>Page references:</strong> Fixed the Readability capture path mutating the source website DOM. The extension now clones the page first, then adds <code>&lt;base&gt;</code> and removes hidden/script/style elements only inside the clone. This prevents sites such as <code>linux.do</code> / Discourse-based pages from losing their normal styling after capture.</p>
+
+<h2>v2.21.11 (2026-05-05)</h2>
+<p><strong>Chat stability and web search:</strong> Fixed UI shaking while typing and while AI responses stream. The chat area now keeps a stable scrollbar gutter, and streaming auto-scroll runs at most once per animation frame. Web search keeps smart triggering: when enabled, it searches only when the message appears to need fresh web information; when disabled, explicit “search the web” style requests can still auto-trigger search. Search context is injected into both the system prompt and the latest user message to reduce “I cannot access the internet” answers. Brave / Tavily failures or zero-result responses fall back to DuckDuckGo, and OpenRouter <code>:online</code> is used only as a fallback.</p>
+
+<h2>v2.21.10 (2026-05-04)</h2>
+<p><strong>Page references:</strong> Refined the LM Studio compatibility fix. Empty page-reference sends now add the default user query only while building the API payload, so it is not stored in chat history or shown in the conversation. The UI keeps showing only the page-reference label while still avoiding Qwen Jinja template errors.</p>
+
+<h2>v2.21.9 (2026-05-04)</h2>
+<p><strong>LM Studio page references:</strong> Fixed an issue where sending only a referenced page with an empty input created an empty user message, causing LM Studio / Qwen Jinja prompt templates to fail with <code>No user query found in messages</code>. Empty page-reference sends now add a default user query, and the send button only enables for pending page references.</p>
+
+<h2>v2.21.8 (2026-04-12)</h2>
+<p><strong>Web search:</strong> When web search is enabled in the sidebar, searches now run on <strong>smart triggers</strong> only (signals like news, prices, weather, explicit &quot;search the web&quot;, URLs in the message), not on every user message. The &quot;current/previous year&quot; trigger is evaluated after creative/translation skip rules so prompts like &quot;write a story set in 2026&quot; no longer force a search. Copy and i18n updated accordingly.</p>
+
+<h2>v2.21.7 (2026-04-12)</h2>
+<p><strong>Web search — short follow-ups and conversation context:</strong> Search keywords used to be built only from the <strong>last user message</strong>, so follow-ups like &quot;price in China&quot; after discussing iPhone could become overly generic queries. The extension now extracts topic hints (e.g. product/model names) from <strong>earlier turns</strong> and, when appropriate, merges them into the actual search string. For API requests, a one-line English context prefix may be added before the last plain-text user message so server-side search (e.g. OpenRouter <code>:online</code>) stays aligned with the ongoing topic.</p>
+
+<h2>v2.21.6 (2026-04-08)</h2>
+<p>Renamed the design-system preview doc from <code>dev-notes/ui-preview.html</code> to <code>dev-notes/design-system-preview.html</code>; in-doc version label updated to v2.21.6.</p>
+
+<h2>v2.21.5 (2026-04-08)</h2>
+<p><code>dev-notes/design-system-preview.html</code>: expanded button interaction notes (Primary / Outline / Danger / Disabled, segmented controls and theme mapping); version label v2.21.5.</p>
+
+<h2>v2.21.4 (2026-04-06)</h2>
+<p>Product name unified to <strong>Momo AI Bud</strong> (manifest, toolbar, float ball, default sidebar/settings titles). Settings tab title now follows UI language (e.g. English <code>Settings - Momo AI Bud</code>) instead of a fixed Chinese string.</p>
+
+<h2>v2.21.3 (2026-04-06)</h2>
+<p>README intro aligned with the feature list (Groq, OpenClaw, system TTS, adjustable typography, multi-language UI, float ball, etc.); removed outdated &quot;think deeper&quot; pitch.</p>
+
+<h2>v2.21.2 (2026-04-06)</h2>
+<p>Duplicate model names in the dropdown no longer show a provider text suffix (e.g. <code>(Ollama)</code>); provider icons distinguish entries instead.</p>
+
+<h2>v2.21.1 (2026-04-06)</h2>
+<p>Fixed local providers (Ollama / LM Studio, etc.) incorrectly removing manually added models when the name matched a cloud default.</p>
+
+<h2>v2.21.0 (2026-04-06)</h2>
+<p>Added <strong>Groq</strong> AI provider; default models <code>openai/gpt-oss-120b</code> and <code>meta-llama/llama-4-scout-17b-16e-instruct</code>; API keys at <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>; settings page shows free-tier notes; <code>host_permissions</code> includes <code>api.groq.com</code>.</p>
+
+<h2>v2.20.1 (2026-04-06)</h2>
+<p>Google AI default models updated to <code>gemini-3.1-flash-lite-preview</code> and <code>gemini-3-flash-preview</code>.</p>
+
+<h2>v2.20.0 (2026-04-06)</h2>
+<p>Fixed duplicate model names across providers: model identity now uses a <code>provider::name</code> uid; same display name on different providers can both be enabled; the dropdown adds a provider name suffix for duplicates; legacy selections migrate to the new uid format.</p>
+
+<h2>v2.19.5 (2026-04-06)</h2>
+<p>Fix test connection permission popup: added all built-in AI provider API domains (DeepSeek, Google AI, MiniMax, Moonshot, NVIDIA, OpenRouter, Qwen) to <code>host_permissions</code>, so clicking Start Test no longer triggers Chrome's permission request dialog.</p>
+
+<h2>v2.15.0 (2026-04-04)</h2>
+<p>OpenRouter server-side web search (<code>:online</code> + Exa), OpenRouter <code>url_citation</code> annotations, auto-trigger search ("查一下", "搜尋", "search for"), DDG proxy fallback; search context budget increased from 2,000 to 6,000 characters.</p>
+
+<h2>v2.14.x (2026-04-04)</h2>
+<p>Prompt display toggle, smaller toggle size, redesigned settings page navigation bar (7 items + SVG icons), scroll fixes.</p>
+
+<h2>v2.13.0 (2026-04-04)</h2>
+<p>Google HTML search (new default), DDG HTML search, simple search mode, search result count 1–20, auto URL visit, search enabled by default, SearXNG support.</p>
+
+<h2>v2.10.0 (2026-04-04)</h2>
+<p>Web search feature, search source viewer, default DDG / optional Tavily.</p>
+
+<h2>v2.9.x (2026-03-29 – 30)</h2>
+<p>Global thinking mode toggle, three model states (toggleable / always_on / unsupported), settings sync via <code>chrome.storage.sync</code>, OpenClaw (Beta), Google AI, image upload, enhanced page capture, i18n system, modular refactoring.</p>
+
+<h2>Earlier Versions</h2>
+<p>Core feature set.</p>
+
+<nav class="page-nav">
+  <a href="i18n.html"><span class="label">Previous</span><span class="title">← Multi-language</span></a>
+  <a href="privacy.html"><span class="label">Next</span><span class="title">Privacy Policy →</span></a>
+</nav>
+</main>
+</div>
+</body>
+</html>

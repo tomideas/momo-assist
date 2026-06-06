@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Chat History — Momo AI Docs</title>
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">Guide</a>
+    <a href="sidebar-chat.html" class="hide-mobile">Features</a>
+    <a href="changelog.html" class="hide-mobile">Changelog</a>
+    <button class="menu-toggle" aria-label="Menu">☰</button>
+  </nav>
+</header>
+<div class="backdrop"></div>
+<div class="page-wrapper">
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search...">
+  </div>
+  <div class="group-title">Getting Started</div>
+  <a href="index.html">Introduction</a>
+  <a href="installation.html">Installation</a>
+  <a href="getting-started.html">Quick Start</a>
+  <div class="group-title">Features</div>
+  <a href="sidebar-chat.html">Sidebar Chat</a>
+  <a href="ai-providers.html">AI Providers</a>
+  <a href="web-search.html">Web Search</a>
+  <a href="page-capture.html">Page Capture</a>
+  <a href="image-upload.html">Image Upload</a>
+  <a href="thinking-mode.html">Thinking Mode</a>
+  <a href="tts.html">Text-to-Speech (TTS)</a>
+  <a href="system-prompts.html">System Prompts</a>
+  <a href="chat-history.html">Chat History</a>
+  <a href="float-ball.html">Float Ball</a>
+  <div class="group-title">Settings</div>
+  <a href="settings.html">Settings Overview</a>
+  <a href="shortcuts.html">Shortcuts</a>
+  <a href="i18n.html">Multi-language</a>
+  <div class="group-title">Others</div>
+  <a href="changelog.html">Changelog</a>
+  <a href="privacy.html">Privacy Policy</a>
+</aside>
+<main class="main-content">
+<h1>Chat History</h1>
+
+<h2>Open History</h2>
+<p>Use the history button at the top of the sidebar to slide out the panel where you can view and manage past conversations.</p>
+
+<h2>Features</h2>
+<ul>
+  <li><strong>Browse Conversations</strong>: View all saved conversations sorted by time.</li>
+  <li><strong>Select &amp; Batch Operations</strong>: Supports select-all and batch deletion.</li>
+  <li><strong>Export</strong>: Export conversation content for backup.</li>
+  <li><strong>Delete</strong>: Delete individual or selected conversations.</li>
+</ul>
+
+<h2>Storage Mechanism</h2>
+<p>Conversation data is stored in <code>chrome.storage.local</code> and is not synced to other devices via Chrome. The system automatically cleans up old conversations to save space.</p>
+<div class="callout info"><strong>ℹ️ Empty Conversations</strong> Empty conversations are not saved.</div>
+
+<nav class="page-nav">
+  <a href="system-prompts.html"><span class="label">Previous</span><span class="title">← System Prompts</span></a>
+  <a href="float-ball.html"><span class="label">Next</span><span class="title">Float Ball →</span></a>
+</nav>
+</main>
+</div>
+</body>
+</html>

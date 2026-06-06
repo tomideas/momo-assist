@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Installation — Momo AI Docs</title>
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">Guide</a>
+    <a href="sidebar-chat.html" class="hide-mobile">Features</a>
+    <a href="changelog.html" class="hide-mobile">Changelog</a>
+    <button class="menu-toggle" aria-label="Menu">☰</button>
+  </nav>
+</header>
+
+<div class="backdrop"></div>
+<div class="page-wrapper">
+
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search...">
+  </div>
+  <div class="group-title">Getting Started</div>
+  <a href="index.html">Introduction</a>
+  <a href="installation.html">Installation</a>
+  <a href="getting-started.html">Quick Start</a>
+  <div class="group-title">Features</div>
+  <a href="sidebar-chat.html">Sidebar Chat</a>
+  <a href="ai-providers.html">AI Providers</a>
+  <a href="web-search.html">Web Search</a>
+  <a href="page-capture.html">Page Capture</a>
+  <a href="image-upload.html">Image Upload</a>
+  <a href="thinking-mode.html">Thinking Mode</a>
+  <a href="tts.html">Text-to-Speech (TTS)</a>
+  <a href="system-prompts.html">System Prompts</a>
+  <a href="chat-history.html">Chat History</a>
+  <a href="float-ball.html">Float Ball</a>
+  <div class="group-title">Settings</div>
+  <a href="settings.html">Settings Overview</a>
+  <a href="shortcuts.html">Shortcuts</a>
+  <a href="i18n.html">Multi-language</a>
+  <div class="group-title">Others</div>
+  <a href="changelog.html">Changelog</a>
+  <a href="privacy.html">Privacy Policy</a>
+</aside>
+
+<main class="main-content">
+
+<h1>Installation</h1>
+
+<h2>System Requirements</h2>
+<ul>
+  <li><strong>Google Chrome</strong> browser (version 116 or above, with Side Panel API support)</li>
+  <li>Or any Chromium-based browser (Edge, Brave, Arc, etc.)</li>
+</ul>
+
+<h2>Installation Steps</h2>
+
+<h3>Method 1: Install from Source (Developer Mode)</h3>
+<ol>
+  <li>Download or clone the Momo AI extension source folder <code>sider/</code></li>
+  <li>Open Chrome and navigate to: <code>chrome://extensions/</code></li>
+  <li>Enable the <strong>Developer mode</strong> toggle in the top-right corner</li>
+  <li>Click <strong>Load unpacked</strong></li>
+  <li>Select the <code>sider/</code> folder</li>
+  <li>Installation complete! You'll see the Momo AI icon in the toolbar</li>
+</ol>
+
+<h3>Method 2: Using Packaged .crx File</h3>
+<ol>
+  <li>Open <code>chrome://extensions/</code></li>
+  <li>Drag and drop the <code>.crx</code> file onto the extensions page</li>
+  <li>Confirm the installation prompt</li>
+</ol>
+
+<h2>After Installation</h2>
+<p>Once installed, you can:</p>
+<ul>
+  <li><strong>Click the toolbar icon</strong> to open the sidebar</li>
+  <li><strong>Set up a keyboard shortcut</strong> — go to <code>chrome://extensions/shortcuts</code> to configure a custom shortcut for quick sidebar access (see <a href="shortcuts.html">Shortcuts</a> page)</li>
+  <li>Configure your preferred AI provider and API key in the settings page</li>
+</ul>
+
+<div class="callout tip">
+  <strong>💡 First Time Use</strong>
+  On first launch, Momo AI will automatically detect your browser language and set the interface language accordingly.
+</div>
+
+<h2>Required Permissions</h2>
+<table>
+  <thead><tr><th>Permission</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>sidePanel</code></td><td>Display the sidebar chat interface</td></tr>
+    <tr><td><code>storage</code> / <code>unlimitedStorage</code></td><td>Store settings and chat history</td></tr>
+    <tr><td><code>activeTab</code></td><td>Capture current page content</td></tr>
+    <tr><td><code>scripting</code></td><td>Inject float ball script</td></tr>
+    <tr><td><code>tabs</code></td><td>Detect tab switching</td></tr>
+    <tr><td><code>declarativeNetRequest</code></td><td>OpenClaw WebSocket connection header handling</td></tr>
+  </tbody>
+</table>
+
+<div class="callout info">
+  <strong>ℹ️ Optional Permissions</strong>
+  When using a custom API endpoint for the first time, you may be prompted to grant additional Host permissions (<code>http(s)://*/*</code>) to connect to your custom AI server.
+</div>
+
+<nav class="page-nav">
+  <a href="index.html"><span class="label">Previous</span><span class="title">← Introduction</span></a>
+  <a href="getting-started.html"><span class="label">Next</span><span class="title">Quick Start →</span></a>
+</nav>
+
+</main>
+</div>
+</body>
+</html>

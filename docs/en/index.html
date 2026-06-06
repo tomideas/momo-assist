@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Introduction — Momo AI Docs</title>
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">Guide</a>
+    <a href="sidebar-chat.html" class="hide-mobile">Features</a>
+    <a href="changelog.html" class="hide-mobile">Changelog</a>
+    <button class="menu-toggle" aria-label="Menu">☰</button>
+  </nav>
+</header>
+
+<div class="backdrop"></div>
+<div class="page-wrapper">
+
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search...">
+  </div>
+  <div class="group-title">Getting Started</div>
+  <a href="index.html">Introduction</a>
+  <a href="installation.html">Installation</a>
+  <a href="getting-started.html">Quick Start</a>
+  <div class="group-title">Features</div>
+  <a href="sidebar-chat.html">Sidebar Chat</a>
+  <a href="ai-providers.html">AI Providers</a>
+  <a href="web-search.html">Web Search</a>
+  <a href="page-capture.html">Page Capture</a>
+  <a href="image-upload.html">Image Upload</a>
+  <a href="thinking-mode.html">Thinking Mode</a>
+  <a href="tts.html">Text-to-Speech (TTS)</a>
+  <a href="system-prompts.html">System Prompts</a>
+  <a href="chat-history.html">Chat History</a>
+  <a href="float-ball.html">Float Ball</a>
+  <div class="group-title">Settings</div>
+  <a href="settings.html">Settings Overview</a>
+  <a href="shortcuts.html">Shortcuts</a>
+  <a href="i18n.html">Multi-language</a>
+  <div class="group-title">Others</div>
+  <a href="changelog.html">Changelog</a>
+  <a href="privacy.html">Privacy Policy</a>
+</aside>
+
+<main class="main-content">
+
+<h1>Introduction</h1>
+
+<h2>What is Momo AI?</h2>
+<p><strong>Momo AI</strong> is a Chrome browser extension that provides an elegant AI chat sidebar experience. You can open the sidebar anytime while browsing any webpage to chat with AI, without switching tabs or opening other apps.</p>
+<p>Momo AI's core philosophy is "<strong>friendly and practical</strong>" — it's not just a chat interface, but a comprehensive AI assistant integrating web search, page capture, image understanding, and deep reasoning.</p>
+
+<img src="../momo-preview.png" alt="Momo AI Bud preview" style="margin:16px 0 24px;box-shadow:0 4px 24px rgba(0,0,0,.18);max-width:100%;display:block">
+
+<h2>Core Features</h2>
+
+<h3>🤖 Multi AI Provider Support</h3>
+<p>Supports 12 AI providers, covering cloud and local models:</p>
+<table>
+  <thead><tr><th>Provider</th><th>Type</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td>OpenAI</td><td>Cloud</td><td>GPT-4o, o1, o3-mini, etc.</td></tr>
+    <tr><td>Google AI</td><td>Cloud</td><td>Gemini 2.5 Flash / Pro</td></tr>
+    <tr><td>DeepSeek</td><td>Cloud</td><td>DeepSeek Chat / Reasoner</td></tr>
+    <tr><td>Qwen</td><td>Cloud</td><td>Qwen3 series</td></tr>
+    <tr><td>OpenRouter</td><td>Cloud</td><td>Aggregation platform with access to multiple models</td></tr>
+    <tr><td>Moonshot (Kimi)</td><td>Cloud</td><td>Moonshot / Kimi K2</td></tr>
+    <tr><td>MiniMax</td><td>Cloud</td><td>MiniMax-Text-01, etc.</td></tr>
+    <tr><td>Groq</td><td>Cloud</td><td>Fast inference; default gpt-oss-120b, Llama 4 Scout, etc.</td></tr>
+    <tr><td>NVIDIA</td><td>Cloud</td><td>NVIDIA NIM models</td></tr>
+    <tr><td>Ollama</td><td>Local</td><td>Run local open-source models</td></tr>
+    <tr><td>LM Studio</td><td>Local</td><td>Desktop LLM tool</td></tr>
+    <tr><td>OpenClaw</td><td>Local</td><td>WebSocket AI gateway (Beta)</td></tr>
+  </tbody>
+</table>
+
+<h3>🔍 Web Search</h3>
+<p>Built-in search engine integration for real-time web information during AI conversations.</p>
+
+<h3>📄 Page Capture</h3>
+<p>One-click page context with default <strong>Smart Capture</strong> mode selection. Page content is injected only for the referenced user turn; follow-up messages do not resend the full page.</p>
+
+<h3>💡 Thinking Mode</h3>
+<p>Enable deep reasoning, showing the complete thinking process — ideal for complex problem solving.</p>
+
+<h3>🖼️ Image Understanding</h3>
+<p>Upload or paste images for vision-capable models to analyze image content.</p>
+
+<h3>🔊 Text-to-Speech</h3>
+<p>AI responses support TTS with customizable voice, speed, and pitch.</p>
+
+<h3>📝 System Prompt Management</h3>
+<p>Built-in useful prompts (translation assistant, writing assistant, etc.), also fully customizable.</p>
+
+<h3>🌐 Multi-language Interface</h3>
+<p>Full support for Traditional Chinese, Simplified Chinese, and English.</p>
+
+<h2>Privacy &amp; Security</h2>
+<ul>
+  <li>All settings are synced across Google accounts via <code>chrome.storage.sync</code></li>
+  <li>Chat history is stored locally only (<code>chrome.storage.local</code>)</li>
+  <li>No personal data is collected, and your conversations are never sent to third-party servers (except the AI provider you choose)</li>
+</ul>
+
+<nav class="page-nav">
+  <span></span>
+  <a href="installation.html"><span class="label">Next</span><span class="title">Installation →</span></a>
+</nav>
+
+</main>
+</div>
+</body>
+</html>

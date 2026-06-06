@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Thinking Mode — Momo AI Docs</title>
+  <link rel="stylesheet" href="../docs.css">
+  <script src="../docs.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">Guide</a>
+    <a href="sidebar-chat.html" class="hide-mobile">Features</a>
+    <a href="changelog.html" class="hide-mobile">Changelog</a>
+    <button class="menu-toggle" aria-label="Menu">☰</button>
+  </nav>
+</header>
+<div class="backdrop"></div>
+<div class="page-wrapper">
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Search...">
+  </div>
+  <div class="group-title">Getting Started</div>
+  <a href="index.html">Introduction</a>
+  <a href="installation.html">Installation</a>
+  <a href="getting-started.html">Quick Start</a>
+  <div class="group-title">Features</div>
+  <a href="sidebar-chat.html">Sidebar Chat</a>
+  <a href="ai-providers.html">AI Providers</a>
+  <a href="web-search.html">Web Search</a>
+  <a href="page-capture.html">Page Capture</a>
+  <a href="image-upload.html">Image Upload</a>
+  <a href="thinking-mode.html">Thinking Mode</a>
+  <a href="tts.html">Text-to-Speech (TTS)</a>
+  <a href="system-prompts.html">System Prompts</a>
+  <a href="chat-history.html">Chat History</a>
+  <a href="float-ball.html">Float Ball</a>
+  <div class="group-title">Settings</div>
+  <a href="settings.html">Settings Overview</a>
+  <a href="shortcuts.html">Shortcuts</a>
+  <a href="i18n.html">Multi-language</a>
+  <div class="group-title">Others</div>
+  <a href="changelog.html">Changelog</a>
+  <a href="privacy.html">Privacy Policy</a>
+</aside>
+<main class="main-content">
+<h1>Thinking Mode</h1>
+<p>Let the AI perform deep reasoning before generating its final response, with the option to display the full thinking process.</p>
+
+<h2>How to Enable</h2>
+<p>Click the 💡 lightbulb icon to toggle the global thinking mode on or off.</p>
+
+<h2>Three Model States</h2>
+
+<h3>Toggleable</h3>
+<p>For example: Qwen's <code>enable_thinking</code>, Gemini's <code>thinkingConfig</code>, Claude's thinking budget, Kimi/Moonshot, MiniMax, etc. — can be toggled via the lightbulb switch.</p>
+
+<h3>Always On</h3>
+<p>For example: DeepSeek Reasoner, OpenAI o1/o3 — thinking is a built-in behavior, and the lightbulb button appears locked.</p>
+
+<h3>Unsupported</h3>
+<p>For example: GPT-4o/GPT-4o-mini, most Ollama/LM Studio models — the lightbulb button is grayed out and unavailable.</p>
+
+<h2>Thinking Process Display</h2>
+<p>Thinking content is shown in a <code>think</code> block that is collapsible and visually separated from the regular response.</p>
+
+<h2>Global vs Per-Model</h2>
+<p>You can use the <strong>global lightbulb button</strong> for unified control, or override individually in each model's settings via <strong>custom JSON</strong>. The two are in an <strong>OR</strong> relationship — use either or both depending on your integration approach.</p>
+
+<nav class="page-nav">
+  <a href="image-upload.html"><span class="label">Previous</span><span class="title">← Image Upload</span></a>
+  <a href="tts.html"><span class="label">Next</span><span class="title">Text-to-Speech →</span></a>
+</nav>
+</main>
+</div>
+</body>
+</html>

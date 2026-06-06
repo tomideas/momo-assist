@@ -1,0 +1,44 @@
+# macOS
+.DS_Store
+._*
+
+# IDE
+.cursor/
+.vscode/
+.idea/
+*.swp
+
+# Archives & build outputs
+*.zip
+*.crx
+dist/
+
+# Signing keys
+*.pem
+keys/
+
+# Design source files
+*.psd
+
+# Videos
+*.mp4
+
+# Temp (personal workspace only, never push)
+temp/
+
+# Research / reference extensions
+research/
+
+# Backups (use git history instead)
+backup/
+
+# Dev notes (internal technical references)
+dev-notes/
+
+# Icon source / animation assets
+icon/
+animation/
+model sets/
+
+# Claude settings
+.claude/

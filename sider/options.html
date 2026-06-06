@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <title>Settings - Hii~ Momo: AI Assist</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <meta id="metaColorScheme" name="color-scheme" content="light" />
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <main class="page">
+
+    <aside class="nav-sidebar">
+      <nav class="nav-menu">
+        <a class="nav-item" href="#sec-language" data-sections="sec-language,sec-theme,sec-typography">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V14M4 10V3M12 21V12M12 8V3M20 21V16M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+          <span data-i18n="navGeneral">一般設定</span>
+        </a>
+        <a class="nav-item" href="#sec-floatball" data-sections="sec-floatball,sec-shortcut">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+          <span data-i18n="navSidebar">側邊欄</span>
+        </a>
+        <a class="nav-item" href="#sec-provider" data-sections="sec-provider,sec-provider-config,sec-models">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></svg>
+          <span data-i18n="navAiModels">AI 模型</span>
+        </a>
+        <a class="nav-item" href="#sec-websearch" data-sections="sec-websearch">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <span data-i18n="navWebSearch">聯網搜尋</span>
+        </a>
+        <a class="nav-item" href="#sec-capture" data-sections="sec-capture">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+          <span data-i18n="navCapture">引用頁面</span>
+        </a>
+        <a class="nav-item" href="#sec-tts" data-sections="sec-tts">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          <span data-i18n="navTts">語音朗讀</span>
+        </a>
+        <a class="nav-item" href="#sec-prompts" data-sections="sec-prompts">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span data-i18n="navPrompts">提示詞</span>
+        </a>
+      </nav>
+    </aside>
+
+    <div class="card">
+
+      <header class="page-header">
+        <h1 class="page-title" data-i18n="pageTitle">設定</h1>
+        <p class="page-subtitle" data-i18n="pageSubtitle">配置你的 AI 助手參數與外觀</p>
+      </header>
+
+      <!-- Language -->
+      <section id="sec-language" class="section section-compact">
+        <h2 class="section-title" data-i18n="language">語言設定</h2>
+        <p class="hint" data-i18n="languageHint">選擇介面顯示語言。</p>
+        <div id="languageSegment" class="seg-group">
+          <button type="button" class="seg-btn" data-lang="hant" data-i18n="langHant">繁體中文</button>
+          <button type="button" class="seg-btn" data-lang="hans" data-i18n="langHans">简体中文</button>
+          <button type="button" class="seg-btn" data-lang="en" data-i18n="langEn">English</button>
+        </div>
+      </section>
+
+      <!-- Theme -->
+      <section id="sec-theme" class="section section-compact">
+        <h2 class="section-title" data-i18n="theme">外觀主題</h2>
+        <div id="themeSegment" class="seg-group">
+          <button class="seg-btn" data-theme="auto" data-i18n="themeAuto">自動</button>
+          <button class="seg-btn" data-theme="light" data-i18n="themeLight">淺色</button>
+          <button class="seg-btn" data-theme="dark" data-i18n="themeDark">深色</button>
+        </div>
+      </section>
+
+      <!-- Typography -->
+      <section id="sec-typography" class="section">
+        <h2 class="section-title" data-i18n="messageText">對話文字</h2>
+        <div class="form-grid">
+          <label class="field-label" for="messageSizeSlider" data-i18n="fontSize">字號</label>
+          <div class="slider-container">
+            <div class="slider-labels">
+              <span class="slider-label" data-i18n="fontSizeSmall">小</span>
+              <span class="slider-label" data-i18n="fontSizeLarge">大</span>
+            </div>
+            <div class="slider-wrapper">
+              <input type="range" id="messageSizeSlider" class="size-slider" min="12" max="20" value="14" step="1">
+              <div class="slider-value" id="messageSizeValue" data-i18n="fontSizeDefault">默認</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-grid">
+          <label class="field-label" for="messageWeightSelect" data-i18n="fontWeight">字體粗細</label>
+          <select id="messageWeightSelect" class="input">
+            <option value="200" data-i18n="fontWeight200">極細 (200)</option>
+            <option value="300" data-i18n="fontWeight300">細體 (300)</option>
+            <option value="400" data-i18n="fontWeight400">正常 (400)</option>
+            <option value="500" data-i18n="fontWeight500">中等 (500)</option>
+            <option value="600" data-i18n="fontWeight600">偏粗 (600)</option>
+            <option value="700" data-i18n="fontWeight700">粗體 (700)</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Float Ball -->
+      <section id="sec-floatball" class="section section-compact">
+        <div class="section-header">
+          <h2 class="section-title" data-i18n="floatBall">懸浮球</h2>
+          <label class="switch" data-i18n-aria-label="floatBallToggle" aria-label="Float ball toggle">
+            <input type="checkbox" id="showFloatBall">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <p class="hint" data-i18n="floatBallHint">顯示在側欄右下角，點擊可快速開啟設定。</p>
+      </section>
+
+      <section id="sec-sidebar-behavior" class="section section-compact">
+        <div class="section-header">
+          <h2 class="section-title" data-i18n="sidebarBehavior">側邊欄行為</h2>
+          <label class="switch" data-i18n-aria-label="freshChatOnPanelOpenToggle" aria-label="Fresh chat on panel open toggle">
+            <input type="checkbox" id="freshChatOnPanelOpen">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <p class="hint" data-i18n="freshChatOnPanelOpenHint">重新打開側邊欄時自動開始新對話；關閉後會延續上次對話。</p>
+      </section>
+
+      <!-- Open Sidebar Shortcut -->
+      <section id="sec-shortcut" class="section section-compact">
+        <h2 class="section-title" data-i18n="shortcutOpenSidebar">開啟側邊欄快捷鍵</h2>
+        <div class="form-field">
+          <p class="hint" data-i18n="shortcutHint">點擊下方按鈕前往快捷鍵設置頁面進行配置。</p>
+          <div class="action-row">
+            <button id="btnOpenShortcutsPage" class="btn btn-outline" data-i18n="openShortcutsPage">打開快捷鍵設置頁面</button>
+          </div>
+        </div>
+      </section>
+
+      <hr class="section-divider">
+
+      <!-- Provider Selection -->
+      <section id="sec-provider" class="section section-provider-select">
+        <h2 class="section-title" data-i18n="aiProvider">AI 服務提供商</h2>
+        <div class="provider-select-wrapper">
+          <div id="providerSelectButton" class="provider-select-button">
+            <img src="assets/icons/qwen.svg" class="provider-icon" alt="Qwen">
+            <span class="provider-name">Qwen</span>
+            <span class="dropdown-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+          </div>
+          <div id="providerDropdown" class="provider-dropdown hidden">
+            <div class="provider-option" data-provider="deepseek">
+              <img src="assets/icons/deepseek.svg" class="provider-icon" alt="DeepSeek">
+              <span>DeepSeek</span>
+            </div>
+            <div class="provider-option" data-provider="google">
+              <img src="assets/icons/google.svg" class="provider-icon" alt="Google AI">
+              <span>Google AI</span>
+            </div>
+            <div class="provider-option" data-provider="groq">
+              <img src="assets/icons/groq.svg" class="provider-icon" alt="Groq">
+              <span>Groq</span>
+            </div>
+            <div class="provider-option" data-provider="hermes">
+              <img src="assets/icons/hermes.svg" class="provider-icon" alt="Hermes">
+              <span>Hermes <span class="beta-text">(beta)</span></span>
+            </div>
+            <div class="provider-option" data-provider="lmstudio">
+              <img src="assets/icons/lmstudio.svg" class="provider-icon" alt="LM Studio">
+              <span>LM Studio</span>
+            </div>
+            <div class="provider-option" data-provider="minimax">
+              <img src="assets/icons/minimax.svg" class="provider-icon" alt="MiniMax">
+              <span>MiniMax</span>
+            </div>
+            <div class="provider-option" data-provider="moonshot">
+              <img src="assets/icons/moonshot.svg" class="provider-icon" alt="Moonshot">
+              <span>Moonshot</span>
+            </div>
+            <div class="provider-option" data-provider="nvidia">
+              <img src="assets/icons/nvidia.svg" class="provider-icon" alt="NVIDIA">
+              <span>NVIDIA</span>
+            </div>
+            <div class="provider-option" data-provider="ollama">
+              <img src="assets/icons/ollama.svg" class="provider-icon" alt="Ollama">
+              <span>Ollama</span>
+            </div>
+            <div class="provider-option" data-provider="openclaw" id="openclawProviderOption">
+              <img src="assets/icons/openclaw.svg" class="provider-icon" alt="OpenClaw">
+              <span>OpenClaw <span class="beta-text">(beta)</span></span>
+            </div>
+            <div class="provider-option" data-provider="openai">
+              <img src="assets/icons/openai.svg" class="provider-icon" alt="OpenAI">
+              <span>OpenAI</span>
+            </div>
+            <div class="provider-option" data-provider="openrouter">
+              <img src="assets/icons/openrouter.svg" class="provider-icon" alt="OpenRouter">
+              <span>OpenRouter</span>
+            </div>
+            <div class="provider-option selected" data-provider="qwen">
+              <img src="assets/icons/qwen.svg" class="provider-icon" alt="Qwen">
+              <span>Qwen</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Provider Configuration -->
+      <section id="sec-provider-config" class="section">
+        <h2 class="section-title" data-i18n="providerConfig">Provider 配置</h2>
+        
+        <!-- Base URL -->
+        <div class="form-field">
+          <label class="field-label" for="providerBaseUrl" data-i18n="apiBaseUrl">API Base URL（可選）</label>
+          <input id="providerBaseUrl" type="text" class="input" data-i18n-placeholder="useDefaultUrl" placeholder="使用默認 URL">
+          <p class="hint" id="providerBaseUrlHint"></p>
+        </div>
+
+        <!-- API Key (label changes to "Gateway Token" for OpenClaw via JS) -->
+        <div class="form-field">
+          <label class="field-label" for="providerApiKey" data-i18n="apiKey">API Key</label>
+          <div class="inline-row">
+            <input id="providerApiKey" type="password" class="input" data-i18n-placeholder="enterApiKey" placeholder="請輸入 API Key">
+            <button id="btnToggleProviderKey" class="btn btn-outline small" data-i18n="showKey">顯示</button>
+          </div>
+          <!-- OpenClaw: Start Test + Setup Guide inline row (no heading) -->
+          <div id="openclawTestRow" class="openclaw-action-row hidden" style="margin-top:8px;">
+            <div class="openclaw-action-left">
+              <button id="btnTestConnectionOC" class="btn btn-outline small" data-i18n="openclawConnect">Connect</button>
+              <span id="testStatusOC" class="inline-status" aria-live="polite"></span>
+            </div>
+            <button id="btnOpenClawTutorial" class="btn btn-outline small openclaw-tutorial-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <span data-i18n="openclawTutorial">設定教學</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- OpenClaw Session Select (only shown for OpenClaw provider) -->
+        <div id="openclawSessionKeyField" class="form-field hidden">
+          <label class="field-label" for="openclawSessionKey" data-i18n="openclawSessionLabel">Session</label>
+          <div class="inline-row">
+            <select id="openclawSessionKey" class="input">
+              <option value="">-- Connect to load Sessions --</option>
+            </select>
+            <button id="btnLoadSessions" class="btn btn-outline small btn-refresh" data-i18n-title="refreshSessions" title="重新整理">
+              <svg class="refresh-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3L21.5 8"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2L2.5 16"/></svg>
+            </button>
+          </div>
+          <p class="hint" id="openclawSessionKeyHint" data-i18n="openclawSessionKeyHint">選擇 OpenClaw Gateway Session 以路由到指定 Agent。</p>
+          <span id="sessionSwitchStatus" class="inline-status" aria-live="polite"></span>
+        </div>
+
+        <!-- Hermes Session Controls (only shown for Hermes provider) -->
+        <div id="hermesSessionField" class="form-field hidden">
+          <label class="field-label" data-i18n="hermesSessionLabel">Hermes Session</label>
+          <div class="inline-row">
+            <button id="btnNewHermesSession" class="btn btn-outline small" data-i18n="hermesNewSession">New Session</button>
+          </div>
+          <p class="hint" id="hermesSessionHint" data-i18n="hermesSessionHint">建立新的 Hermes server session，並清空 Momo 本地 Hermes 對話記錄。</p>
+          <span id="hermesSessionStatus" class="inline-status" aria-live="polite"></span>
+        </div>
+
+        <!-- Thinking Mode Toggle (per-model, moved to model row) -->
+
+        <!-- Test Connection -->
+        <div class="form-field" id="testConnectionField">
+          <h3 class="sub-heading" data-i18n="testConnection">測試連線</h3>
+          <p class="hint" data-i18n="testConnectionHint">檢查 API Key / Proxy 是否有效（會自動授權 host）。</p>
+          <div class="test-row">
+            <button id="btnTestConnection" class="btn btn-outline small" data-i18n="startTest">開始測試</button>
+            <span id="testStatus" class="inline-status" aria-live="polite"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Agent Simple Toggle (shown only for connect-first agent providers) -->
+      <section id="sec-openclaw-toggle" class="section hidden">
+        <div class="form-field">
+          <label class="field-label" data-i18n="enabledModels">啟用模型</label>
+          <div class="model-row" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg-subtle);border-radius:12px;">
+            <span id="agentModelName" style="flex:1;font-size:14px;font-weight:500;color:var(--text);">openclaw</span>
+            <label class="switch" style="margin:0;">
+              <input type="checkbox" id="openclawModelToggle">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Models -->
+      <section id="sec-models" class="section">
+        <div class="section-header">
+          <h2 class="section-title"><span data-i18n="enabledModels">啟用模型</span> <span id="modelCount" class="count-badge">(0)</span></h2>
+          <div class="section-actions">
+            <button id="btnAddModel" class="btn btn-outline small" data-i18n="addModel">新增模型</button>
+          </div>
+        </div>
+        <div class="model-list-header">
+          <span class="mlh-name">Model Name</span>
+        </div>
+        <div id="modelList" class="model-list"></div>
+        <p class="hint" data-i18n="modelsHint">僅「啟用」的模型會顯示在側邊欄下拉選單。</p>
+        <p id="thinkingParamsHint" class="hint hint-secondary"></p>
+      </section>
+
+      <hr class="section-divider">
+
+
+      <!-- Web Search -->
+      <section id="sec-websearch" class="section">
+        <h2 class="section-title" data-i18n="webSearchSettings">聯網搜尋設定</h2>
+        <p class="hint" data-i18n="webSearchSettingsHint">在側邊欄開啟聯網搜尋後，僅在訊息看起來需要即時網路資訊時才會搜尋（例如新聞、價格、天氣、明確「上網查／搜尋」、訊息內網址等），並將結果作為上下文提供給 AI；未開啟時，只有明確「上網查／搜尋」等訊息會自動觸發搜尋。</p>
+
+        <div class="form-grid">
+          <label class="field-label" for="webSearchProviderSelect" data-i18n="webSearchProvider">搜尋引擎</label>
+          <select id="webSearchProviderSelect" class="input">
+            <option value="duckduckgo" data-i18n="webSearchProviderDDG">DuckDuckGo（免費，無需 API Key）</option>
+            <option value="brave" data-i18n="webSearchProviderBrave">Brave Search API（免費 2000 次/月，需 API Key）</option>
+            <option value="tavily" data-i18n="webSearchProviderTavily">Tavily API（免費 1000 次/月，需 API Key）</option>
+          </select>
+        </div>
+
+        <div class="form-grid">
+          <div class="toggle-row">
+            <label class="field-label" data-i18n="simpleInternetSearch">簡易搜尋模式</label>
+            <label class="switch">
+              <input type="checkbox" id="simpleInternetSearchToggle" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <p class="hint" style="margin:0;" data-i18n="simpleInternetSearchHint">開啟時只使用搜尋摘要，關閉時會額外訪問搜尋結果的頁面取得完整內容（較慢但更精確）。</p>
+        </div>
+
+        <div class="form-grid">
+          <label class="field-label" for="totalSearchResultsInput" data-i18n="totalSearchResults">搜尋結果數量</label>
+          <input id="totalSearchResultsInput" type="number" class="input" value="5" min="1" max="20" />
+        </div>
+
+        <div class="form-grid">
+          <div class="toggle-row">
+            <label class="field-label" data-i18n="visitWebsiteInMessage">訪問訊息中的網址</label>
+            <label class="switch">
+              <input type="checkbox" id="visitWebsiteInMessageToggle" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <p class="hint" style="margin:0;" data-i18n="visitWebsiteInMessageHint">開啟時，若訊息中包含網址，會自動抓取該頁面的內容並提供給 AI。</p>
+        </div>
+
+        <div class="form-grid">
+          <div class="toggle-row">
+            <label class="field-label" data-i18n="internetSearchOnByDefault">預設開啟聯網搜尋</label>
+            <label class="switch">
+              <input type="checkbox" id="internetSearchOnByDefaultToggle">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <p class="hint" style="margin:0;" data-i18n="internetSearchOnByDefaultHint">開啟時，每次對話預設啟用聯網搜尋。</p>
+        </div>
+
+        <div id="braveKeyFields" class="form-grid hidden">
+          <label class="field-label" for="braveSearchApiKeyInput" data-i18n="braveSearchApiKey">Brave Search API Key</label>
+          <input id="braveSearchApiKeyInput" type="password" class="input" placeholder="BSA..." />
+          <p class="hint hint-secondary" data-i18n="braveSearchApiKeyHint">到 brave.com/search/api 免費註冊即可取得（每月 2000 次免費搜尋，無需信用卡）。</p>
+        </div>
+        <div id="tavilyKeyFields" class="form-grid hidden">
+          <label class="field-label" for="tavilyApiKeyInput" data-i18n="tavilyApiKey">Tavily API Key</label>
+          <input id="tavilyApiKeyInput" type="password" class="input" placeholder="tvly-xxxxxxxx" />
+          <p class="hint hint-secondary" data-i18n="tavilyApiKeyHint">到 tavily.com 免費註冊即可取得 API Key（每月 1000 次免費搜尋）。</p>
+        </div>
+        <div class="form-grid" style="margin-top:12px;">
+          <label class="field-label" data-i18n="testWebSearch">測試搜尋</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button id="testWebSearchBtn" class="btn btn-outline" data-i18n="startTestSearch">開始測試</button>
+            <span id="testWebSearchStatus" class="status-text"></span>
+          </div>
+        </div>
+      </section>
+
+      <section id="sec-capture" class="section">
+        <h2 class="section-title" data-i18n="pageCapture">引用頁面內容設定</h2>
+        <p class="hint" data-i18n="pageCaptureHint">選擇想擷取的區塊。「Markdown 智能提取」使用 <strong>Mozilla Readability</strong> 智能識別主要內容，自動過濾導航、廣告、側邊欄等，並轉換為 <strong>Markdown 格式</strong>，讓 AI 更容易理解，節省 token。</p>
+        <div class="form-grid">
+          <label class="field-label" for="captureModeSelect" data-i18n="captureMode">擷取模式</label>
+          <select id="captureModeSelect" class="input capture-select">
+            <option value="smart" data-i18n="captureSmart">Smart Capture</option>
+            <option value="reader" data-i18n="captureReader">Markdown 智能提取</option>
+            <option value="visible" data-i18n="captureVisible">可見文字</option>
+            <option value="full" data-i18n="captureFull">整個頁面</option>
+            <option value="custom" data-i18n="captureCustom">自訂 CSS 選擇器</option>
+          </select>
+        </div>
+        <div id="customCaptureFields" class="form-grid hidden">
+          <label class="field-label" for="includeSelectorInput" data-i18n="mainContent">主要內容 (可選)</label>
+          <input id="includeSelectorInput" type="text" class="input" data-i18n-placeholder="example" placeholder="例如：main.article-body" />
+
+          <label class="field-label" for="excludeSelectorInput" data-i18n="excludeBlocks">排除區塊 (一行一個，可選)</label>
+          <textarea id="excludeSelectorInput" class="input textarea" rows="4" data-i18n-placeholder="example" placeholder="例如：nav\nheader\n.sidebar"></textarea>
+        </div>
+        
+        <!-- 字符限制設定 -->
+        <div class="form-field">
+          <label class="field-label" for="pageContextLimit" data-i18n="pageContextLimit">頁面內容字符數上限</label>
+          <input id="pageContextLimit" type="number" class="input" min="1000" max="200000" step="1000" placeholder="20000">
+          <p class="hint" data-i18n="pageContextLimitHint">設定每次引用頁面時發送給 AI 的最大字符數（建議：20000-100000），包含頁面標題、URL、正文等全部內容。數值越大，可捕獲的內容越多，但也會消耗更多 token。Amazon 等複雜頁面建議設置 100000 以上。</p>
+          <p class="hint hint-secondary" data-i18n="pageContextLimitHint2">✨ 智能捕獲：插件會自動檢測虛擬滾動網站（如 Amazon、Twitter、Reddit 等），並使用智能滾動模式自動捕獲完整內容。<strong>點擊「引用頁面」按鈕</strong>後，頁面會自動滾動並累積所有內容（需時 10-30 秒），捕獲完成後內容會自動添加到對話中。可多次點擊重新捕獲最新內容。</p>
+        </div>
+      </section>
+
+      <!-- TTS Settings -->
+      <section id="sec-tts" class="section">
+        <h2 class="section-title" data-i18n="ttsSettings">語音朗讀</h2>
+        <p class="hint" data-i18n="ttsHint">設定 AI 回覆朗讀時的語音、語速與音調。</p>
+
+        <div class="form-grid">
+          <label class="field-label" for="ttsVoiceSelect" data-i18n="ttsVoice">語音</label>
+          <select id="ttsVoiceSelect" class="input"></select>
+        </div>
+
+        <div class="form-grid">
+          <label class="field-label" for="ttsRateSlider" data-i18n="ttsRate">語速</label>
+          <div class="slider-container">
+            <div class="slider-labels">
+              <span class="slider-label" data-i18n="ttsSlow">慢</span>
+              <span class="slider-label" data-i18n="ttsFast">快</span>
+            </div>
+            <div class="slider-wrapper">
+              <input type="range" id="ttsRateSlider" class="size-slider" min="0.5" max="2.0" value="1.0" step="0.1">
+              <div class="slider-value" id="ttsRateValue">1.0x</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="field-label" for="ttsPitchSlider" data-i18n="ttsPitch">音調</label>
+          <div class="slider-container">
+            <div class="slider-labels">
+              <span class="slider-label" data-i18n="ttsLow">低</span>
+              <span class="slider-label" data-i18n="ttsHigh">高</span>
+            </div>
+            <div class="slider-wrapper">
+              <input type="range" id="ttsPitchSlider" class="size-slider" min="0.5" max="1.5" value="1.0" step="0.1">
+              <div class="slider-value" id="ttsPitchValue">1.0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid" style="margin-top:12px;">
+          <label class="field-label" data-i18n="ttsPreview">試聽</label>
+          <button id="ttsPreviewBtn" class="btn btn-outline small" data-i18n="ttsPreviewBtn">播放預覽</button>
+        </div>
+      </section>
+
+      <!-- System Prompts -->
+      <section id="sec-prompts" class="section">
+        <h2 class="section-title" data-i18n="systemPrompts">系統提示詞（System Prompts）</h2>
+        <p class="hint" data-i18n="systemPromptsHint">管理並快速切換不同的 AI 角色行為。</p>
+        
+        <p class="hint variable-hint" data-i18n="promptVariableHint">
+          💡 System prompt defines the AI's role and rules. Your messages and referenced page content are sent separately — no variables needed.
+        </p>
+
+        <div id="promptCardList" class="sp-list"></div>
+<div class="sp-actions-inline">
+          <button id="btnAddPrompt" class="btn btn-outline pill" data-i18n="addPrompt">新增提示詞</button>
+        </div>
+      </section>
+
+      <footer class="save-footer">
+        <div class="footer-left">
+          <p class="designer-credit">Designed by Tom Tam · <a href="https://tomideas.com" target="_blank" rel="noopener noreferrer" class="designer-link">tomideas.com</a></p>
+        </div>
+        <div class="footer-right">
+          <div id="saveStatus" class="status" aria-live="polite"></div>
+          <button id="btnResetPrompts" class="btn btn-outline" data-i18n="resetPrompts">重置為預設</button>
+        </div>
+      </footer>
+    </div>
+  </main>
+
+  <!-- Templates -->
+  <template id="tplModelRow">
+    <div class="model-row">
+      <input type="text" class="model-name-input" data-i18n-placeholder="modelName" placeholder="Model Name">
+      <input type="text" class="model-thinking-params" data-i18n-title="modelThinkingParamsTitle" title="Custom API Parameters (Optional)&#10;Blank = default enable thinking&#10;Fill in JSON to override, for example:&#10;{&quot;enable_thinking&quot;:false}" placeholder='Custom (JSON)'>
+      <input type="text" class="model-prefix-prompt" data-i18n-title="modelPrefixPromptTitle" title="Prefix Prompt (Optional)&#10;Automatically prepended to each message&#10;e.g. /no_think" placeholder='Prefix'>
+      <label class="switch" data-i18n-title="enableDisable" title="Enable/Disable">
+        <input type="checkbox" class="model-enabled" checked>
+        <span class="slider"></span>
+      </label>
+      <button class="icon-btn delete-model" data-i18n-title="delete" title="Delete">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </button>
+    </div>
+  </template>
+
+  <template id="tplPromptCard">
+    <div class="sp-card" data-id="">
+      <label class="sp-radio-wrap">
+        <input type="radio" name="promptRadio" class="sp-radio">
+        <span class="sp-radio-mark"></span>
+      </label>
+      <div class="sp-title" title=""></div>
+      <div class="sp-icons">
+        <label class="switch sp-visible-switch" data-i18n-title="promptVisibleToggle" title="在對話窗口中顯示/隱藏">
+          <input type="checkbox" class="sp-visible" checked>
+          <span class="slider"></span>
+        </label>
+        <button class="sp-icon sp-edit" data-i18n-title="edit" title="編輯">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="sp-icon sp-delete" data-i18n-title="delete" title="刪除">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+      </div>
+    </div>
+  </template>
+
+  <!-- Prompt Edit Modal -->
+  <div id="promptModal" class="prompt-modal" role="dialog" aria-modal="true" hidden>
+    <div class="prompt-modal-backdrop"></div>
+    <div class="prompt-modal-box">
+      <div class="sp-editor-head">
+        <h3 class="sp-editor-title" data-i18n="editPrompt">編輯提示詞</h3>
+        <button class="sp-editor-close prompt-modal-close" data-i18n-title="close" title="關閉">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="sp-field">
+        <label><span data-i18n="promptName">標題</span> <span class="req" data-i18n="required">*</span></label>
+        <input type="text" class="sp-field-input sp-edit-name" data-i18n-placeholder="promptNamePlaceholder" placeholder="名稱">
+      </div>
+      <div class="sp-field">
+        <label><span data-i18n="promptContent">提示詞內容</span> <span class="req" data-i18n="required">*</span></label>
+        <textarea class="sp-field-input sp-edit-text" data-i18n-placeholder="promptContentPlaceholder" placeholder="輸入系統提示詞內容..."></textarea>
+        <div class="sp-foot-note" data-i18n="promptVariables">Define the AI's role, personality, and rules here. User input and page content are handled automatically.</div>
+      </div>
+      <div class="sp-editor-actions">
+        <button class="btn btn-primary sp-update" data-i18n="updatePrompt">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OpenClaw Tutorial Modal -->
+  <div id="openclawTutorialModal" class="prompt-modal" role="dialog" aria-modal="true" hidden>
+    <div class="prompt-modal-backdrop"></div>
+    <div class="prompt-modal-box openclaw-tutorial-box">
+      <div class="sp-editor-head">
+        <h3 class="sp-editor-title" id="agentTutorialTitle">OpenClaw <span class="beta-text">(beta)</span></h3>
+        <button class="sp-editor-close openclaw-tutorial-close" data-i18n-title="close" title="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- OpenClaw Server Setup -->
+      <div id="openclawTutorialContent">
+      <div class="tutorial-section">
+        <div class="tutorial-section-header">
+          <span class="tutorial-icon">⚙️</span>
+          <h4 data-i18n="tutorialServerSetup">Server setup (required for remote gateway)</h4>
+        </div>
+        <p class="tutorial-text" data-i18n-html="tutorialServerDesc">Momo connects with <strong>Token Only</strong> (no device pairing). For remote gateways, configure <code>~/.openclaw/openclaw.json</code> like below — then use the same token in Momo.</p>
+        <ol class="tutorial-steps">
+          <li>
+            <span data-i18n-html="tutorialStep1">Edit <code>~/.openclaw/openclaw.json</code> (example — replace placeholders):</span>
+            <div class="tutorial-code-block">
+              <pre><code>{
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "lan",
+    "controlUi": {
+      "allowedOrigins": [
+        "http://YOUR_HOST:PORT",
+        "null"
+      ],
+      "allowInsecureAuth": true,
+      "dangerouslyDisableDeviceAuth": true
+    }
+  },
+  "auth": {
+    "mode": "token",
+    "token": "&lt;your-gateway-token&gt;"
+  }
+}</code></pre>
+            </div>
+            <p class="tutorial-note" data-i18n-html="tutorialConfigNote"><code>YOUR_HOST:PORT</code> — use the same host/port as Momo’s Gateway URL (<code>ws://YOUR_HOST:PORT</code>; Momo sends <code>http://YOUR_HOST:PORT</code> as Origin). Include <code>"null"</code> for Chrome extension fallback. <code>gateway.port</code> must match your listen port. Set <code>auth.token</code> to your secret; paste the same value into Momo <strong>Gateway Token</strong>.</p>
+          </li>
+          <li data-i18n="tutorialStep2">Restart or reload the gateway for changes to take effect.</li>
+          <li data-i18n-html="tutorialStep3">In Momo: Gateway URL <code>ws://YOUR_HOST:PORT</code> (or <code>http://</code>, auto-converted), same <strong>Gateway Token</strong>, then <strong>Connect</strong> → pick a Session.</li>
+        </ol>
+        <div class="tutorial-caution">
+          <span class="tutorial-caution-icon" aria-hidden="true">▲</span>
+          <p data-i18n="tutorialTokenWarning">Anyone with the token gets full access. Only use on local/trusted networks. Gateway must support protocol v4.</p>
+        </div>
+      </div>
+      </div>
+
+      <!-- Hermes Server Setup -->
+      <div id="hermesTutorialContent" hidden>
+      <div class="tutorial-section">
+        <div class="tutorial-section-header">
+          <span class="tutorial-icon">⚙️</span>
+          <h4 data-i18n="hermesTutorialServerSetup">Hermes API Server setup</h4>
+        </div>
+        <p class="tutorial-text" data-i18n-html="hermesTutorialServerDesc">和 OpenClaw 一樣，Hermes 需要先在 Hermes 的 <code>.env</code> 開啟 API Server，然後重啟 Hermes gateway。</p>
+        <ol class="tutorial-steps">
+          <li>
+            <span data-i18n-html="hermesTutorialStep1">在 Hermes <code>.env</code> 修改：</span>
+            <div class="tutorial-code-block">
+              <pre><code>API_SERVER_ENABLED=true
+API_SERVER_HOST=0.0.0.0
+API_SERVER_PORT=8642
+API_SERVER_KEY=&lt;your-secret-key&gt;
+API_SERVER_CORS_ORIGINS=*</code></pre>
+            </div>
+            <p class="tutorial-note" data-i18n-html="hermesTutorialStep1Note">請把 <code>&lt;your-secret-key&gt;</code> 換成你自己的密碼，並在 Momo 的 API Server Key 欄填入同一個值。</p>
+          </li>
+          <li data-i18n-html="hermesTutorialStep2">重啟 Hermes gateway，讓 <code>.env</code> 變更生效。</li>
+          <li data-i18n-html="hermesTutorialStep3">在 Momo 填入 Base URL，例如 <code>http://127.0.0.1:8642/v1</code> 或你的遠端 URL，然後按 <strong>Connect</strong>。</li>
+        </ol>
+        <div class="tutorial-warning">
+          <span class="tutorial-warning-icon">▲</span>
+          <p data-i18n-html="hermesTutorialWarning"><code>API_SERVER_CORS_ORIGINS=*</code> 是 Chrome extension / 遠端連線最簡單可用設定；公開服務請改用更嚴格的可信任 origin。</p>
+        </div>
+      </div>
+      </div>
+
+      <div class="sp-editor-actions">
+        <button class="btn btn-primary openclaw-tutorial-close" style="width:100%" data-i18n="tutorialGotIt">我知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <script defer src="assets/i18n/i18n-loader.js"></script>
+  <script defer src="prompt-defaults.js"></script>
+  <!-- Shared modules (loaded before options.js) -->
+  <script defer src="js/utils.js"></script>
+  <script defer src="js/storage.js"></script>
+  <script defer src="js/web-search.js"></script>
+  <script defer src="options.js"></script>
+  <script>
+    (function () {
+      const sections = document.querySelectorAll('section[id]');
+      const navItems = document.querySelectorAll('.nav-item[data-sections]');
+      function updateActive() {
+        let current = '';
+        sections.forEach(s => { if (s.getBoundingClientRect().top <= 100) current = s.id; });
+        if (!current && sections.length) current = sections[0].id;
+        navItems.forEach(a => {
+          const secs = (a.dataset.sections || '').split(',');
+          a.classList.toggle('active', secs.includes(current));
+        });
+      }
+      window.addEventListener('scroll', updateActive, { passive: true });
+      updateActive();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>語音朗讀 (TTS) — Momo AI Docs</title>
+  <link rel="stylesheet" href="docs.css">
+  <script src="docs.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="index.html">🐹 Momo AI Docs</a>
+  <nav>
+    <a href="index.html" class="hide-mobile">指南</a>
+    <a href="sidebar-chat.html" class="hide-mobile">功能</a>
+    <a href="changelog.html" class="hide-mobile">更新日誌</a>
+    <button class="menu-toggle" aria-label="選單">☰</button>
+  </nav>
+</header>
+<div class="backdrop"></div>
+<div class="page-wrapper">
+<aside class="sidebar">
+  <div class="sidebar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="搜尋...">
+  </div>
+  <div class="group-title">入門</div>
+  <a href="index.html">介紹</a>
+  <a href="installation.html">安裝</a>
+  <a href="getting-started.html">快速開始</a>
+  <div class="group-title">功能</div>
+  <a href="sidebar-chat.html">側邊欄聊天</a>
+  <a href="ai-providers.html">AI 模型供應商</a>
+  <a href="web-search.html">聯網搜尋</a>
+  <a href="page-capture.html">引用頁面內容</a>
+  <a href="image-upload.html">圖片上傳</a>
+  <a href="thinking-mode.html">思考模式</a>
+  <a href="tts.html">語音朗讀 (TTS)</a>
+  <a href="system-prompts.html">系統提示詞</a>
+  <a href="chat-history.html">聊天記錄</a>
+  <a href="float-ball.html">懸浮球</a>
+  <div class="group-title">設定</div>
+  <a href="settings.html">設定總覽</a>
+  <a href="shortcuts.html">快捷鍵</a>
+  <a href="i18n.html">多語言支援</a>
+  <div class="group-title">其他</div>
+  <a href="changelog.html">更新日誌</a>
+  <a href="privacy.html">隱私政策</a>
+</aside>
+<main class="main-content">
+<h1>語音朗讀 (TTS)</h1>
+<p>使用瀏覽器內建的 Web Speech API，將 AI 回覆以語音朗讀。</p>
+
+<h2>使用方式</h2>
+<p>點擊 🔊 朗讀按鈕開始朗讀；再次點擊同一按鈕可停止。</p>
+
+<h2>文字前處理</h2>
+<p>朗讀前會自動清理回覆內容：</p>
+<ul>
+  <li>移除思考區塊（<code>&lt;think&gt;</code>、<code>&lt;thinking&gt;</code>、<code>&lt;thought&gt;</code>）</li>
+  <li>移除 HTML 標籤和 Markdown 語法</li>
+  <li>移除 emoji 和裝飾符號</li>
+  <li>根據使用者語言偏好自動進行繁簡轉換</li>
+</ul>
+
+<h2>設定（設定 → 語音朗讀）</h2>
+
+<h3>語音選擇</h3>
+<p>從系統與瀏覽器提供的可用語音清單中選擇朗讀聲音。</p>
+<div class="callout tip"><strong>💡 更多語音</strong>在 macOS 或 Windows 的系統設定中可下載並安裝額外語音，安裝後通常會出現在此清單中。</div>
+
+<h3>語速（Rate）</h3>
+<p>調整朗讀速度。</p>
+
+<h3>音調（Pitch）</h3>
+<p>調整朗讀音調高低。</p>
+
+<h3>預覽</h3>
+<p>使用試聽按鈕可預先聽取目前設定效果。</p>
+
+<nav class="page-nav">
+  <a href="thinking-mode.html"><span class="label">上一頁</span><span class="title">← 思考模式</span></a>
+  <a href="system-prompts.html"><span class="label">下一頁</span><span class="title">系統提示詞 →</span></a>
+</nav>
+</main>
+</div>
+</body>
+</html>
