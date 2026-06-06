@@ -4,7 +4,7 @@
 
 🐹 **嘿，夥伴！來認識 Momo** — 你的瀏覽器裡，住著一隻溫暖的小夥伴。Hii~ Momo: AI Assist 是一款由設計師打造的 Chrome 側邊欄，相信 AI 工具不該只有功能，更該有溫度、有個性、有陪伴感 ✨。可選 **12+ AI 供應商** 🤖（含 Groq、Hermes Beta、OpenClaw Beta 等）、**聯網搜尋** 🔍、**頁面擷取與引用** 📄、**圖片上傳與理解** 🖼️、**系統 TTS 語音朗讀** 🔊，並能 **自調字體大小與字粗、方便閱讀** 👁️；介面支援 **繁中 / 簡中 / English** 🌐，還有 **浮球快捷** 🎈、**自訂提示詞**、**聊天記錄** 與 **快捷鍵** — 一切都在一個小小的側邊欄裡，像跟朋友聊天一樣自然 💬
 
-![Momo AI 截圖](docs/momo-preview.png)
+![Momo AI 截圖](site/momo-preview.png)
 
 ## ✨ 功能
 
@@ -85,7 +85,7 @@ API_SERVER_CORS_ORIGINS=*
 
 👉 [tomideas.github.io/momo-assist](https://tomideas.github.io/momo-assist/)
 
-原始檔在 [`docs/`](docs/)。本機預覽見 [`docs/README.md`](docs/README.md)。
+原始檔在 [`site/`](site/)。本機預覽見 [`site/README.md`](site/README.md)。
 
 ## 🗂️ 專案結構
 
@@ -98,7 +98,7 @@ sider/              # 🧩 Chrome 擴充功能原始碼
 ├── assets/         # 🎨 圖示、i18n 翻譯
 ├── js/             # 🧠 核心模組
 └── libs/           # 📚 第三方函式庫
-docs/               # 📖 說明文件網站
+site/               # 📖 說明文件網站
 instruction.md      # 🤖 給 AI 協作用的主說明
 instructions.md     # 🤖 給 AI 工具相容用的入口檔
 ```

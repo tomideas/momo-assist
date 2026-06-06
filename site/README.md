@@ -13,6 +13,6 @@
 ## 本機預覽
 
 ```bash
-python3 -m http.server 8765 --directory docs
+python3 -m http.server 8765 --directory site
 # 瀏覽器開 http://127.0.0.1:8765/
 ```

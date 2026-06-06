@@ -4,7 +4,7 @@
 
 🐹 **Hey bud! Meet Momo** — your friendly AI companion, right in your browser. Hii~ Momo: AI Assist is a Chrome sidebar crafted by a designer who believes AI tools should feel warm, personal, and delightful ✨ — not just functional. Pick from **12+ AI providers** 🤖 (including Groq, Hermes Beta, OpenClaw Beta, and more), **search the web** 🔍, **capture pages** 📄, **upload images** 🖼️, **hear replies with system TTS** 🔊, and **tune font size & weight for comfortable reading** 👁️ — with **Traditional Chinese / Simplified Chinese / English** UI 🌐, a **float ball** for quick access 🎈, **custom prompts**, **chat history**, and **shortcuts** — all from a cozy little sidebar that feels like talking to a friend 💬
 
-![Momo AI Screenshot](docs/momo-preview.png)
+![Momo AI Screenshot](site/momo-preview.png)
 
 ## ✨ Features
 
@@ -85,7 +85,7 @@ User guide (HTML, hosted via GitHub Pages):
 
 👉 [tomideas.github.io/momo-assist](https://tomideas.github.io/momo-assist/)
 
-Source files live in [`docs/`](docs/). See [`docs/README.md`](docs/README.md) for local preview.
+Source files live in [`site/`](site/). See [`site/README.md`](site/README.md) for local preview.
 
 ## 🗂️ Project Structure
 
@@ -98,7 +98,7 @@ sider/              # 🧩 Chrome extension source
 ├── assets/         # 🎨 Icons, i18n translations
 ├── js/             # 🧠 Core modules
 └── libs/           # 📚 Third-party libraries
-docs/               # 📖 Documentation site
+site/               # 📖 Documentation site
 instruction.md      # 🤖 AI collaboration guide (main file)
 instructions.md     # 🤖 Compatibility pointer for AI tools
 ```
