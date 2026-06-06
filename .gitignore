@@ -15,7 +15,6 @@ dist/
 
 # Signing keys
 *.pem
-keys/
 
 # Design source files
 *.psd
