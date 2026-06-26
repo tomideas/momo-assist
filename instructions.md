@@ -44,6 +44,7 @@ Chrome **Manifest V3** 擴充功能：側邊欄 AI 聊天、多供應商 API、�
 │   ├── research/          競品研究，不要複製進正式功能
 │   └── animation/backup/  設計素材備份
 ├── instructions.md        本檔（給 AI 協作）
+├── REPO-LAYOUT.md         架構速查（本機 / GitHub / Release，可複製到其他專案）
 ├── README.md / README.zh-TW.md
 └── .github/workflows/deploy-docs.yml
 ```
@@ -81,6 +82,10 @@ Chrome **Manifest V3** 擴充功能：側邊欄 AI 聊天、多供應商 API、�
 - **System prompt selector**：僅在存在 `visible:true` 的 prompt 時顯示；預設 **MoMo** 為 active
 - **TTS**：`buildTtsPlaybackParts()` 前處理（語義符號轉自然文字、標點切段與停頓、不送標點進引擎）
 - **自動捲動**：`scheduleLayoutAutoFollow()`、`observeMessageImageLayout()` 處理圖片載入後高度變化
+- **長對話記憶體保護**（v2.22.13 起）：
+  - 送 API 前只 hydrate 最近 `IMAGE_HYDRATION_RECENT_TURNS`（預設 2）輪的圖片 base64，較舊訊息只送文字（`getApiMessageContentForSend` 的 `stripImages` 選項、`stripImagePartsKeepText()`）。**勿**改回一次性 hydrate 全部歷史圖片，會讓長對話 + 多圖時記憶體暴漲、側邊欄崩潰。
+  - 單則訊息串流內容超過 `STREAM_RENDER_VERY_LONG_LENGTH`（預設 80000 字）時，串流期間改純文字顯示，避免每次節流更新都重新解析全文 Markdown；`finalizeAssistantMessageContent` 結束後才補渲染完整 Markdown。
+  - `persistSessions()` 寫入 `chrome.storage.local` 失敗（含 `QUOTA_BYTES` 超限）會記錄錯誤並嘗試清理重試，不可移除這層 catch。
 - **檔案很大**：改功能前先 `grep` 定位，避免整檔重寫
 
 ### options.js 職責
@@ -106,6 +111,9 @@ Chrome **Manifest V3** 擴充功能：側邊欄 AI 聊天、多供應商 API、�
 | 版本號 | `sider/manifest.json` → `version` |
 | 發版紀錄 | `CHANGELOG.md`（頂部最新版本區塊） |
 | UI 設計 token | `docs/UI-SPEC.md` |
+| 串流渲染節流間隔/長度閾值 | `sider/sidepanel.js` → `STREAM_RENDER_*` 常數（約第 67–71 行） |
+| 圖片 hydration 保留輪數 | `sider/sidepanel.js` → `IMAGE_HYDRATION_RECENT_TURNS`（`streamChatCompletion` 內） |
+| 會話數量上限/清理規則 | `sider/js/storage.js` → `StorageHelper.MAX_SESSIONS`、`cleanupSessions()` |
 
 ---
 
@@ -178,7 +186,7 @@ Session 結構含 `messages`；頁面引用綁在 **user message** 的 `_pageCon
 2. **無 bundler**：腳本以 `<script src>` 順序載入，注意依賴順序（如 `utils.js` 在 `openclaw.js` 前）。
 3. **每次對外變更**：更新 `sider/manifest.json` 版本 + `CHANGELOG.md` 頂部區塊。
 4. **macOS**：勿 commit `._*`、`.DS_Store`。
-5. **勿 commit**：`keys/`、`dist/*.crx`、`*.zip`、API 金鑰、真實 Gateway token/IP。
+5. **勿 commit**：`keys/`、`*.crx`、`*.zip`、API 金鑰、真實 Gateway token/IP。
 6. **IndexedDB 名稱** `momo-bud-attachments` 除非有遷移計畫，否則不要改。
 7. **使用者文件** 變更時同步 `site/`（HTML），連結指向 `https://tomideas.github.io/momo-assist/`。
 8. **不要**在沒有要求時新增測試框架、TypeScript、或大型抽象層。
@@ -240,7 +248,7 @@ git push origin main
 - Zip 規則：壓縮 **`sider/` 內容**，資產名 `momo-ai-<version>-chrome.zip`
 - Pages 確認：`curl -sI "https://tomideas.github.io/momo-assist/?v=$(date +%s)"`
 - 全域 skill：`~/.cursor/skills/github-release-sync/SKILL.md`
-- `.gitignore` 已排除：`temp/`、`keys/`、`dist/`、`icon/`、`docs/`、`*.pem`、`*.psd`、`*.zip`
+- `.gitignore` 已排除：`temp/`、`keys/`、`icon/`、`docs/`、`*.pem`、`*.psd`、`*.zip`、`*.crx`
 
 ---
 
@@ -249,6 +257,7 @@ git push origin main
 | 檔案 | 用途 |
 |------|------|
 | `README.md` / `README.zh-TW.md` | 對外專案介紹（GitHub 首頁） |
+| `REPO-LAYOUT.md` | **架構速查**：本機 / GitHub / Release 三層（可複製到其他專案） |
 | `site/README.md` | 說明書發佈方式 |
 | （已刪除） | 工作區導覽（內部） |
 | `docs/UI-SPEC.md` | UI 設計系統 token |

@@ -937,8 +937,17 @@ async function hydrateContentAttachmentsForApi(content){
   }
   return hydrated;
 }
+// 丟棄圖片資料、僅保留文字，用於較舊的歷史訊息（避免把全部歷史圖片 base64 載入記憶體）
+function stripImagePartsKeepText(content){
+  if(!Array.isArray(content)) return content;
+  const textParts = content.filter(part => part?.type === 'text');
+  if(!textParts.length) return '[image]';
+  return textParts;
+}
 async function getApiMessageContentForSend(msg, options){
-  return hydrateContentAttachmentsForApi(getApiMessageContent(msg, options));
+  const content = getApiMessageContent(msg, options);
+  if(options?.stripImages) return stripImagePartsKeepText(content);
+  return hydrateContentAttachmentsForApi(content);
 }
 async function extractMessageImagesForSend(msg){
   const urls = [];
@@ -4708,7 +4717,18 @@ function persistSessions(){
   if(sessions.length > StorageHelper.MAX_SESSIONS){
     sessions = StorageHelper.cleanupSessions(sessions);
   }
-  chrome.storage.local.set({ chatSessions:sessions, currentSessionId });
+  chrome.storage.local.set({ chatSessions:sessions, currentSessionId })
+    .catch(err => {
+      // 配額超限：清理舊會話後重試一次，避免靜默丟失資料
+      if(String(err?.message || err).includes('QUOTA_BYTES')){
+        console.warn('[SP] storage quota exceeded, cleaning up and retrying...');
+        sessions = StorageHelper.cleanupSessions(sessions);
+        chrome.storage.local.set({ chatSessions:sessions, currentSessionId })
+          .catch(e => console.error('[SP] persistSessions retry failed:', e));
+      }else{
+        console.error('[SP] persistSessions failed:', err);
+      }
+    });
 }
 
 function toggleSelectAllSessions(){
@@ -7838,11 +7858,21 @@ async function streamChatCompletion(assistantTs){
     .filter(m => !m._pageContext);
   const latestUserMessage = [...sourceMessages].reverse()
     .find(m => m.role === 'user');
+  // 只 hydrate 最近 N 輪的圖片 base64，更舊的訊息保留文字、丟棄圖片資料
+  const IMAGE_HYDRATION_RECENT_TURNS = 2;
+  let hydrateFromIdx = 0;
+  for(let i = sourceMessages.length - 1, turns = 0; i >= 0; i--){
+    if(sourceMessages[i].role === 'user' && ++turns >= IMAGE_HYDRATION_RECENT_TURNS){
+      hydrateFromIdx = i;
+      break;
+    }
+  }
   const messages = await Promise.all(sourceMessages
-    .map(async m => ({
+    .map(async (m, idx) => ({
       role: m.role,
       content: await getApiMessageContentForSend(m, {
-        includePageContext: !!latestUserMessage?._hasPageContext && m.ts === latestUserMessage.ts
+        includePageContext: !!latestUserMessage?._hasPageContext && m.ts === latestUserMessage.ts,
+        stripImages: idx < hydrateFromIdx
       })
     })));
 
@@ -7863,7 +7893,8 @@ async function streamChatCompletion(assistantTs){
   const searchCheck = isAgentProvider ? { needed:false, reason:'agent-provider' } : shouldSearch(userQuery);
   const autoTrigger = !isAgentProvider && !webSearchEnabled && searchCheck.needed && searchCheck.reason === 'explicit-search';
   const doSearch = !isAgentProvider && (webSearchEnabled || autoTrigger);
-  const searchNeeded = doSearch && userQuery && lastUserIdx >= 0 && searchCheck.needed;
+  // 手動開啟開關 = 本回合一定搜尋；shouldSearch 啟發式僅用於開關關閉時的自動觸發
+  const searchNeeded = doSearch && userQuery && lastUserIdx >= 0;
   const isOpenRouter = modelProvider === 'openrouter';
   // Use client-side search whenever possible so every model receives the same grounded source context.
   // OpenRouter :online is kept as a fallback only when local search returns no usable results.
@@ -8266,6 +8297,12 @@ async function streamChatCompletion(assistantTs){
   }, 0);
 }
 function finalizeStreamingMessage(ts){
+  // 清除殘留的串流節流定時器，避免 finalize 後舊定時器再覆蓋一次渲染
+  const pending = streamUpdateTimers.get(ts);
+  if(pending?.timer){
+    clearTimeout(pending.timer);
+    streamUpdateTimers.delete(ts);
+  }
   // 移除消息對象的 _streaming 標記
   const session = getCurrentSession();
   if(session){
@@ -8561,6 +8598,14 @@ function updateStreamingMessage(ts, text){
         const isMd = state.isMarkdown;
         streamUpdateTimers.delete(ts);
         isolateMessageContentElement(node, latest);
+        // 超长内容：串流期間以純文字呈現，避免每次全量重解析 markdown（O(n²)）；
+        // 串流結束時 finalize 會渲染完整 markdown
+        if(isMd && latest.length > STREAM_RENDER_VERY_LONG_LENGTH){
+          node.textContent = String(latest);
+          scheduleAutoFollow();
+          updateScrollBtnVisibility();
+          return;
+        }
         if(isMd){
           const existingThinking = node.querySelector('.reasoning-block');
           if(existingThinking && /<think>[\s\S]*$/i.test(latest)){

@@ -3249,7 +3249,8 @@ async function loadWebSearchSettings(){
       els.tavilyApiKeyInput.value = data.tavilyApiKey || '';
     }
     if(els.simpleInternetSearchToggle){
-      els.simpleInternetSearchToggle.checked = data.simpleInternetSearch !== false;
+      // 預設抓取網頁正文：未設定時開關為關閉（=完整內容模式）
+      els.simpleInternetSearchToggle.checked = data.simpleInternetSearch === true;
     }
     if(els.totalSearchResultsInput){
       els.totalSearchResultsInput.value = data.totalSearchResults || 5;

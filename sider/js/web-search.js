@@ -18,7 +18,7 @@ const WebSearch = (() => {
       braveSearchApiKey: '',
       tavilyApiKey: '',
       totalSearchResults: 5,
-      simpleInternetSearch: true,
+      simpleInternetSearch: false,
       visitWebsiteInMessage: true
     };
     try {
@@ -216,24 +216,18 @@ const WebSearch = (() => {
   /* ═══════════ Simple vs Full search mode ═══════════ */
 
   async function fetchFullPageContents(results, query, maxChars = 2000) {
-    const enhanced = [];
-    for (const r of results.slice(0, 3)) {
+    // 並行抓取前 3 筆結果的網頁正文，避免串行等待造成過長延遲
+    const top = await Promise.all(results.slice(0, 3).map(async r => {
       try {
         const pageText = await fetchPageContent(r.url);
         if (pageText) {
           const truncated = pageText.length > maxChars ? pageText.slice(0, maxChars) + '...' : pageText;
-          enhanced.push({ ...r, fullContent: truncated });
-        } else {
-          enhanced.push(r);
+          return { ...r, fullContent: truncated };
         }
-      } catch {
-        enhanced.push(r);
-      }
-    }
-    for (let i = 3; i < results.length; i++) {
-      enhanced.push(results[i]);
-    }
-    return enhanced;
+      } catch {}
+      return r;
+    }));
+    return top.concat(results.slice(3));
   }
 
   /* ═══════════ Public API ═══════════ */
