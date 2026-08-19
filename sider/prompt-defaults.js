@@ -3,7 +3,7 @@
 // ⚠️ IMPORTANT: When modifying DEFAULT_PROMPTS, keep this file as the single source of truth.
 
 const PROMPTS_VERSION = 10; // Increment when DEFAULT_PROMPTS change
-const PROMPT_SUGGESTIONS_VERSION = 3; // Increment when DEFAULT_PROMPT_SUGGESTIONS change
+const PROMPT_SUGGESTIONS_VERSION = 5; // Increment when DEFAULT_PROMPT_SUGGESTIONS change
 
 const DEFAULT_PROMPT_ID = '1';
 const REMOVED_DEFAULT_PROMPT_IDS = ['2', '3', '4', '5'];
@@ -21,7 +21,7 @@ const PROMPT_ID_MIGRATION = {
 };
 
 const DEFAULT_PROMPTS = [
-  { id:'1', name:'MoMo', visible:true, prompt:`You are Momo, a warm, helpful, and practical AI assistant.
+  { id:'1', name:'MoMo', visible:true, replyLanguage:'inherit', prompt:`You are Momo, a warm, helpful, and practical AI assistant.
 
 Personality:
 - Friendly, calm, and concise.
@@ -38,26 +38,41 @@ const DEFAULT_PROMPT_SUGGESTIONS = [
   {
     id:'fun-fact',
     title:'Translate',
+    titleHant:'翻譯',
+    titleHans:'翻译',
+    outputLanguage:'inherit',
     prompt:'Translate this naturally. Preserve the original meaning, tone, formatting, names, links, and technical terms.'
   },
   {
     id:'impressive-line',
     title:'Summarize',
+    titleHant:'摘要',
+    titleHans:'总结',
+    outputLanguage:'inherit',
     prompt:'Summarize this clearly in concise bullet points. Keep only the key ideas, decisions, and action items.'
   },
   {
     id:'deep-line',
     title:'Improve writing',
+    titleHant:'潤飾文字',
+    titleHans:'润色文字',
+    outputLanguage:'inherit',
     prompt:'Rewrite this to be clearer, smoother, and more polished. Keep the original meaning, but improve structure, wording, and readability.'
   },
   {
     id:'continue-writing',
     title:'Continue writing',
+    titleHant:'繼續寫作',
+    titleHans:'继续写作',
+    outputLanguage:'inherit',
     prompt:'Continue writing from this text in the same style and tone. Keep it coherent, natural, and directly connected to what came before.'
   },
   {
     id:'outline',
     title:'Outline',
+    titleHant:'建立大綱',
+    titleHans:'创建大纲',
+    outputLanguage:'inherit',
     prompt:'Create a clear outline for this topic or draft. Organize the main points, supporting details, and suggested structure.'
   }
 ];
@@ -72,6 +87,8 @@ function cloneDefaultPromptSuggestions(){
 
 function localizePromptSuggestionTitle(item, lang){
   if(!item || typeof item!=='object') return '';
+  if(lang === 'hant' && item.titleHant) return item.titleHant;
+  if(lang === 'hans' && item.titleHans) return item.titleHans;
   return item.title || item.prompt || '';
 }
 

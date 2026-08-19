@@ -498,9 +498,6 @@ body { overflow:hidden; }
   flex-direction:column;
   gap:14px;
   max-width:min(620px, 100%);
-  max-height:min(42vh, 360px);
-  overflow-y:auto;
-  overscroll-behavior:contain;
   padding-bottom:4px;
 }
 .suggestion-card {
@@ -606,7 +603,7 @@ body { overflow:hidden; }
 .sidebar-frame:not(.chatting) .chat-region {
   display:flex;
   flex-direction:column;
-  justify-content:center;
+  justify-content:safe center;
   align-items:flex-start;
   padding:16px 0 20px;
   gap:22px;

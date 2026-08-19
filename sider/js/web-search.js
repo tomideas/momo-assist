@@ -113,10 +113,25 @@ const WebSearch = (() => {
 
   /* ═══════════ Brave Search API ═══════════ */
 
+  function getSearchIntent(query) {
+    const q = String(query || '');
+    const news = /(新聞|新闻|最新|最近|今日|今天|目前|現在|现在|latest|recent|breaking|news|today|current)/i.test(q);
+    const finance = /(股票|股價|股价|匯率|汇率|幣價|币价|stock|share price|exchange rate|crypto|bitcoin|market cap)/i.test(q);
+    return { news, finance };
+  }
+
   async function searchBrave(query, apiKey, maxResults) {
     if (!apiKey) throw new Error('Brave Search API Key not configured');
+    const lang = String(navigator.language || 'en').split('-')[0].toLowerCase();
+    const params = {
+      q: query,
+      count: String(maxResults),
+      extra_snippets: 'true'
+    };
+    if (/^[a-z]{2}$/.test(lang)) params.search_lang = lang;
+    if (getSearchIntent(query).news) params.freshness = 'pm';
     const url = 'https://api.search.brave.com/res/v1/web/search?' +
-      new URLSearchParams({ q: query, count: String(maxResults) });
+      new URLSearchParams(params);
     const resp = await fetchWithTimeout(url, {
       headers: {
         'Accept': 'application/json',
@@ -130,7 +145,9 @@ const WebSearch = (() => {
     }
     const data = await resp.json();
     return (data.web?.results || []).slice(0, maxResults).map(r => ({
-      title: r.title || '', url: r.url || '', snippet: r.description || ''
+      title: r.title || '',
+      url: r.url || '',
+      snippet: [r.description, ...(r.extra_snippets || [])].filter(Boolean).join('\n')
     }));
   }
 
@@ -138,6 +155,7 @@ const WebSearch = (() => {
 
   async function searchTavily(query, apiKey, maxResults) {
     if (!apiKey) throw new Error('Tavily API Key not configured');
+    const intent = getSearchIntent(query);
     const resp = await fetchWithTimeout('https://api.tavily.com/search', {
       method: 'POST',
       headers: {
@@ -149,7 +167,8 @@ const WebSearch = (() => {
         max_results: maxResults,
         include_answer: false,
         include_raw_content: false,
-        search_depth: 'basic'
+        search_depth: 'basic',
+        topic: intent.finance ? 'finance' : (intent.news ? 'news' : 'general')
       })
     });
     if (!resp.ok) {
@@ -158,7 +177,7 @@ const WebSearch = (() => {
     }
     const data = await resp.json();
     return (data.results || []).slice(0, maxResults).map(r => ({
-      title: r.title || '', url: r.url || '', snippet: r.content || ''
+      title: r.title || '', url: r.url || '', snippet: r.content || '', score: r.score
     }));
   }
 
@@ -167,6 +186,101 @@ const WebSearch = (() => {
   function extractUrlsFromText(text) {
     const re = /https?:\/\/[^\s<>"{}|\\^`[\]]+/g;
     return (text.match(re) || []).map(u => u.replace(/[.,;:!?)]+$/, ''));
+  }
+
+  function canonicalUrlKey(url) {
+    try {
+      const parsed = new URL(url);
+      parsed.hash = '';
+      for (const key of [...parsed.searchParams.keys()]) {
+        if (/^(utm_|fbclid$|gclid$|ref$|source$)/i.test(key)) parsed.searchParams.delete(key);
+      }
+      parsed.hostname = parsed.hostname.toLowerCase();
+      if (parsed.pathname.length > 1) parsed.pathname = parsed.pathname.replace(/\/+$/, '');
+      return parsed.toString();
+    } catch {
+      return String(url || '').trim();
+    }
+  }
+
+  function getQueryTerms(query) {
+    const rawTerms = String(query || '')
+      .toLowerCase()
+      .match(/[\p{Script=Han}]{2,}|[\p{L}\p{N}][\p{L}\p{N}._-]{1,}/gu) || [];
+    const stop = new Set(['the', 'and', 'for', 'with', 'what', 'when', 'where', 'which', 'about', 'this', 'that',
+      '請問', '请问', '幫我', '帮我', '一下', '可以', '能否', '是否', '什麼', '什么', '怎麼', '怎么']);
+    const terms = [];
+    for (const term of rawTerms) {
+      if (stop.has(term)) continue;
+      if (/^[\p{Script=Han}]+$/u.test(term) && term.length > 4) {
+        for (let i = 0; i < term.length - 1; i++) terms.push(term.slice(i, i + 2));
+      } else {
+        terms.push(term);
+      }
+    }
+    return [...new Set(terms)].slice(0, 12);
+  }
+
+  function resultRelevance(result, query) {
+    if (Number.isFinite(result.score)) return result.score * 10;
+    const haystack = `${result.title || ''}\n${result.snippet || ''}`.toLowerCase();
+    return getQueryTerms(query).reduce((score, term) => score + (haystack.includes(term) ? 1 : 0), 0);
+  }
+
+  function dedupeAndRankResults(results, query) {
+    const unique = [];
+    const indexByUrl = new Map();
+    for (const result of results || []) {
+      const canonical = canonicalUrlKey(result.url);
+      if (!canonical) continue;
+      const existingIndex = indexByUrl.get(canonical);
+      if (existingIndex != null) {
+        const existing = unique[existingIndex];
+        if (resultRelevance(result, query) > resultRelevance(existing, query)) {
+          unique[existingIndex] = { ...result, _order: existing._order };
+        }
+        continue;
+      }
+      indexByUrl.set(canonical, unique.length);
+      unique.push({ ...result, _order: unique.length });
+    }
+    return unique
+      .sort((a, b) => resultRelevance(b, query) - resultRelevance(a, query) || a._order - b._order)
+      .map(({ _order, ...result }) => result);
+  }
+
+  function extractRelevantPassages(text, query, maxChars = 2400) {
+    const normalized = String(text || '').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+    if (!normalized || normalized.length <= maxChars) return normalized;
+    const terms = getQueryTerms(query);
+    if (!terms.length) return normalized.slice(0, maxChars) + '…';
+
+    const chunks = normalized
+      .split(/\n{2,}|(?<=[。！？.!?])\s+(?=[\p{L}\p{N}])/u)
+      .map((value, index) => ({ value: value.trim(), index }))
+      .filter(chunk => chunk.value.length >= 30);
+    const ranked = chunks
+      .map(chunk => ({
+        ...chunk,
+        score: terms.reduce((score, term) => score + (chunk.value.toLowerCase().includes(term) ? 1 : 0), 0)
+      }))
+      .filter(chunk => chunk.score > 0)
+      .sort((a, b) => b.score - a.score || a.index - b.index);
+    if (!ranked.length) return normalized.slice(0, maxChars) + '…';
+
+    const selected = [];
+    let used = 0;
+    for (const chunk of ranked) {
+      if (selected.length > 0 && used + chunk.value.length + 2 > maxChars) continue;
+      selected.push(chunk);
+      used += chunk.value.length + 2;
+      if (used >= maxChars * 0.8) break;
+    }
+    return selected
+      .sort((a, b) => a.index - b.index)
+      .map(chunk => chunk.value)
+      .join('\n\n')
+      .slice(0, maxChars);
   }
 
   async function fetchPageContent(url) {
@@ -198,7 +312,7 @@ const WebSearch = (() => {
     }
   }
 
-  async function visitWebsitesInMessage(userMessage, maxChars = 3000) {
+  async function visitWebsitesInMessage(userMessage, maxChars = 4000) {
     const urls = extractUrlsFromText(userMessage);
     if (!urls.length) return { hasUrls: false, urls: [], contents: [] };
 
@@ -206,8 +320,7 @@ const WebSearch = (() => {
     for (const url of urls.slice(0, 3)) {
       const text = await fetchPageContent(url);
       if (text) {
-        const truncated = text.length > maxChars ? text.slice(0, maxChars) + '...' : text;
-        contents.push({ url, content: truncated });
+        contents.push({ url, content: extractRelevantPassages(text, userMessage, maxChars) });
       }
     }
     return { hasUrls: true, urls, contents };
@@ -215,14 +328,13 @@ const WebSearch = (() => {
 
   /* ═══════════ Simple vs Full search mode ═══════════ */
 
-  async function fetchFullPageContents(results, query, maxChars = 2000) {
+  async function fetchFullPageContents(results, query, maxChars = 2400) {
     // 並行抓取前 3 筆結果的網頁正文，避免串行等待造成過長延遲
     const top = await Promise.all(results.slice(0, 3).map(async r => {
       try {
         const pageText = await fetchPageContent(r.url);
         if (pageText) {
-          const truncated = pageText.length > maxChars ? pageText.slice(0, maxChars) + '...' : pageText;
-          return { ...r, fullContent: truncated };
+          return { ...r, fullContent: extractRelevantPassages(pageText, query, maxChars) };
         }
       } catch {}
       return r;
@@ -271,6 +383,8 @@ const WebSearch = (() => {
         throw e;
       }
     }
+
+    results = dedupeAndRankResults(results, q).slice(0, maxResults);
 
     if (!simpleMode && results.length > 0) {
       console.log('[WebSearch] Fetching full page contents for top results...');

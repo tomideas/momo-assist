@@ -105,6 +105,7 @@ section[id] { scroll-margin-top:100px; }
   line-height:20px;
   border-radius:9px;
 }
+.language-setting-row + .language-setting-row { padding-top:16px; }
 
 /* Shortcut row */
 .shortcut-row {
@@ -360,14 +361,16 @@ html[data-theme="dark"] .seg-group .seg-btn.active:hover { background:var(--bg-a
 .designer-link:hover { color:var(--focus); text-decoration:underline; }
 
 /* ===== System Prompts Cards ===== */
-.sp-list { display:flex; flex-direction:column; gap:16px; margin-top:18px; }
+.sp-list { display:flex; flex-direction:column; gap:10px; margin-top:14px; }
 .sp-card {
   position:relative;
-  display:flex; align-items:center; gap:20px;
-  padding:18px 26px;
+  display:flex; align-items:center; gap:14px;
+  min-height:48px;
+  padding:8px 16px;
+  box-sizing:border-box;
   background:var(--bg-subtle);
   border:1px solid var(--border);
-  border-radius:18px;
+  border-radius:12px;
   transition:.18s;
 }
 .sp-card:hover { background:var(--bg-card); border-color:var(--border); }
@@ -402,7 +405,7 @@ html[data-theme="dark"] .seg-group .seg-btn.active:hover { background:var(--bg-a
 .sp-icon svg { width:15px; height:15px; stroke-width:1.8; }
 .sp-icon:hover { color:var(--text); background:var(--bg-subtle); border:1px solid var(--border); }
 
-.sp-actions-inline { display:flex; gap:12px; flex-wrap:wrap; margin-top:22px; }
+.sp-actions-inline { display:flex; gap:12px; flex-wrap:wrap; margin-top:16px; }
 .prompt-suggestions-section { padding-top:0; }
 .suggestion-config-list {
   max-height:420px;
@@ -412,7 +415,10 @@ html[data-theme="dark"] .seg-group .seg-btn.active:hover { background:var(--bg-a
 }
 .suggestion-config-card .sp-title { padding-left:0; }
 
-.config-backup-section { border-top:1px solid var(--border); }
+.config-backup-section {
+  border-top:1px solid var(--border);
+  padding-top:24px;
+}
 .config-row {
   display:flex;
   align-items:center;

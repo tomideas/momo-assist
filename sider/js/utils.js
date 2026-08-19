@@ -247,6 +247,7 @@ const PROVIDER_DEFAULTS = {
 /* ── Capture presets ── */
 const CAPTURE_PRESETS = {
   smart:  { include: '', exclude: 'header\nfooter\nnav\naside' },
+  limited:{ include: '', exclude: 'header\nfooter\nnav\naside' },
   visible:{ include: '', exclude: 'header\nfooter\nnav\naside' },
   full:   { include: '', exclude: '' },
   reader: { include: '', exclude: 'header\nfooter\nnav\naside' }

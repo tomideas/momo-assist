@@ -67,6 +67,21 @@
             <option value="en" data-i18n="langEn">English</option>
           </select>
         </div>
+        <div class="language-setting-row">
+          <div class="language-copy">
+            <h2 class="section-title" data-i18n="replyLanguage">AI 回覆語言</h2>
+            <p id="replyLanguageHint" class="hint" data-i18n="replyLanguageHint">只在新對話首次請求時使用訊息語言作為預設；之後依照對話延續，明確指定其他語言即可切換。</p>
+          </div>
+          <select id="replyLanguageSelect" class="input language-select" data-i18n-title="replyLanguage">
+            <option value="auto" data-i18n="langAuto">訊息語言（預設）</option>
+            <option value="ui" data-i18n="langFollowInterface">介面語言</option>
+            <option value="hant" data-i18n="langHant">繁體中文</option>
+            <option value="hans" data-i18n="langHans">简体中文</option>
+            <option value="en" data-i18n="langEn">English</option>
+            <option value="ja" data-i18n="langJapanese">日本語</option>
+            <option value="ko" data-i18n="langKorean">한국어</option>
+          </select>
+        </div>
       </section>
 
       <!-- Theme -->
@@ -436,15 +451,13 @@
 
       <section id="sec-capture" class="section">
         <h2 class="section-title" data-i18n="pageCapture">引用頁面內容設定</h2>
-        <p class="hint" data-i18n="pageCaptureHint">選擇想擷取的區塊。「Markdown 智能提取」使用 <strong>Mozilla Readability</strong> 智能識別主要內容，自動過濾導航、廣告、側邊欄等，並轉換為 <strong>Markdown 格式</strong>，讓 AI 更容易理解，節省 token。</p>
+        <p class="hint" data-i18n="pageCaptureHint">「智能擷取」自動選擇策略且不限字數；「限制字數」使用相同策略並套用字符上限；「整個頁面」擷取全部已載入內容且不限字數。</p>
         <div class="form-grid">
           <label class="field-label" for="captureModeSelect" data-i18n="captureMode">擷取模式</label>
           <select id="captureModeSelect" class="input capture-select">
             <option value="smart" data-i18n="captureSmart">Smart Capture</option>
-            <option value="reader" data-i18n="captureReader">Markdown 智能提取</option>
-            <option value="visible" data-i18n="captureVisible">可見文字</option>
+            <option value="limited" data-i18n="captureLimited">限制字數</option>
             <option value="full" data-i18n="captureFull">整個頁面</option>
-            <option value="custom" data-i18n="captureCustom">自訂 CSS 選擇器</option>
           </select>
         </div>
         <div id="customCaptureFields" class="form-grid hidden">
@@ -457,9 +470,11 @@
         
         <!-- 字符限制設定 -->
         <div class="form-field">
-          <label class="field-label" for="pageContextLimit" data-i18n="pageContextLimit">頁面內容字符數上限</label>
-          <input id="pageContextLimit" type="number" class="input" min="1000" max="200000" step="1000" placeholder="20000">
-          <p class="hint" data-i18n="pageContextLimitHint">設定每次引用頁面時，最多交給 AI 讀取多少文字（建議 20000-100000）。一般保持預設即可；如果頁面很長或內容常被截斷，再把數值調高。數值越大，AI 看到的內容越多，也會用更多 token。</p>
+          <label id="pageContextLimitLabel" class="field-label" for="pageContextLimit" data-i18n="pageContextLimit">頁面內容字符數上限</label>
+          <input id="pageContextLimit" type="number" class="input" min="1000" max="200000" step="1000" placeholder="50000">
+          <p id="pageContextLimitHint" class="hint" data-i18n="pageContextLimitHint">設定「限制字數」模式每次最多交給 AI 讀取多少文字（預設 50000；建議範圍 20000-100000）。</p>
+          <p id="pageContextLimitSmartHint" class="hint hidden" data-i18n="pageContextLimitSmartHint">Smart Capture 會智能提取內容，不套用字符數上限。</p>
+          <p id="pageContextLimitFullHint" class="hint hidden" data-i18n="pageContextLimitFullHint">Full Page 會擷取並傳送頁面中已載入的全部內容，不套用字符數上限。</p>
           <p class="hint hint-secondary" data-i18n="pageContextLimitHint2">✨ 智能捕獲：插件會自動檢測虛擬滾動網站（如 Amazon、Twitter、Reddit 等），並使用智能滾動模式自動捕獲完整內容。<strong>點擊「引用頁面」按鈕</strong>後，頁面會自動滾動並累積所有內容（需時 10-30 秒），捕獲完成後內容會自動添加到對話中。可多次點擊重新捕獲最新內容。</p>
         </div>
       </section>
@@ -660,6 +675,20 @@
         <textarea class="sp-field-input sp-edit-text" data-i18n-placeholder="promptContentPlaceholder" placeholder="輸入系統提示詞內容..."></textarea>
         <div class="sp-foot-note" data-i18n="promptVariables">Define the AI's role, personality, and rules here. User input and page content are handled automatically.</div>
       </div>
+      <div class="sp-field">
+        <label><span data-i18n="promptReplyLanguage">回覆語言</span></label>
+        <select class="sp-field-input sp-edit-language">
+          <option value="inherit" data-i18n="langInheritGlobal">AI 回覆設定</option>
+          <option value="auto" data-i18n="langAuto">訊息語言（預設）</option>
+          <option value="ui" data-i18n="langFollowInterface">介面語言</option>
+          <option value="hant" data-i18n="langHant">繁體中文</option>
+          <option value="hans" data-i18n="langHans">简体中文</option>
+          <option value="en" data-i18n="langEn">English</option>
+          <option value="ja" data-i18n="langJapanese">日本語</option>
+          <option value="ko" data-i18n="langKorean">한국어</option>
+        </select>
+        <div class="sp-foot-note" data-i18n="promptReplyLanguageHint">只控制這個系統提示詞的回答語言；選擇「AI 回覆設定」即可沿用上方設定。你的訊息不會被翻譯。</div>
+      </div>
       <div class="sp-editor-actions">
         <button class="btn btn-primary sp-update" data-i18n="updatePrompt">儲存</button>
       </div>
@@ -684,6 +713,20 @@
         <label><span data-i18n="suggestionPrompt">Prompt</span> <span class="req" data-i18n="required">*</span></label>
         <textarea class="sp-field-input sg-edit-prompt" data-i18n-placeholder="suggestionPromptPlaceholder" placeholder="Full prompt to send..."></textarea>
         <div class="sp-foot-note" data-i18n="suggestionPromptHint">The chat window displays the title only; clicking it sends this full prompt.</div>
+      </div>
+      <div class="sp-field">
+        <label><span class="sg-language-label" data-i18n="suggestionOutputLanguage">輸出語言</span></label>
+        <select class="sp-field-input sg-edit-language">
+          <option value="inherit" data-i18n="langInheritGlobal">AI 回覆設定</option>
+          <option value="same" data-i18n="langSameAsInput">輸入語言</option>
+          <option value="ui" data-i18n="langFollowInterface">介面語言</option>
+          <option value="hant" data-i18n="langHant">繁體中文</option>
+          <option value="hans" data-i18n="langHans">简体中文</option>
+          <option value="en" data-i18n="langEn">English</option>
+          <option value="ja" data-i18n="langJapanese">日本語</option>
+          <option value="ko" data-i18n="langKorean">한국어</option>
+        </select>
+        <div class="sp-foot-note sg-language-hint" data-i18n="suggestionOutputLanguageHint">預設沿用「AI 回覆語言」；只有這個快捷提示需要固定使用其他語言時才更改。</div>
       </div>
       <div class="sp-editor-actions">
         <button class="btn btn-primary sg-update" data-i18n="updateSuggestion">Save suggestion</button>

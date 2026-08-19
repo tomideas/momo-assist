@@ -52,6 +52,7 @@ function initCustomSelect(sel){
   function build(){
     dropdown.innerHTML = '';
     for(const opt of sel.options){
+      if(opt.hidden) continue;
       const item = document.createElement('div');
       if(opt.disabled){
         item.className = 'csel-group';
@@ -101,7 +102,7 @@ function initCustomSelect(sel){
       let idx = sel.selectedIndex;
       const dir = e.key==='ArrowDown'?1:-1;
       for(let i=idx+dir; i>=0 && i<sel.options.length; i+=dir){
-        if(!sel.options[i].disabled){ sel.selectedIndex=i; break; }
+        if(!sel.options[i].disabled && !sel.options[i].hidden){ sel.selectedIndex=i; break; }
       }
       if(sel.selectedIndex!==idx){
         sel.dispatchEvent(new Event('change',{bubbles:true}));
@@ -763,6 +764,8 @@ function cacheDom(){
     openclawModelToggle: $('#openclawModelToggle'),
 
     languageSelect: $('#languageSelect'),
+    replyLanguageSelect: $('#replyLanguageSelect'),
+    replyLanguageHint: $('#replyLanguageHint'),
     themeSegment: $('#themeSegment'),
     showFloatBall: $('#showFloatBall'),
     freshChatOnPanelOpen: $('#freshChatOnPanelOpen'),
@@ -809,13 +812,33 @@ function cacheDom(){
     customCaptureFields: $('#customCaptureFields'),
     includeSelectorInput: $('#includeSelectorInput'),
     excludeSelectorInput: $('#excludeSelectorInput'),
+    pageContextLimitLabel: $('#pageContextLimitLabel'),
     pageContextLimit: $('#pageContextLimit'),
+    pageContextLimitHint: $('#pageContextLimitHint'),
+    pageContextLimitSmartHint: $('#pageContextLimitSmartHint'),
+    pageContextLimitFullHint: $('#pageContextLimitFullHint'),
 
     tplModelRow: $('#tplModelRow'),
     tplPromptCard: $('#tplPromptCard'),
     tplSuggestionCard: $('#tplSuggestionCard'),
     tplPromptEditor: $('#tplPromptEditor')
   });
+}
+
+function updateReplyLanguageHint(){
+  if(!els.replyLanguageHint || !els.replyLanguageSelect) return;
+  const setting=els.replyLanguageSelect.value || 'auto';
+  if(setting === 'auto'){
+    els.replyLanguageHint.textContent=t('replyLanguageHint');
+    return;
+  }
+  const selectedLanguage=setting === 'ui'
+    ? els.languageSelect?.selectedOptions?.[0]?.textContent?.trim()
+    : els.replyLanguageSelect.selectedOptions?.[0]?.textContent?.trim();
+  els.replyLanguageHint.textContent=tpl(
+    setting === 'ui' ? 'replyLanguageHintInterface' : 'replyLanguageHintFixed',
+    { language:selectedLanguage || '' }
+  );
 }
 
 /* ---------- Init ---------- */
@@ -1029,10 +1052,21 @@ function bindEvents(){
         currentLang = lang;
         await applyLanguageConversion();
         els.languageSelect._cselRefresh?.();
+        updateReplyLanguageHint();
         loadProviderConfig(currentProvider);
         updateThinkingHint(currentProvider);
         updateOpenClawSessionPlaceholder();
         refreshTtsVoices?.();
+      });
+    });
+  }
+  if(els.replyLanguageSelect){
+    els.replyLanguageSelect.addEventListener('change',()=>{
+      const replyLanguage = els.replyLanguageSelect.value || 'auto';
+      updateReplyLanguageHint();
+      chrome.storage.local.set({ replyLanguage });
+      chrome.storage.sync.set({ replyLanguage }, ()=>{
+        setStatus(t('saved'),'success');
       });
     });
   }
@@ -1047,7 +1081,7 @@ function bindEvents(){
         });
       }else{
         showAlert(t('pageLimitAlert'));
-        els.pageContextLimit.value = 20000;
+        els.pageContextLimit.value = 50000;
       }
     });
   }
@@ -1112,7 +1146,7 @@ async function loadAll(){
     chrome.storage.local.get([
       'apiKey','apiEndpoint','customModels',
       'providerDataMigrated',
-      'zhVariant','theme','messageSize','messageWeight','showFloatBall','freshChatOnPanelOpen','autoGenerateChatTitles',
+      'zhVariant','replyLanguage','theme','messageSize','messageWeight','showFloatBall','freshChatOnPanelOpen','autoGenerateChatTitles',
       'ttsVoice','ttsVoiceUpdatedAt','ttsRate','ttsPitch','ttsPause','ttsAutoRead', // TTS settings
       'pageCaptureMode','pageCaptureInclude','pageCaptureExclude',
       'pageCaptureCustomInclude','pageCaptureCustomExclude','pageContextLimit',
@@ -1124,7 +1158,7 @@ async function loadAll(){
       'ttsVoice','ttsVoiceUpdatedAt','ttsRate','ttsPitch','ttsPause','ttsAutoRead',
       'pageCaptureMode','pageCaptureInclude','pageCaptureExclude',
       'pageCaptureCustomInclude','pageCaptureCustomExclude',
-      'pageContextLimit','zhVariant',
+      'pageContextLimit','zhVariant','replyLanguage',
       'prompts','defaultPrompt','selectedPrompt','promptSuggestions',
       'promptsVersion','promptSuggestionsVersion','deletedDefaultPrompts',
       ...providerKeys
@@ -1253,11 +1287,16 @@ async function loadAll(){
   if(els.languageSelect){
     els.languageSelect.value = currentLang;
   }
+  if(els.replyLanguageSelect){
+    els.replyLanguageSelect.value = merged.replyLanguage || 'auto';
+  }
   if(typeof window.__applyTranslations === 'function'){
     try{ await window.__applyTranslations(currentLang); }catch(err){
       console.warn('[OPT] Failed to apply translations:', err);
     }
   }
+  els.replyLanguageSelect?._cselRefresh?.();
+  updateReplyLanguageHint();
   // Re-apply provider config now that i18n and currentLang are ready
   loadProviderConfig(currentProvider);
   updateThinkingHint(currentProvider);
@@ -1281,30 +1320,23 @@ async function loadAll(){
   // 初始化 TTS 設定
   initTtsSettings(merged);
 
-  let mode=merged.pageCaptureMode;
+  const storedMode=merged.pageCaptureMode;
+  const mode=['limited', 'full'].includes(storedMode) ? storedMode : 'smart';
   const storedInclude=(merged.pageCaptureInclude||'').trim();
   const storedExclude=normalizeExcludeSelectors(merged.pageCaptureExclude||'');
   const customInclude=((merged.pageCaptureCustomInclude ?? storedInclude) || '').trim();
   const customExclude=normalizeExcludeSelectors((merged.pageCaptureCustomExclude ?? storedExclude) || '');
 
-  if(!mode){
-    if(storedInclude || storedExclude){
-      mode='custom';
-    }else{
-      mode='smart';
-    }
-  }
-
   captureSettings={ mode, include: storedInclude, exclude: storedExclude };
   customCaptureDraft={ include: customInclude, exclude: customExclude };
-  applyCaptureModeUI(mode, mode==='custom' ? customCaptureDraft : captureSettings);
-  if(!merged.pageCaptureMode){
+  applyCaptureModeUI(mode, captureSettings);
+  if(storedMode !== mode){
     persistCaptureSettings(mode, { include: storedInclude, exclude: storedExclude, silent:true });
   }
 
   // Load page context limit
   if(els.pageContextLimit){
-    els.pageContextLimit.value = merged.pageContextLimit || 20000;
+    els.pageContextLimit.value = merged.pageContextLimit || 50000;
   }
 
   // Load web search settings
@@ -1407,7 +1439,7 @@ async function loadAll(){
     const defaults = new Map(DEFAULT_PROMPT_SUGGESTIONS.map(item=>[item.id, item]));
     suggestionList = suggestionList.map(item=>{
       const def = defaults.get(item?.id);
-      return def ? { ...def } : item;
+      return def ? { ...item, outputLanguage:def.outputLanguage || 'inherit' } : item;
     });
     const existingSuggestionIds = new Set(suggestionList.map(item=>item?.id));
     DEFAULT_PROMPT_SUGGESTIONS.forEach(def=>{
@@ -1859,6 +1891,17 @@ function applyCaptureModeUI(mode, values){
   els.customCaptureFields.classList.toggle('hidden', !isCustom);
   els.includeSelectorInput.disabled=!isCustom;
   els.excludeSelectorInput.disabled=!isCustom;
+  const isLimited=effectiveMode==='limited';
+  const isSmart=effectiveMode==='smart';
+  const isFull=effectiveMode==='full';
+  els.pageContextLimitLabel?.classList.toggle('hidden', !isLimited);
+  if(els.pageContextLimit){
+    els.pageContextLimit.disabled=!isLimited;
+    els.pageContextLimit.classList.toggle('hidden', !isLimited);
+  }
+  els.pageContextLimitHint?.classList.toggle('hidden', !isLimited);
+  els.pageContextLimitSmartHint?.classList.toggle('hidden', !isSmart);
+  els.pageContextLimitFullHint?.classList.toggle('hidden', !isFull);
 
   if(isCustom){
     const src=values ?? customCaptureDraft;
@@ -2516,6 +2559,7 @@ function appendPromptCard(p, selectedId){
   const card=els.tplPromptCard.content.firstElementChild.cloneNode(true);
   card.dataset.id=p.id;
   card.dataset.content=p.prompt;
+  card.dataset.replyLanguage=p.replyLanguage || 'inherit';
   const title=card.querySelector('.sp-title');
   
   // 清空並重新構建標題結構
@@ -2579,6 +2623,9 @@ function refreshDynamicI18n(){
   els.promptCardList?.querySelectorAll('.sp-card').forEach(card=>{
     updateDefaultBadge(card, !!card.querySelector('.sp-radio')?.checked);
   });
+  if(els.suggestionCardList){
+    renderSuggestionCards(collectSuggestionsFromUI());
+  }
   els.modelList?.querySelectorAll('.model-row').forEach(applyModelRowI18n);
 }
 
@@ -2640,7 +2687,7 @@ function addPromptCard(){
   const id=uuid();
   // 獲取當前選中的提示詞 ID，保持不變
   const currentSelected=els.promptCardList.querySelector('.sp-card.active')?.dataset.id;
-  appendPromptCard({ id, name:t('newPromptName'), prompt:'' }, currentSelected);
+  appendPromptCard({ id, name:t('newPromptName'), prompt:'', replyLanguage:'inherit' }, currentSelected);
   persistPrompts();
   setStatus(t('addedPrompt'),'success');
   // 直接進入編輯
@@ -2740,12 +2787,17 @@ function openEditor(card){
   const modal=document.getElementById('promptModal');
   const nameInput=modal.querySelector('.sp-edit-name');
   const textArea=modal.querySelector('.sp-edit-text');
+  const languageSelect=modal.querySelector('.sp-edit-language');
 
   // 填入現有值
   const titleEl=card.querySelector('.sp-title');
   const nameSpan=titleEl.querySelector('span:not(.default-badge)');
   nameInput.value=nameSpan ? nameSpan.textContent.trim() : titleEl.textContent.trim().replace(new RegExp(t('defaultBadge')+'$'), '').trim();
   textArea.value=card.dataset.content||'';
+  if(languageSelect){
+    languageSelect.value=card.dataset.replyLanguage || 'inherit';
+    languageSelect._cselRefresh?.();
+  }
 
   const saveChanges = () => {
     const newName=nameInput.value.trim()||t('unnamed');
@@ -2770,6 +2822,7 @@ function openEditor(card){
       }
     }
     card.dataset.content=newContent;
+    card.dataset.replyLanguage=languageSelect?.value || 'inherit';
     persistPrompts();
   };
 
@@ -2825,7 +2878,8 @@ function collectPromptsFromUI(){
       return {
         id:c.dataset.id,
         name:t('unnamed'),
-        prompt:c.dataset.content||''
+        prompt:c.dataset.content||'',
+        replyLanguage:c.dataset.replyLanguage || 'inherit'
       };
     }
     
@@ -2846,7 +2900,8 @@ function collectPromptsFromUI(){
       id:c.dataset.id,
       name:name||t('unnamed'),
       prompt:c.dataset.content||'',
-      visible: visibleToggle ? visibleToggle.checked : true
+      visible: visibleToggle ? visibleToggle.checked : true,
+      replyLanguage:c.dataset.replyLanguage || 'inherit'
     };
     
     console.log('[OPT] collectPromptsFromUI - Collected:', promptData.id, '=', promptData.name, '(content length:', promptData.prompt.length, ')');
@@ -2922,8 +2977,9 @@ function normalizePromptSuggestionTitles(list){
     return {
       ...item,
       title:item.title || def.title || '',
-      titleHant:'',
-      titleHans:''
+      titleHant:item.titleHant || def.titleHant || '',
+      titleHans:item.titleHans || def.titleHans || '',
+      outputLanguage:item.outputLanguage || def.outputLanguage || 'inherit'
     };
   });
 }
@@ -2936,6 +2992,8 @@ function appendSuggestionCard(s){
   card.dataset.title=s.title || '';
   card.dataset.titleHant=s.titleHant || '';
   card.dataset.titleHans=s.titleHans || '';
+  card.dataset.outputLanguage=s.outputLanguage || 'inherit';
+  card.dataset.isTranslation=String(s.id === 'fun-fact');
   const title=card.querySelector('.sp-title');
   title.innerHTML='';
   const titleSpan=document.createElement('span');
@@ -2957,7 +3015,8 @@ function collectSuggestionsFromUI(){
       title,
       titleHant:c.dataset.titleHant || '',
       titleHans:c.dataset.titleHans || '',
-      prompt:c.dataset.prompt || title
+      prompt:c.dataset.prompt || title,
+      outputLanguage:c.dataset.outputLanguage || 'inherit'
     };
   });
 }
@@ -2975,7 +3034,7 @@ function persistSuggestions(){
 }
 
 function addSuggestionCard(){
-  const item={ id:uuid(), title:t('newSuggestionName'), prompt:'' };
+  const item={ id:uuid(), title:t('newSuggestionName'), prompt:'', outputLanguage:'inherit' };
   appendSuggestionCard(item);
   persistSuggestions();
   const card=els.suggestionCardList.querySelector(`.suggestion-config-card[data-id="${item.id}"]`);
@@ -2997,6 +3056,18 @@ function suggestionCardClick(e){
 }
 
 let currentSuggestionEditorId=null;
+function applySuggestionLanguageCopy(modal, isTranslation){
+  const label=modal?.querySelector('.sg-language-label');
+  const hint=modal?.querySelector('.sg-language-hint');
+  const select=modal?.querySelector('.sg-edit-language');
+  if(label) label.textContent=t(isTranslation ? 'translationTargetLanguage' : 'suggestionOutputLanguage');
+  if(hint) hint.textContent=t(isTranslation ? 'translationTargetLanguageHint' : 'suggestionOutputLanguageHint');
+  const sameOption=select?.querySelector('option[value="same"]');
+  if(sameOption) sameOption.hidden=!!isTranslation;
+  if(isTranslation && select?.value === 'same') select.value='inherit';
+  select?._cselRefresh?.();
+}
+
 function openSuggestionEditor(card){
   if(!card) return;
   const sid=card.dataset.id;
@@ -3006,6 +3077,8 @@ function openSuggestionEditor(card){
   const modal=document.getElementById('suggestionModal');
   const titleInput=modal.querySelector('.sg-edit-title');
   const promptArea=modal.querySelector('.sg-edit-prompt');
+  const languageSelect=modal.querySelector('.sg-edit-language');
+  const isTranslation=card.dataset.isTranslation === 'true';
   const localizedTitle = card.querySelector('.sp-title span')?.textContent.trim() || '';
   titleInput.value = currentLang === 'hant'
     ? (card.dataset.titleHant || localizedTitle)
@@ -3013,6 +3086,10 @@ function openSuggestionEditor(card){
       ? (card.dataset.titleHans || localizedTitle)
       : (card.dataset.title || localizedTitle);
   promptArea.value=card.dataset.prompt || '';
+  if(languageSelect){
+    languageSelect.value=card.dataset.outputLanguage || 'inherit';
+    applySuggestionLanguageCopy(modal, isTranslation);
+  }
 
   const saveChanges=()=>{
     const newTitle=titleInput.value.trim() || t('unnamed');
@@ -3032,6 +3109,7 @@ function openSuggestionEditor(card){
       card.dataset.title=newTitle;
     }
     card.dataset.prompt=newPrompt;
+    card.dataset.outputLanguage=languageSelect?.value || 'inherit';
     persistSuggestions();
   };
 
@@ -3054,7 +3132,9 @@ function openSuggestionEditor(card){
   modal.removeAttribute('hidden');
   currentSuggestionEditorId=sid;
   if(typeof window.__applyTranslations === 'function'){
-    window.__applyTranslations(currentLang).catch(()=>{});
+    window.__applyTranslations(currentLang)
+      .then(()=>applySuggestionLanguageCopy(modal, isTranslation))
+      .catch(()=>{});
   }
   titleInput.focus();
 }
@@ -3077,7 +3157,7 @@ function getConfigStorageKeys(){
   const localKeys = [
     'apiKey','apiEndpoint','customModels','providerConfigs','providerDataMigrated',
     AGENT_PROVIDER_CONNECTIONS_KEY,
-    'zhVariant','theme','messageSize','messageWeight',
+    'zhVariant','replyLanguage','theme','messageSize','messageWeight',
     'showFloatBall','freshChatOnPanelOpen','autoGenerateChatTitles',
     'ttsVoice','ttsVoiceUpdatedAt','ttsRate','ttsPitch','ttsPause','ttsAutoRead',
     'chatWithPageEnabled',
@@ -3089,7 +3169,7 @@ function getConfigStorageKeys(){
   ];
   const syncKeys = [
     'activeProvider','model',
-    'zhVariant','theme','messageSize','messageWeight',
+    'zhVariant','replyLanguage','theme','messageSize','messageWeight',
     'showFloatBall','freshChatOnPanelOpen','autoGenerateChatTitles',
     'ttsVoice','ttsVoiceUpdatedAt','ttsRate','ttsPitch','ttsPause','ttsAutoRead',
     'pageCaptureMode','pageCaptureInclude','pageCaptureExclude',
@@ -3222,6 +3302,8 @@ async function applyLanguageConversion(){
       await window.__applyTranslations(lang === 'en' ? 'en' : lang === 'hans' ? 'hans' : 'hant');
     }
     refreshDynamicI18n();
+    els.replyLanguageSelect?._cselRefresh?.();
+    updateReplyLanguageHint();
     updateOpenClawSessionPlaceholder();
     refreshTtsVoices?.();
   }catch(err){
