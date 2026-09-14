@@ -2294,36 +2294,25 @@ async function testConnection(){
       btn.textContent=t('successLabel');
       return;
     }
-    let ok=false;
-    if(apiKey){
-      const headers={ 'Authorization':'Bearer '+apiKey };
-      let modelsBase=endpoint.replace(/\/models\/?$/,'').replace(/\/+$/,'');
-      if(modelsBase && !/\/v1$/.test(modelsBase)) modelsBase=modelsBase+'/v1';
-      const modelsUrl=(modelsBase||'https://api.openai.com/v1')+'/models';
-      const r=await fetch(modelsUrl,{ headers });
-      if(r.ok){
-        setTestStatus(t('successModels'),'success'); btn.textContent=t('successLabel'); ok=true;
-      }
+    // A models endpoint may be public and therefore cannot prove that an API key is valid.
+    // Test the authenticated inference path for every OpenAI-compatible provider instead.
+    const headers={ 'Content-Type':'application/json' };
+    if(apiKey) headers.Authorization='Bearer '+apiKey;
+    const chatUrl=buildChatCompletionsUrl(endpoint);
+    const testModel = PROVIDER_DEFAULTS[currentProvider]?.testModel || getProviderPrimaryModelName(currentProvider) || 'gpt-3.5-turbo';
+    const r2=await fetch(chatUrl,{
+      method:'POST',
+      headers,
+      body:JSON.stringify({ model:testModel, messages:[{role:'system',content:'ping'},{role:'user',content:'Reply only OK.'}], max_tokens:5, stream:false })
+    });
+    if(!r2.ok){
+      const t=await r2.text(); throw new Error('HTTP '+r2.status+' '+t.slice(0,120));
     }
-    if(!ok){
-      const headers={ 'Content-Type':'application/json' };
-      if(apiKey) headers.Authorization='Bearer '+apiKey;
-      const chatUrl=buildChatCompletionsUrl(endpoint);
-      const testModel = PROVIDER_DEFAULTS[currentProvider]?.testModel || getProviderPrimaryModelName(currentProvider) || 'gpt-3.5-turbo';
-      const r2=await fetch(chatUrl,{
-        method:'POST',
-        headers,
-        body:JSON.stringify({ model:testModel, messages:[{role:'system',content:'ping'},{role:'user',content:'hello'}], max_tokens:5 })
-      });
-      if(!r2.ok){
-        const t=await r2.text(); throw new Error('HTTP '+r2.status+' '+t.slice(0,120));
-      }
-      setTestStatus(apiKey?t('successChat'):t('successChatNoKey'),'success'); btn.textContent=t('successLabel');
-    }
+    setTestStatus(apiKey?t('successChat'):t('successChatNoKey'),'success'); btn.textContent=t('successLabel');
   }catch(e){
     const m=e.message||String(e);
     if(/Failed to fetch/i.test(m)) setTestStatus(t('cannotConnect'),'error');
-    else if(/401/.test(m)) setTestStatus(apiKey?t('authKeyFailed'):t('proxyAuthFailed'),'error');
+    else if(/40[13]/.test(m)) setTestStatus(apiKey?t('authKeyFailed'):t('proxyAuthFailed'),'error');
     else setTestStatus(tpl('failedPrefix',{msg:m}),'error');
     btn.textContent=t('failedLabel');
   }finally{

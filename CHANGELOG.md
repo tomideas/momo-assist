@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [2.22.27] — 2026-09-14
+### Fixed — 連線測試改走「需驗證的推理路徑」
+- 原先先試 `/models`，但很多 OpenAI 相容 provider 的 models 端點是公開的，測通了也代表不了 API key 有效；現在一律以 chat completions（ping）測試，401 與 403 都視為金鑰/代理授權失敗
+
 ## [2.22.26] — 2026-07-28
 ### Changed — 回覆語言規則只在首次請求加入
 - 全域、介面或固定回覆語言只在新對話第一次請求時加入模型指令，後續訊息不再重複傳送，減少固定提示消耗的 token。
