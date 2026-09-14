@@ -3186,7 +3186,7 @@ async function exportConfig(){
       chrome.storage.sync.get(syncKeys)
     ]);
     const payload = {
-      app:'Hii~ Momo: AI Assist',
+      app:'Momo: AI Assist',
       type:'momo-config',
       version:VERSION,
       exportedAt:new Date().toISOString(),

@@ -1,8 +1,8 @@
-# 🐹 Hii~ Momo: AI Assist
+# Momo: AI Assist
 
 [繁體中文](README.zh-TW.md) | English
 
-🐹 **Hey bud! Meet Momo** — your friendly AI companion, right in your browser. Hii~ Momo: AI Assist is a Chrome sidebar crafted by a designer who believes AI tools should feel warm, personal, and delightful ✨ — not just functional. Pick from **12+ AI providers** 🤖 (including Groq, Hermes Beta, OpenClaw Beta, and more), **search the web** 🔍, **capture pages** 📄, **upload images** 🖼️, **hear replies with system TTS** 🔊, and **tune font size & weight for comfortable reading** 👁️ — with **Traditional Chinese / Simplified Chinese / English** UI 🌐, a **float ball** for quick access 🎈, **custom prompts**, **chat history**, and **shortcuts** — all from a cozy little sidebar that feels like talking to a friend 💬
+🐹 **Hey bud! Meet Momo** — your friendly AI companion, right in your browser. Momo: AI Assist is a Chrome sidebar crafted by a designer who believes AI tools should feel warm, personal, and delightful ✨ — not just functional. Pick from **12+ AI providers** 🤖 (including Groq, Hermes Beta, OpenClaw Beta, and more), **search the web** 🔍, **capture pages** 📄, **upload images** 🖼️, **hear replies with system TTS** 🔊, and **tune font size & weight for comfortable reading** 👁️ — with **Traditional Chinese / Simplified Chinese / English** UI 🌐, a **float ball** for quick access 🎈, **custom prompts**, **chat history**, and **shortcuts** — all from a cozy little sidebar that feels like talking to a friend 💬
 
 ![Momo AI Screenshot](site/momo-preview.png)
 
@@ -25,7 +25,7 @@
 ## 🧪 Hermes Agent (Beta) Overview
 
 Hermes Agent is a local-first AI agent server.  
-With Hii~ Momo: AI Assist, it works as your private in-browser assistant: lower latency, self-managed gateway, and easier control over local data flow.
+With Momo: AI Assist, it works as your private in-browser assistant: lower latency, self-managed gateway, and easier control over local data flow.
 
 - Default Base URL: `http://127.0.0.1:8642/v1`
 - Default model: `hermes-agent`

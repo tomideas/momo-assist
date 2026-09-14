@@ -1,7 +1,7 @@
-# Hii~ Momo: AI Assist — AI 協作說明書
+# Momo: AI Assist — AI 協作說明書
 
 > 給 **Cursor / Claude / GPT / 其他 AI 模型** 閱讀，用於在本 repo 安全、正確地修改程式碼。  
-> 產品名稱：**Hii~ Momo: AI Assist** · 版本見 `sider/manifest.json` · GitHub：**tomideas/momo-assist**
+> 產品名稱：**Momo: AI Assist** · 版本見 `sider/manifest.json` · GitHub：**tomideas/momo-assist**
 
 ---
 
@@ -176,7 +176,7 @@ Session 結構含 `messages`；頁面引用綁在 **user message** 的 `_pageCon
 - 設計 token 對照：`docs/UI-SPEC.md`
 - 新程式碼優先用 canonical token：`--bg-page`、`--bg-card`、`--accent`、`--focus` 等
 - 設定頁用自訂 dropdown（`initCustomSelect`），不要假設原生 `<select>` 樣式一致
-- 產品顯示名：**Hii~ Momo: AI Assist**（非舊名 Momo AI Bud）
+- 產品顯示名：**Momo: AI Assist**（非舊名 Momo AI Bud）
 
 ---
 

@@ -1,8 +1,8 @@
 {
   "pageTitle": "Settings",
   "pageSubtitle": "Configure your AI assistant parameters and appearance",
-  "optionsDocumentTitle": "Settings - Hii~ Momo: AI Assist",
-  "sidepanelDocumentTitle": "Hii~ Momo: AI Assist",
+  "optionsDocumentTitle": "Settings - Momo: AI Assist",
+  "sidepanelDocumentTitle": "Momo: AI Assist",
   "aiProvider": "AI Service Provider",
   "providerConfig": "Provider Configuration",
   "apiBaseUrl": "API Base URL (Optional)",

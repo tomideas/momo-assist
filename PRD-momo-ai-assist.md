@@ -1,4 +1,4 @@
-# Product Strategy PRD — Hii~ Momo: AI Assist
+# Product Strategy PRD — Momo: AI Assist
 
 > 產品策略全局文件 · Product Strategy Document  
 > 版本 v2.1 · 2026-06-26（路線圖對齊 v2.22.13–14 已完成項目）  

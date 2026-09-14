@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [2.22.28] — 2026-09-14
+### Changed — 產品名稱改名
+- 產品名稱由「🐹 Hii~ Momo: AI Assist」改為 **Momo: AI Assist**（manifest 名稱、動作按鈕、i18n 介面字串、README、說明書與 docs 同步更新；changelog 历史记录保留原名）
+
 ## [2.22.27] — 2026-09-14
 ### Fixed — 連線測試改走「需驗證的推理路徑」
 - 原先先試 `/models`，但很多 OpenAI 相容 provider 的 models 端點是公開的，測通了也代表不了 API key 有效；現在一律以 chat completions（ping）測試，401 與 403 都視為金鑰/代理授權失敗

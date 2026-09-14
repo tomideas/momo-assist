@@ -1,8 +1,8 @@
 {
   "pageTitle": "設定",
   "pageSubtitle": "配置你的 AI 助手參數與外觀",
-  "optionsDocumentTitle": "設定 - Hii~ Momo: AI Assist",
-  "sidepanelDocumentTitle": "Hii~ Momo: AI Assist",
+  "optionsDocumentTitle": "設定 - Momo: AI Assist",
+  "sidepanelDocumentTitle": "Momo: AI Assist",
   "aiProvider": "AI 服務提供商",
   "providerConfig": "服務提供商配置",
   "apiBaseUrl": "API Base URL（可選）",

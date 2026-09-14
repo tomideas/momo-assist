@@ -1,8 +1,8 @@
 
 {
-  "name": "Hii~ Momo: AI Assist",
-  "description": "Friendly AI chat sidebar — Hii~ Momo: AI Assist",
-  "version": "2.22.27",
+  "name": "Momo: AI Assist",
+  "description": "Friendly AI chat sidebar — Momo: AI Assist",
+  "version": "2.22.28",
   "manifest_version": 3,
   "icons": {
     "16": "icons/icon16.png",
@@ -49,7 +49,7 @@
     }
   ],
   "action": {
-    "default_title": "Hii~ Momo: AI Assist"
+    "default_title": "Momo: AI Assist"
   },
   "side_panel": {
     "default_path": "sidepanel.html"
@@ -82,7 +82,7 @@
         "default": "Alt+Shift+Y",
         "mac": "Command+Shift+Y"
       },
-      "description": "Open Hii~ Momo: AI Assist"
+      "description": "Open Momo: AI Assist"
     }
   }
 }
