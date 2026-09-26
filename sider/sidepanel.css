@@ -1605,15 +1605,12 @@ pre {
 
 /* ================= Responsive ================= */
 @media (max-width:540px){
-  .hero-title { font-size:clamp(24px, 7vw, 36px); }
   #promptSelector,#modelSelector { height:26px; line-height:26px; }
   .history-panel { width:min(240px, 78%); }
   .top-toolbar { flex-wrap:wrap; }
   .model-row-wrap { flex-wrap:wrap; }
 }
 @media (max-width:360px){
-  .hero-title { font-size:24px; }
-  .hero-subtitle { font-size:14px; }
   .sidebar-frame { padding:12px 8px 10px; }
   .suggestion-card { padding:12px 14px; font-size:13px; }
   .plain-icon-btn { padding:2px; }
