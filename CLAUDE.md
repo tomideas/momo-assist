@@ -63,3 +63,10 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+## 项目设计系统
+
+涉及 UI、页面、组件、样式或颜色模式时，先读取本项目的
+design-system/AI.md 和最新 design-system/design-system.json，并按 AI.md 执行。
+新增页面沿用现有设计；用户要求修改 UI 时，在同一任务同步相关设计资料。
+完成前检查产品实作、JSON 同步及验证结果，不只修改产品后结束。

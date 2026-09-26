@@ -2,7 +2,7 @@
 {
   "name": "Momo: AI Assist",
   "description": "Friendly AI chat sidebar — Momo: AI Assist",
-  "version": "2.22.28",
+  "version": "2.22.30",
   "manifest_version": 3,
   "icons": {
     "16": "icons/icon16.png",
@@ -20,15 +20,28 @@
     "declarativeNetRequest"
   ],
   "host_permissions": [
+    "https://api.anthropic.com/*",
+    "https://open.bigmodel.cn/*",
+    "https://api.cerebras.ai/*",
+    "https://llm.chutes.ai/*",
     "https://api.openai.com/*",
     "https://api.deepseek.com/*",
+    "https://api.fireworks.ai/*",
     "https://generativelanguage.googleapis.com/*",
     "https://api.groq.com/*",
-    "https://api.minimaxi.chat/*",
+    "https://router.huggingface.co/*",
+    "https://api.minimax.io/*",
+    "https://api.mistral.ai/*",
     "https://api.moonshot.cn/*",
+    "https://api.novita.ai/*",
     "https://integrate.api.nvidia.com/*",
     "https://openrouter.ai/*",
+    "https://api.perplexity.ai/*",
     "https://dashscope.aliyuncs.com/*",
+    "https://api.siliconflow.com/*",
+    "https://api.together.xyz/*",
+    "https://ai-gateway.vercel.sh/*",
+    "https://api.x.ai/*",
     "https://html.duckduckgo.com/*",
     "https://api.search.brave.com/*",
     "https://api.tavily.com/*"

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="1em" height="1em">
+  <title>Fireworks AI</title>
+  <rect width="24" height="24" rx="6" fill="#6D28D9"/>
+  <path d="M12 3.5v17M5.8 7l12.4 10M18.2 7 5.8 17M4 12h16" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>
+  <circle cx="12" cy="12" r="2.2" fill="#FDE047"/>
+</svg>

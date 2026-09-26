@@ -244,30 +244,27 @@ function updateProviderSelectButton(providerId){
 const THINKING_HINTS_I18N = {
   hant: {
     qwen:       '💡 <strong>Custom</strong>：停止思考可填 <code>{"enable_thinking": false}</code>',
-    google:     '💡 <strong>Custom</strong>：Gemini 2.5 Flash 停止思考可填 <code>{"thinkingConfig": {"thinkingBudget": 0}}</code>，Pro 版無法用此方法停止，可改用 Prefix。',
+    google:     '💡 <strong>Custom</strong>：Gemini 3 無法完全停止思考；可填 <code>{"reasoning_effort": "low"}</code> 降低延遲與用量。',
     moonshot:   '💡 <strong>Custom</strong>：停止 Kimi 思考可填 <code>{"thinking": {"type": "disabled"}}</code>',
     openrouter: '💡 <strong>Custom</strong>：停止 Claude 思考可填 <code>{"thinking": {"type": "disabled"}}</code>',
-    deepseek:   '💡 <strong>Custom</strong>：Reasoner 思考無法停止，如需無思考版請改用 deepseek-chat 模型。',
     _default:   '💡 <strong>Custom</strong>：可填入 JSON 覆蓋 API 參數，不填則使用模型預設。',
-    _prefix:    '　<strong>Prefix</strong>：每次發訊息時自動貼在最前面，例如 Gemini 2.5 Pro 無法用 API 停止思考，可填 <code>Direct answer only. No thinking.</code>',
+    _prefix:    '　<strong>Prefix</strong>：每次發訊息時自動貼在最前面，例如 Gemini Pro 無法用 API 停止思考，可填 <code>Direct answer only. No thinking.</code>',
   },
   hans: {
     qwen:       '💡 <strong>Custom</strong>：停止思考可填 <code>{"enable_thinking": false}</code>',
-    google:     '💡 <strong>Custom</strong>：Gemini 2.5 Flash 停止思考可填 <code>{"thinkingConfig": {"thinkingBudget": 0}}</code>，Pro 版无法用此方法停止，可改用 Prefix。',
+    google:     '💡 <strong>Custom</strong>：Gemini 3 无法完全停止思考；可填 <code>{"reasoning_effort": "low"}</code> 降低延迟与用量。',
     moonshot:   '💡 <strong>Custom</strong>：停止 Kimi 思考可填 <code>{"thinking": {"type": "disabled"}}</code>',
     openrouter: '💡 <strong>Custom</strong>：停止 Claude 思考可填 <code>{"thinking": {"type": "disabled"}}</code>',
-    deepseek:   '💡 <strong>Custom</strong>：Reasoner 思考无法停止，如需无思考版请改用 deepseek-chat 模型。',
     _default:   '💡 <strong>Custom</strong>：可填入 JSON 覆盖 API 参数，不填则使用模型预设。',
-    _prefix:    '　<strong>Prefix</strong>：每次发消息时自动贴在最前面，例如 Gemini 2.5 Pro 无法用 API 停止思考，可填 <code>Direct answer only. No thinking.</code>',
+    _prefix:    '　<strong>Prefix</strong>：每次发消息时自动贴在最前面，例如 Gemini Pro 无法用 API 停止思考，可填 <code>Direct answer only. No thinking.</code>',
   },
   en: {
     qwen:       '💡 <strong>Custom</strong>: To disable thinking, fill in <code>{"enable_thinking": false}</code>',
-    google:     '💡 <strong>Custom</strong>: Gemini 2.5 Flash can disable thinking via <code>{"thinkingConfig": {"thinkingBudget": 0}}</code>. Pro cannot — use Prefix instead.',
+    google:     '💡 <strong>Custom</strong>: Gemini 3 cannot fully disable thinking; use <code>{"reasoning_effort": "low"}</code> to reduce latency and usage.',
     moonshot:   '💡 <strong>Custom</strong>: To disable Kimi thinking, fill in <code>{"thinking": {"type": "disabled"}}</code>',
     openrouter: '💡 <strong>Custom</strong>: To disable Claude thinking, fill in <code>{"thinking": {"type": "disabled"}}</code>',
-    deepseek:   '💡 <strong>Custom</strong>: Reasoner cannot disable thinking. To use a non-thinking version, switch to the deepseek-chat model.',
     _default:   '💡 <strong>Custom</strong>: Fill in JSON to override API parameters. Leave empty to use model defaults.',
-    _prefix:    '　<strong>Prefix</strong>: Automatically prepended to every message. e.g. Gemini 2.5 Pro cannot disable thinking via API — fill in <code>Direct answer only. No thinking.</code>',
+    _prefix:    '　<strong>Prefix</strong>: Automatically prepended to every message. e.g. Gemini Pro cannot disable thinking via API — fill in <code>Direct answer only. No thinking.</code>',
   },
 };
 function updateThinkingHint(providerId){
@@ -448,10 +445,12 @@ function loadProviderConfig(providerId){
     const apiKeyLinks = {
       anthropic: 'https://console.anthropic.com/settings/keys',
       bigmodel: 'https://bigmodel.cn/usercenter/proj-mgmt/apikeys',
+      cerebras: 'https://cloud.cerebras.ai/',
       chutes: 'https://chutes.ai/app/api',
       google: 'https://aistudio.google.com/api-keys',
       openai: 'https://platform.openai.com/api-keys',
       deepseek: 'https://platform.deepseek.com/api_keys',
+      fireworks: 'https://app.fireworks.ai/settings/users/api-keys',
       huggingface: 'https://huggingface.co/settings/tokens',
       mistral: 'https://console.mistral.ai/api-keys',
       qwen: 'https://dashscope.console.aliyun.com/apiKeys',
@@ -460,6 +459,8 @@ function loadProviderConfig(providerId){
       nvidia: 'https://build.nvidia.com/settings/api-keys',
       minimax: 'https://platform.minimax.io/user-center/basic-information/interface-key',
       openrouter: 'https://openrouter.ai/keys',
+      perplexity: 'https://www.perplexity.ai/account/api/keys',
+      siliconflow: 'https://cloud.siliconflow.com/account/ak',
       together: 'https://api.together.xyz/settings/api-keys',
       vercel: 'https://vercel.com/account/ai',
       xai: 'https://console.x.ai/',
@@ -795,6 +796,7 @@ function cacheDom(){
     configImportFile: $('#configImportFile'),
 
     saveStatus: $('#saveStatus'),
+    extensionVersion: $('#extensionVersion'),
 
     webSearchProviderSelect: $('#webSearchProviderSelect'),
     braveKeyFields: $('#braveKeyFields'),
@@ -846,6 +848,10 @@ document.addEventListener('DOMContentLoaded', init);
 
 async function init(){
   cacheDom();
+  if(els.extensionVersion){
+    const extensionVersion = chrome.runtime.getManifest().version;
+    els.extensionVersion.textContent = extensionVersion ? `· Version ${extensionVersion}` : '';
+  }
   bindEvents();
   await loadAll();
   applyThemeButtons();
@@ -1090,6 +1096,7 @@ function bindEvents(){
   if(els.messageSizeSlider){
     els.messageSizeSlider.addEventListener('input',()=>{
       const size = String(els.messageSizeSlider.value||'14');
+      updateMessageSizeLabel();
       chrome.storage.local.set({ messageSize: size });
       chrome.storage.sync.set({ messageSize: size }, ()=>{
         setStatus(t('fontSizeUpdated'),'success');
@@ -1175,37 +1182,19 @@ async function loadAll(){
     const storageKey = `provider_${id}`;
     if(merged[storageKey]){
       const stored = merged[storageKey];
-      const defaultModelNames = PROVIDER_DEFAULTS[id].models;
       
-      // Filter models: only keep models that belong to this provider's default list OR are custom additions
-      let models = Array.isArray(stored.models) ? stored.models : providersData[id].models;
-      // 先做一次嚴格清理並補齊 provider 欄位
-      models = sanitizeModels(normalizeModels(models), id).map(m=>({ ...m, provider:id }));
-      const originalCount = models.length;
+      // Keep provider-scoped models, including the same upstream model offered by multiple gateways.
+      const storedModels = Array.isArray(stored.models) ? stored.models : providersData[id].models;
+      const normalizedModels = normalizeModels(storedModels);
+      const originalJson = JSON.stringify(normalizedModels);
+      // 清理後補入新版預設；保留使用者自行加入或仍想繼續使用的舊模型。
+      const models = ensureDefaultModels(sanitizeModels(normalizedModels, id), id)
+        .map(m=>({ ...m, provider:id }));
       
-      // Validate: 僅在「命中其它供應商的預設清單」或「provider 欄位不符」時才過濾；
-      // 本地 provider（ollama/lmstudio/無預設模型）允許任意模型名稱
-      // 其它情況（包含未啟用與自訂名稱）一律保留
-      const isLocalProv = ['ollama','lmstudio','custom'].includes(id) || !(PROVIDER_DEFAULTS[id]?.models?.length);
-      models = models.filter(m => {
-        if(isLocalProv) return true;
-        const modelName = m.name || '';
-        for(const otherId of Object.keys(PROVIDER_DEFAULTS)){
-          if(otherId !== id && PROVIDER_DEFAULTS[otherId].models.includes(modelName)){
-            console.warn(`[OPT] Removing ${modelName} from ${id} (belongs to ${otherId})`);
-            needsCleanup = true;
-            changedProviders.add(id);
-            return false;
-          }
-        }
-        if(m.provider && m.provider!==id){
-          needsCleanup = true; changedProviders.add(id); return false;
-        }
-        return true;
-      });
-      
-      if(models.length !== originalCount){
-        console.log(`[OPT] Cleaned ${id}: ${originalCount} -> ${models.length} models`);
+      if(JSON.stringify(models) !== originalJson){
+        needsCleanup = true;
+        changedProviders.add(id);
+        console.log(`[OPT] Updated ${id} presets: ${normalizedModels.length} -> ${models.length} models`);
       }
       const supportsThinking = !!PROVIDER_DEFAULTS[id].supportsThinking;
       const enableThinking = supportsThinking
@@ -1307,9 +1296,7 @@ async function loadAll(){
   if(els.messageSizeSlider){
     els.messageSizeSlider.value = size;
   }
-  if(els.messageSizeValue){
-    els.messageSizeValue.textContent = t('fontSizeDefault');
-  }
+  updateMessageSizeLabel();
 
   // 初始化訊息字重
   const weight = String(merged.messageWeight || '500');
@@ -2299,11 +2286,19 @@ async function testConnection(){
     const headers={ 'Content-Type':'application/json' };
     if(apiKey) headers.Authorization='Bearer '+apiKey;
     const chatUrl=buildChatCompletionsUrl(endpoint);
-    const testModel = PROVIDER_DEFAULTS[currentProvider]?.testModel || getProviderPrimaryModelName(currentProvider) || 'gpt-3.5-turbo';
+    const { model: selectedModelUid = '' } = await chrome.storage.sync.get('model');
+    const testModel = resolveProviderTestModel(currentProvider, collectModels(), selectedModelUid);
+    if(!testModel) throw new Error(t('noModels'));
+    const testBody = adaptChatCompletionRequest(currentProvider, testModel, {
+      model:testModel,
+      messages:[{role:'system',content:'ping'},{role:'user',content:'Reply only OK.'}],
+      max_tokens:5,
+      stream:false
+    });
     const r2=await fetch(chatUrl,{
       method:'POST',
       headers,
-      body:JSON.stringify({ model:testModel, messages:[{role:'system',content:'ping'},{role:'user',content:'Reply only OK.'}], max_tokens:5, stream:false })
+      body:JSON.stringify(testBody)
     });
     if(!r2.ok){
       const t=await r2.text(); throw new Error('HTTP '+r2.status+' '+t.slice(0,120));
@@ -2335,38 +2330,14 @@ function normalizeModels(raw){
     ...(m.prefixPrompt ? { prefixPrompt: m.prefixPrompt } : {})
   }));
 }
-// 判斷模型預設歸屬的 provider（若不在任何預設名單，回傳 null，視為自定義）
-function getModelOwner(modelName){
-  if(!modelName) return null;
-  for(const pid of Object.keys(PROVIDER_DEFAULTS)){
-    if((PROVIDER_DEFAULTS[pid].models||[]).includes(modelName)) return pid;
-  }
-  return null;
-}
 // 清理模型清單：
 // 1) 去除空名
 // 2) 去重（以名稱為 key）
-// 3) 過濾掉屬於其他 provider 的預設模型
+// 3) 過濾掉明確標記為其他 provider 的模型
 function sanitizeModels(models, currentProviderId){
-  const seen=new Set();
-  const out=[];
-  // 本地 / 自訂 provider 允許任意模型名稱（不做跨 provider 過濾）
-  const isLocalProvider = ['ollama','lmstudio','custom'].includes(currentProviderId) || !(PROVIDER_DEFAULTS[currentProviderId]?.models?.length);
-  (Array.isArray(models)?models:[]).forEach(m=>{
-    const name=(m?.name||'').trim(); if(!name) return;
-    if(!isLocalProvider){
-      const owner=getModelOwner(name);
-      // 若此名稱明確屬於其它 provider 的預設模型，則不保留
-      if(owner && owner!==currentProviderId) return;
-      // 若模型有 provider 欄位但與當前供應商不同，也不保留
-      if(m?.provider && m.provider!==currentProviderId) return;
-    }
-    if(seen.has(name)) return; seen.add(name);
-    out.push({ name, enabled: !!m.enabled, provider: currentProviderId, ...(m.thinkingParams ? { thinkingParams: m.thinkingParams } : {}), ...(m.prefixPrompt ? { prefixPrompt: m.prefixPrompt } : {}) });
-  });
-  return out;
+  return sanitizeProviderModels(models, currentProviderId);
 }
-// 清理所有 provider 的模型，移除跨 provider 的重複模型
+// 清理所有 provider 的模型；同名模型可在不同 provider 下共存
 function cleanupAllProviderModels(){
   let hasChanges = false;
   const cleanedData = {};
@@ -2376,7 +2347,7 @@ function cleanupAllProviderModels(){
     if(!provider || !Array.isArray(provider.models)) return;
     
     const originalModels = provider.models;
-    // 嚴格清理：移除屬於其他 provider 的預設模型
+    // 清理空名、供應商標記錯誤與 provider 內部重複項
     let cleaned = sanitizeModels(originalModels, providerId);
 
     // 檢查是否有變化
@@ -2513,7 +2484,7 @@ function updateMergedModels(){
 }
 
 function persistModels(){
-  // 收集並先行清理，避免把其它供應商的預設模型寫進當前供應商
+  // 收集並清理空名、供應商標記錯誤與 provider 內部重複項
   const collected=collectModels();
   let ms=sanitizeModels(collected, currentProvider);
   els.modelCount.textContent=`(${ms.length})`;
@@ -2608,7 +2579,15 @@ function updateDefaultBadge(card, isDefault){
   }
 }
 
+/* 滑桿下方顯示目前字號：14 顯示「默認」，其餘顯示 px */
+function updateMessageSizeLabel(){
+  if(!els.messageSizeValue || !els.messageSizeSlider) return;
+  const size = String(els.messageSizeSlider.value || '14');
+  els.messageSizeValue.textContent = size === '14' ? t('fontSizeDefault') : `${size}px`;
+}
+
 function refreshDynamicI18n(){
+  updateMessageSizeLabel();
   els.promptCardList?.querySelectorAll('.sp-card').forEach(card=>{
     updateDefaultBadge(card, !!card.querySelector('.sp-radio')?.checked);
   });

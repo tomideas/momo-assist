@@ -106,7 +106,7 @@
             </div>
             <div class="slider-wrapper">
               <input type="range" id="messageSizeSlider" class="size-slider" min="12" max="20" value="14" step="1">
-              <div class="slider-value" id="messageSizeValue" data-i18n="fontSizeDefault">默認</div>
+              <div class="slider-value" id="messageSizeValue"></div>
             </div>
           </div>
         </div>
@@ -200,6 +200,10 @@
               <img src="assets/icons/deepseek.svg" class="provider-icon" alt="DeepSeek">
               <span>DeepSeek</span>
             </div>
+            <div class="provider-option" data-provider="fireworks">
+              <img src="assets/icons/fireworks.svg" class="provider-icon" alt="Fireworks AI">
+              <span>Fireworks AI</span>
+            </div>
             <div class="provider-option" data-provider="google">
               <img src="assets/icons/google.svg" class="provider-icon" alt="Google AI">
               <span>Google AI</span>
@@ -231,6 +235,10 @@
             <div class="provider-option" data-provider="bigmodel">
               <img src="assets/icons/zhipu-color.svg" class="provider-icon" alt="BigModel">
               <span>BigModel (Zhipu)</span>
+            </div>
+            <div class="provider-option" data-provider="cerebras">
+              <img src="assets/icons/cerebras.svg" class="provider-icon" alt="Cerebras">
+              <span>Cerebras</span>
             </div>
             <div class="provider-option" data-provider="hermes">
               <img src="assets/icons/hermes.svg" class="provider-icon" alt="Hermes">
@@ -267,6 +275,14 @@
             <div class="provider-option" data-provider="openrouter">
               <img src="assets/icons/openrouter.svg" class="provider-icon" alt="OpenRouter">
               <span>OpenRouter</span>
+            </div>
+            <div class="provider-option" data-provider="perplexity">
+              <img src="assets/icons/perplexity.svg" class="provider-icon" alt="Perplexity">
+              <span>Perplexity</span>
+            </div>
+            <div class="provider-option" data-provider="siliconflow">
+              <img src="assets/icons/siliconflow.svg" class="provider-icon" alt="SiliconFlow">
+              <span>SiliconFlow</span>
             </div>
             <div class="provider-option selected" data-provider="qwen">
               <img src="assets/icons/qwen.svg" class="provider-icon" alt="Qwen">
@@ -594,7 +610,7 @@
 
       <footer class="save-footer">
         <div class="footer-left">
-          <p class="designer-credit">Designed by Tom Tam · <a href="https://tomideas.com" target="_blank" rel="noopener noreferrer" class="designer-link">tomideas.com</a></p>
+          <p class="designer-credit">Designed by Tom Tam · <a href="https://tomideas.com" target="_blank" rel="noopener noreferrer" class="designer-link">tomideas.com</a><span id="extensionVersion" class="extension-version"></span></p>
         </div>
         <div class="footer-right">
           <div id="saveStatus" class="status" aria-live="polite"></div>

@@ -71,11 +71,13 @@ function normalizeOpenClawGatewayUrl(url) {
 const PROVIDER_ICONS = {
   anthropic: 'assets/icons/anthropic.svg',
   bigmodel:  'assets/icons/zhipu-color.svg',
+  cerebras:  'assets/icons/cerebras.svg',
   chutes:    'assets/icons/chutes.png',
   custom:    'assets/icons/custom.svg',
   qwen:     'assets/icons/qwen.svg',
   openai:   'assets/icons/openai.svg',
   deepseek: 'assets/icons/deepseek.svg',
+  fireworks: 'assets/icons/fireworks.svg',
   huggingface: 'assets/icons/huggingface-color.svg',
   google:   'assets/icons/google.svg',
   mistral:   'assets/icons/mistral-color.svg',
@@ -89,6 +91,8 @@ const PROVIDER_ICONS = {
   minimax:    'assets/icons/minimax.svg',
   moonshot:   'assets/icons/moonshot.svg',
   openrouter: 'assets/icons/openrouter.svg',
+  perplexity: 'assets/icons/perplexity.svg',
+  siliconflow: 'assets/icons/siliconflow.svg',
   together:   'assets/icons/together-color.svg',
   vercel:     'assets/icons/vercel.svg',
   xai:        'assets/icons/xai.svg'
@@ -100,25 +104,31 @@ function getProviderIconUrl(providerId) {
   return '';
 }
 
-/* ── Provider defaults (single source of truth, alphabetical by name) ── */
+/* ── Provider defaults (single source of truth) ── */
 const PROVIDER_DEFAULTS = {
   anthropic: {
     id: 'anthropic', name: 'Anthropic (Claude)',
     baseUrl: 'https://api.anthropic.com/v1',
-    models: ['claude-sonnet-4-5', 'claude-opus-4-1'],
-    testModel: 'claude-sonnet-4-5'
+    models: ['claude-opus-5', 'claude-sonnet-5', 'claude-fable-5-1'],
+    testModel: 'claude-sonnet-5'
   },
   bigmodel: {
     id: 'bigmodel', name: 'BigModel (Zhipu)',
     baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
-    models: ['glm-4.5', 'glm-4.5-air'],
-    testModel: 'glm-4.5-air'
+    models: ['glm-5.2', 'glm-5v-turbo'],
+    testModel: 'glm-5.2'
+  },
+  cerebras: {
+    id: 'cerebras', name: 'Cerebras',
+    baseUrl: 'https://api.cerebras.ai/v1',
+    models: ['gpt-oss-120b', 'zai-glm-4.7'],
+    testModel: 'gpt-oss-120b'
   },
   chutes: {
     id: 'chutes', name: 'Chutes',
     baseUrl: 'https://llm.chutes.ai/v1',
-    models: ['deepseek-ai/DeepSeek-V3.1', 'Qwen/Qwen3-235B-A22B-Instruct-2507'],
-    testModel: 'deepseek-ai/DeepSeek-V3.1'
+    models: ['moonshotai/Kimi-K3-TEE', 'Qwen/Qwen3.8-27B-TEE', 'deepseek-ai/DeepSeek-V4-Flash-0731-TEE'],
+    testModel: 'Qwen/Qwen3.8-27B-TEE'
   },
   custom: {
     id: 'custom', name: 'Custom',
@@ -128,20 +138,26 @@ const PROVIDER_DEFAULTS = {
   deepseek: {
     id: 'deepseek', name: 'DeepSeek',
     baseUrl: 'https://api.deepseek.com/v1',
-    models: ['deepseek-chat', 'deepseek-reasoner'],
-    testModel: 'deepseek-chat'
+    models: ['deepseek-flash'],
+    testModel: 'deepseek-flash'
+  },
+  fireworks: {
+    id: 'fireworks', name: 'Fireworks AI',
+    baseUrl: 'https://api.fireworks.ai/inference/v1',
+    models: ['accounts/fireworks/models/glm-5p2', 'accounts/fireworks/models/kimi-k2p7-code', 'accounts/fireworks/models/kimi-k2p6'],
+    testModel: 'accounts/fireworks/models/kimi-k2p6'
   },
   google: {
     id: 'google', name: 'Google AI',
     baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
-    models: ['gemini-3.1-flash-lite-preview', 'gemini-3-flash-preview'],
-    testModel: 'gemini-3.1-flash-lite-preview'
+    models: ['gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-pro-preview'],
+    testModel: 'gemini-3.5-flash-lite'
   },
   groq: {
     id: 'groq', name: 'Groq',
     baseUrl: 'https://api.groq.com/openai/v1',
-    models: ['openai/gpt-oss-120b', 'meta-llama/llama-4-scout-17b-16e-instruct'],
-    testModel: 'openai/gpt-oss-120b'
+    models: ['openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'llama-3.3-70b-versatile'],
+    testModel: 'openai/gpt-oss-20b'
   },
   hermes: {
     id: 'hermes', name: 'Hermes',
@@ -159,38 +175,38 @@ const PROVIDER_DEFAULTS = {
   huggingface: {
     id: 'huggingface', name: 'Hugging Face',
     baseUrl: 'https://router.huggingface.co/v1',
-    models: ['openai/gpt-oss-120b', 'Qwen/Qwen3-Coder-480B-A35B-Instruct'],
-    testModel: 'openai/gpt-oss-120b'
+    models: ['zai-org/GLM-5.3-Flash', 'deepseek-ai/DeepSeek-V4.1-Flash', 'Qwen/Qwen3.8-27B'],
+    testModel: 'zai-org/GLM-5.3-Flash'
   },
   minimax: {
     id: 'minimax', name: 'MiniMax',
-    baseUrl: 'https://api.minimaxi.chat/v1',
-    models: ['MiniMax-Text-01', 'abab6.5s-chat'],
-    testModel: 'MiniMax-Text-01'
+    baseUrl: 'https://api.minimax.io/v1',
+    models: ['MiniMax-M3', 'MiniMax-M2.7', 'MiniMax-M2.7-highspeed'],
+    testModel: 'MiniMax-M2.7'
   },
   mistral: {
     id: 'mistral', name: 'Mistral',
     baseUrl: 'https://api.mistral.ai/v1',
-    models: ['mistral-large-latest', 'mistral-small-latest'],
-    testModel: 'mistral-small-latest'
+    models: ['mistral-medium-3-5', 'mistral-small-2603'],
+    testModel: 'mistral-small-2603'
   },
   moonshot: {
     id: 'moonshot', name: 'Moonshot',
     baseUrl: 'https://api.moonshot.cn/v1',
-    models: ['kimi-k2.5', 'kimi-k2'],
-    testModel: 'kimi-k2'
+    models: ['kimi-k2.5'],
+    testModel: 'kimi-k2.5'
   },
   novita: {
     id: 'novita', name: 'Novita AI',
-    baseUrl: 'https://api.novita.ai/v3/openai',
-    models: ['deepseek/deepseek-v3.1', 'qwen/qwen3-235b-a22b-instruct-2507'],
-    testModel: 'deepseek/deepseek-v3.1'
+    baseUrl: 'https://api.novita.ai/openai',
+    models: ['zai-org/glm-5.3-flash', 'deepseek/deepseek-v4.1-flash', 'moonshotai/kimi-k3'],
+    testModel: 'zai-org/glm-5.3-flash'
   },
   nvidia: {
     id: 'nvidia', name: 'NVIDIA',
     baseUrl: 'https://integrate.api.nvidia.com/v1',
-    models: ['nvidia/nemotron-3-super-120b-a12b', 'nvidia/nemotron-3-nano-30b-a3b'],
-    testModel: 'nvidia/nemotron-3-nano-30b-a3b'
+    models: ['nvidia/nemotron-3.5-lightning-30b-a3b', 'nvidia/nemotron-3-ultra-550b-a55b', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning'],
+    testModel: 'nvidia/nemotron-3.5-lightning-30b-a3b'
   },
   ollama: {
     id: 'ollama', name: 'Ollama',
@@ -207,42 +223,112 @@ const PROVIDER_DEFAULTS = {
   openai: {
     id: 'openai', name: 'OpenAI',
     baseUrl: 'https://api.openai.com/v1',
-    models: ['gpt-5.4-mini', 'gpt-5.4'],
-    testModel: 'gpt-5.4-mini'
+    models: ['gpt-6-astra', 'gpt-5.6-terra', 'gpt-5.6-luna'],
+    testModel: 'gpt-5.6-luna'
   },
   openrouter: {
     id: 'openrouter', name: 'OpenRouter',
     baseUrl: 'https://openrouter.ai/api/v1',
-    models: ['anthropic/claude-sonnet-4.6', 'deepseek/deepseek-chat'],
-    testModel: 'deepseek/deepseek-chat'
+    models: ['openai/gpt-6-astra', 'anthropic/claude-sonnet-5', 'google/gemini-3.8-flash'],
+    testModel: 'google/gemini-3.8-flash'
+  },
+  perplexity: {
+    id: 'perplexity', name: 'Perplexity',
+    baseUrl: 'https://api.perplexity.ai',
+    models: ['sonar', 'sonar-pro', 'sonar-reasoning-pro', 'sonar-deep-research'],
+    testModel: 'sonar'
   },
   qwen: {
     id: 'qwen', name: 'Qwen',
     baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-    models: ['qwen3.5-plus', 'qwen3.5-flash'],
-    testModel: 'qwen3.5-flash',
+    models: ['qwen3.8-max', 'qwen3.8-flash'],
+    testModel: 'qwen3.8-flash',
     supportsThinking: true,
     defaultEnableThinking: false
+  },
+  siliconflow: {
+    id: 'siliconflow', name: 'SiliconFlow',
+    baseUrl: 'https://api.siliconflow.com/v1',
+    models: ['zai-org/GLM-5.3-Flash', 'deepseek-ai/DeepSeek-V4-Flash-0731', 'Qwen/Qwen3.8-2.4T-A95B'],
+    testModel: 'zai-org/GLM-5.3-Flash'
   },
   together: {
     id: 'together', name: 'Together AI',
     baseUrl: 'https://api.together.xyz/v1',
-    models: ['meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8', 'Qwen/Qwen3-235B-A22B-fp8-tput'],
-    testModel: 'Qwen/Qwen3-235B-A22B-fp8-tput'
+    models: ['MiniMaxAI/MiniMax-M2.7', 'moonshotai/Kimi-K2.6', 'deepseek-ai/DeepSeek-V4-Pro'],
+    testModel: 'MiniMaxAI/MiniMax-M2.7'
   },
   vercel: {
     id: 'vercel', name: 'Vercel AI Gateway',
     baseUrl: 'https://ai-gateway.vercel.sh/v1',
-    models: ['openai/gpt-5.4-mini', 'anthropic/claude-sonnet-4-5'],
-    testModel: 'openai/gpt-5.4-mini'
+    models: ['openai/gpt-6-astra', 'anthropic/claude-sonnet-5', 'google/gemini-3.8-flash'],
+    testModel: 'google/gemini-3.8-flash'
   },
   xai: {
     id: 'xai', name: 'xAI',
     baseUrl: 'https://api.x.ai/v1',
-    models: ['grok-4', 'grok-4-fast'],
-    testModel: 'grok-4-fast'
+    models: ['grok-4.6', 'grok-4.5', 'grok-4.3'],
+    testModel: 'grok-4.6'
   }
 };
+
+/* Resolve the model used by connection tests without inventing a provider-id model. */
+function resolveProviderTestModel(providerId, models, selectedModelUid = '') {
+  const defaults = PROVIDER_DEFAULTS[providerId];
+  if (defaults?.testModel) return defaults.testModel;
+
+  const configured = (Array.isArray(models) ? models : [])
+    .map(model => ({ ...model, name: String(model?.name || '').trim() }))
+    .filter(model => model.name);
+  const selectedValue = String(selectedModelUid || '');
+  const selectedPrefix = `${providerId}::`;
+  const selectedName = selectedValue.startsWith(selectedPrefix)
+    ? selectedValue.slice(selectedPrefix.length).trim()
+    : selectedValue.includes('::') ? '' : selectedValue.trim();
+  if (selectedName && configured.some(model => model.enabled && model.name === selectedName)) return selectedName;
+
+  return configured.find(model => model.enabled)?.name
+    || configured[0]?.name
+    || defaults?.models?.[0]
+    || '';
+}
+
+/* Keep current OpenAI reasoning models compatible with the Chat Completions API. */
+function adaptChatCompletionRequest(providerId, modelName, body) {
+  const request = { ...(body || {}) };
+  const isCurrentOpenAIModel = providerId === 'openai' && /^gpt-(?:5(?:\.|-)|6(?:\.|-))/i.test(String(modelName || ''));
+  if (!isCurrentOpenAIModel) return request;
+
+  delete request.temperature;
+  delete request.top_p;
+  delete request.top_logprobs;
+  delete request.logprobs;
+  if (request.max_tokens !== undefined && request.max_completion_tokens === undefined) {
+    request.max_completion_tokens = request.max_tokens;
+    delete request.max_tokens;
+  }
+  return request;
+}
+
+/* Model IDs are scoped by provider; gateways may legitimately expose the same name. */
+function sanitizeProviderModels(models, providerId) {
+  const seen = new Set();
+  const out = [];
+  (Array.isArray(models) ? models : []).forEach(model => {
+    const name = String(model?.name || '').trim();
+    if (!name || seen.has(name)) return;
+    if (model?.provider && model.provider !== providerId) return;
+    seen.add(name);
+    out.push({
+      name,
+      enabled: !!model.enabled,
+      provider: providerId,
+      ...(model.thinkingParams ? { thinkingParams: model.thinkingParams } : {}),
+      ...(model.prefixPrompt ? { prefixPrompt: model.prefixPrompt } : {})
+    });
+  });
+  return out;
+}
 
 /* ── Capture presets ── */
 const CAPTURE_PRESETS = {

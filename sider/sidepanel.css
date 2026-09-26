@@ -503,32 +503,32 @@ body { overflow:hidden; }
 }
 .suggestion-list {
   display:flex;
-  flex-direction:column;
-  gap:14px;
+  flex-wrap:wrap;
+  gap:8px;
   max-width:min(620px, 100%);
-  padding-bottom:4px;
+  padding:0 16px 4px;
+  box-sizing:border-box;
 }
+/* 快捷提示：線框膠囊 chip */
 .suggestion-card {
   background:transparent;
-  padding:16px 20px;
-  border:none;
-  border-radius:22px;
-  font-size:var(--message-size); line-height:1.48;
+  padding:7px 14px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  font-size:var(--message-size); line-height:1.4;
   cursor:pointer;
-  color:var(--text-sec); font-weight:500;
-  transition:background-color .18s ease;
+  color:var(--text); font-weight:500;
+  transition:border-color .18s ease;
   display:inline-block;
-  align-self:flex-start;
 }
 [data-theme="dark"] .suggestion-card {
   color:#9a9a9a;
 }
 .suggestion-card:hover {
-  background:rgba(0,0,0,0.05);
+  border-color:var(--border-strong);
   color:var(--text);
 }
 [data-theme="dark"] .suggestion-card:hover {
-  background:rgba(255,255,255,0.12);
   color:#c8c8c8;
 }
 
@@ -618,7 +618,7 @@ body { overflow:hidden; }
 }
 .sidebar-frame:not(.chatting) #chatMessages { display:none; }
 .sidebar-frame:not(.chatting) .welcome { width:100%; box-sizing:border-box; padding:0 2px; text-align:left; }
-.sidebar-frame:not(.chatting) .suggestion-list { width:100%; max-width:min(360px, 100%); gap:12px; }
+.sidebar-frame:not(.chatting) .suggestion-list { width:100%; max-width:min(420px, 100%); }
 /* 有對話時隱藏歡迎區和建議列表（立即隱藏） */
 .sidebar-frame.chatting .welcome { 
   display: none;
@@ -1067,7 +1067,7 @@ pre {
   overflow-y:auto; 
   scrollbar-width:thin;
   scrollbar-color:var(--scrollbar) transparent;
-  font-size:var(--message-size); font-weight:var(--message-weight);
+  font-size:14px; font-weight:var(--message-weight); /* 輸入框固定字號，不跟「對話文字」設定 */
 }
 .textarea-wrapper textarea::placeholder {
   color:var(--text-sec); opacity:.55; font-weight:400; letter-spacing:.4px;
@@ -1612,7 +1612,6 @@ pre {
 }
 @media (max-width:360px){
   .sidebar-frame { padding:12px 8px 10px; }
-  .suggestion-card { padding:12px 14px; font-size:13px; }
   .plain-icon-btn { padding:2px; }
   .history-panel { width:min(240px, 85%); }
 }

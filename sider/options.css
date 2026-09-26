@@ -357,6 +357,7 @@ html[data-theme="dark"] .seg-group .seg-btn.active:hover { background:var(--bg-a
 #btnSaveAll { padding:10px 24px; font-size:14px; font-weight:600; }
 #btnResetPrompts { padding:8px 18px; font-size:13px; }
 .designer-credit { margin:0; font-size:13px; color:var(--text-sec); }
+.extension-version { margin-left:6px; white-space:nowrap; }
 .designer-link { color:var(--text); text-decoration:none; font-weight:500; transition:.18s; }
 .designer-link:hover { color:var(--focus); text-decoration:underline; }
 

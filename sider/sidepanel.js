@@ -93,7 +93,7 @@ let currentStreamingMessageTs = null;
 /* ── OpenClawGateway, extractOpenClawText now in js/openclaw.js ── */
 
 /* ── Model UID helpers ── */
-// uid = "provider::modelName", e.g. "google::gemini-3.1-flash-lite-preview"
+// uid = "provider::modelName", e.g. "google::gemini-3.8-flash"
 function modelUid(m){ return (m.uid) || ((m.provider||'')+'::'+( m.name||m.id||m.model||'')); }
 function findModelByUid(list, uid){ return Array.isArray(list) ? list.find(m => modelUid(m) === uid) : null; }
 function modelNameFromUid(uid){ return uid ? uid.replace(/^[^:]*::/, '') : ''; }
@@ -3227,7 +3227,7 @@ function getThinkingCapability(model, provider){
   if(/reasoner|deepseek-r1/.test(m)) return 'always_on';
   if(/\bo[13]-?(mini|preview)?$/.test(m)) return 'always_on';
   if(/qwen/.test(m)) return 'toggleable';
-  if(/gemini-2\.5/.test(m)) return 'toggleable';
+  if(/gemini-/.test(m)) return 'toggleable';
   if(/claude/.test(m)) return 'toggleable';
   if(/kimi|moonshot/.test(m)) return 'toggleable';
   if(/minimax/.test(m)) return 'toggleable';
@@ -6992,6 +6992,11 @@ async function handlePaste(e){
 function isVisionModel(modelName){
   if(!modelName) return false;
   const model = modelName.toLowerCase();
+
+  // Current OpenAI models support image input.
+  if(/^gpt-(5|6)/.test(model) || model.includes('/gpt-6-') || model.includes('/gpt-5.6-')){
+    return true;
+  }
   
   // GPT-4 Vision 系列
   if(model.includes('gpt-4') && (model.includes('vision') || model.includes('gpt-4o') || model.includes('gpt-4-turbo'))){
@@ -7001,16 +7006,19 @@ function isVisionModel(modelName){
   if(model.includes('gpt-4o')){
     return true;
   }
-  // Gemini 2.0+ 系列（都支持視覺）
-  if(model.includes('gemini-2') || model.includes('gemini-1.5')){
+  // Current Gemini series
+  if(model.includes('gemini-')){
     return true;
   }
-  // Claude 3 系列
-  if(model.includes('claude-3')){
+  // Current Claude series
+  if(model.includes('claude-')){
     return true;
   }
-  // Qwen VL 系列
-  if(model.includes('qwen') && model.includes('vl')){
+  // Current multimodal Qwen, Kimi, GLM and Nemotron families.
+  if((model.includes('qwen') && (model.includes('vl') || /qwen3\.(5|8)/.test(model)))
+    || /kimi-(k2\.5|k3)/.test(model)
+    || /glm-(5v|5\.3-flash)/.test(model)
+    || model.includes('nemotron-3-nano-omni')){
     return true;
   }
   
@@ -7025,7 +7033,7 @@ async function handleImageUpload(e){
   const currentModel = els.modelSelector?.value;
   if(currentModel && !isVisionModel(currentModel)){
     const confirmUpload = await showConfirm(
-      `⚠️ 當前模型「${currentModel}」可能不支持圖片輸入。\n\n建議切換到支持視覺的模型：\n• GPT-4o / GPT-4o-mini\n• Gemini 2.5 Pro / Flash\n• Claude 3 系列\n\n是否仍要上傳圖片？`
+      `⚠️ 當前模型「${currentModel}」可能不支持圖片輸入。\n\n建議切換到支持視覺的模型：\n• GPT-6 Astra / GPT-5.6\n• Gemini 3 系列\n• Claude 5 系列\n• Qwen 3.8 / GLM 5.3 Flash\n\n是否仍要上傳圖片？`
     );
     if(!confirmUpload){
       e.target.value = '';
@@ -7909,19 +7917,20 @@ async function generateChatTitleForSession(sessionId, ctx = {}){
       });
     }else{
       const url = buildChatCompletionsUrl(base);
+      const titleBody = adaptChatCompletionRequest(modelProvider, model, {
+        model,
+        messages: [{ role:'user', content: prompt }],
+        temperature: 0.2,
+        max_tokens: 32,
+        stream: false
+      });
       const proxied = await proxyFetchViaBackground(url, {
         method:'POST',
         headers: {
           'Content-Type':'application/json',
           ...(apiKey ? { 'Authorization':'Bearer '+apiKey } : {})
         },
-        body: JSON.stringify({
-          model,
-          messages: [{ role:'user', content: prompt }],
-          temperature: 0.2,
-          max_tokens: 32,
-          stream: false
-        })
+        body: JSON.stringify(titleBody)
       });
       if(!proxied.ok) throw new Error(proxied.error || proxied.text || `HTTP ${proxied.status || 0}`);
       const data = JSON.parse(proxied.text || '{}');
@@ -8231,6 +8240,8 @@ async function streamChatCompletion(assistantTs){
     // deepseek-reasoner / o1 / o3：內建思考，不需帶參數
   }
 
+  const compatibleRequestBody = adaptChatCompletionRequest(modelProvider, effectiveModel, requestBody);
+
   if(modelProvider === 'hermes'){
     const requestSessionId = (typeof hermesSessionId === 'string' && hermesSessionId.trim())
       ? hermesSessionId.trim()
@@ -8287,7 +8298,7 @@ async function streamChatCompletion(assistantTs){
       headers: Object.assign({
         'Content-Type':'application/json'
       }, apiKey?{ 'Authorization':'Bearer '+apiKey }:null),
-      body:JSON.stringify(requestBody),
+      body:JSON.stringify(compatibleRequestBody),
       signal:streamAbortController.signal
     });
     clearTimeout(fetchTimeoutId);

@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [2.22.30] — 2026-09-26
+### Fixed — 歡迎區版面與字號
+- 問候文案與 Momo 卡通在部分螢幕重疊：改為 Momo 獨佔上一行（右上）、文案在下方用滿寬度
+- 窄面板（≤540px／≤360px）不再縮小問候文字
+- 輸入框改為固定 14px，不再跟「對話文字 → 字號」設定變動
+- 快捷提示在窄面板也會跟隨「字號」設定（移除寫死的 13px）
+- 設定頁字號滑桿顯示目前數值（14 顯示「默認」，其餘顯示 px），拖動即時更新
+
+### Changed — 快捷提示樣式
+- 快捷提示改為線框膠囊（無底色），橫向排列並自動換行
+
+## [2.22.29] — 2026-09-16
+### Changed — 更新 AI Provider 預設與版本顯示
+- 更新各 AI Provider 的預設模型，並新增 Cerebras、Fireworks、Perplexity 與 SiliconFlow。
+- 修復 Custom Provider 測試連線使用錯誤模型名稱的問題。
+- 在設定頁底部顯示目前擴充功能版本，版本號直接讀取 `manifest.json`。
+
 ## [2.22.28] — 2026-09-14
 ### Changed — 產品名稱改名
 - 產品名稱由「🐹 Hii~ Momo: AI Assist」改為 **Momo: AI Assist**（manifest 名稱、動作按鈕、i18n 介面字串、README、說明書與 docs 同步更新；changelog 历史记录保留原名）
