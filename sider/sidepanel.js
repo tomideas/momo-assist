@@ -42,6 +42,7 @@ let prompts = [];
 let promptSuggestions = [];
 let pendingSuggestionLanguage = null;
 let pendingSuggestionIsTranslation = false;
+let pendingSuggestionDisplayText = null;
 let sessions = [];
 let sessionsLoaded = false;
 let currentSessionId = null;
@@ -5131,6 +5132,7 @@ async function renderSuggestionsIfNeeded(){
           pendingSuggestionLanguage = item.outputLanguage || 'inherit';
           pendingSuggestionIsTranslation = item.id === 'fun-fact';
           const draft = els.messageInput.value.trim();
+          pendingSuggestionDisplayText = draft ? `${title}\n\n${draft}` : title;
           els.messageInput.value = draft
             ? `${prompt}\n\nContent:\n${draft}`
             : prompt;
@@ -5498,7 +5500,7 @@ function renderMessage(msg){
       msg.content.forEach(part=>{
         if(part.type === 'text'){
           const textDiv = document.createElement('div');
-          renderMessageText(textDiv, part.text, msg, role);
+          renderMessageText(textDiv, msg.displayText || part.text, msg, role);
           content.appendChild(textDiv);
         }
       });
@@ -5536,7 +5538,7 @@ function renderMessage(msg){
       }
     } else {
       // 純文本消息
-      renderMessageText(content, msg.content, msg, role);
+      renderMessageText(content, msg.displayText || msg.content, msg, role);
       if(role==='user' && !msg._streaming){
     const plain=content.textContent;
     if(plain && !/\n/.test(plain) && plain.length<=40){
@@ -6127,6 +6129,7 @@ async function submitEditedUserMessage(msg, newContent, editedImages = []){
   
   // 構建更新後的消息：支持文本和圖片
   const updatedMessage = { ...target, ts:now };
+  delete updatedMessage.displayText;
   
   if (editedImages && editedImages.length > 0) {
     // 有圖片：使用多模態格式
@@ -7496,6 +7499,8 @@ async function onSend(){
   const suggestionIsTranslation = pendingSuggestionIsTranslation;
   pendingSuggestionLanguage = null;
   pendingSuggestionIsTranslation = false;
+  const suggestionDisplayText = pendingSuggestionDisplayText;
+  pendingSuggestionDisplayText = null;
   console.log('[SP] Input text:', text);
   
   // 檢查是否有內容可發送（文字、圖片或頁面內容）
@@ -7540,6 +7545,8 @@ async function onSend(){
     userMessage.outputLanguageOverride=suggestionLanguage;
     userMessage._translationRequest=!!suggestionIsTranslation;
   }
+  // 快捷提示：泡泡只顯示標題，完整提示詞仍送給模型
+  if(suggestionDisplayText) userMessage.displayText=suggestionDisplayText;
   
   // 只有在有等待使用的頁面內容時，才標記此訊息
   if(hasPendingPageContent){
