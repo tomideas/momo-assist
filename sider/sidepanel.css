@@ -473,14 +473,15 @@ body { overflow:hidden; }
 .welcome { 
   padding:8px 2px 24px;
 }
-/* 問候文案 | momo：同列兩欄，各自占位 */
+/* 問候區：Momo 一行、文案一行，各自占位 */
 .welcome-hero {
   display:flex;
-  align-items:center;
-  gap:12px;
+  flex-direction:column;
+  gap:8px;
   margin-bottom:34px;
 }
-.welcome-text { flex:1; min-width:0; }
+.welcome-hero .momo-wrap { order:-1; align-self:flex-end; } /* Momo 獨佔上一行（右上），文案在下方用滿寬度 */
+.welcome-text { min-width:0; }
 .welcome-text .hero-subtitle { margin-bottom:0; }
 .hero-title {
   margin:0 0 8px;
