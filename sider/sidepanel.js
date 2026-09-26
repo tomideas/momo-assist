@@ -651,7 +651,7 @@ async function applyWelcomeZh(){
     if(p)  p.textContent  = greeting.subtitle;
     
     // 在 momo 卡通旁邊添加時間圖標
-    const momoSticker = document.querySelector('.momo-sticker');
+    const momoSticker = document.querySelector('.momo-wrap .momo-sticker');
     if(momoSticker && momoSticker.parentElement) {
       // 移除舊的圖標（如果有）
       const oldIcon = momoSticker.parentElement.querySelector('.time-icon');
@@ -1232,11 +1232,8 @@ async function init(){
       img.src=url;
       wrap.appendChild(bubble);
       wrap.appendChild(img);
-      if(els.chatRegion){
-        els.chatRegion.insertBefore(wrap, els.chatRegion.firstChild);
-      } else {
-        document.body.appendChild(wrap);
-      }
+      // 與問候文案同列、各占一欄，避免重疊
+      document.querySelector('.welcome-hero').appendChild(wrap);
     } else {
       const img=wrap.querySelector('img.momo-sticker');
       if(img && img.getAttribute('src')!==url) img.setAttribute('src', url);

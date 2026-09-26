@@ -473,14 +473,22 @@ body { overflow:hidden; }
 .welcome { 
   padding:8px 2px 24px;
 }
+/* 問候文案 | momo：同列兩欄，各自占位 */
+.welcome-hero {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:34px;
+}
+.welcome-text { flex:1; min-width:0; }
+.welcome-text .hero-subtitle { margin-bottom:0; }
 .hero-title {
   margin:0 0 8px;
   font-size:clamp(28px, 8vw, 42px);
   font-weight:800;
   letter-spacing:.8px;
   padding-left:16px;
-  white-space:nowrap;
-  max-width:calc(100% - 120px);
+  overflow-wrap:anywhere;
   line-height:1.2;
 }
 .hero-subtitle {
@@ -489,8 +497,7 @@ body { overflow:hidden; }
   color:var(--text);
   font-weight:500;
   padding-left:16px;
-  white-space:nowrap;
-  max-width:calc(100% - 120px);
+  overflow-wrap:anywhere;
   line-height:1.4;
 }
 .suggestion-list {
@@ -540,11 +547,9 @@ body { overflow:hidden; }
   z-index: 10;
 }
 .momo-wrap{ 
-  position:absolute; 
-  top:54px;
-  right:28px;
-  transform:translateX(-10px);
-  z-index:1; 
+  position:relative; 
+  flex:none;
+  margin:0 28px 0 34px; /* 左側留給 .time-icon（left:-34px） */
   display:block; 
   pointer-events: none;
 }
@@ -611,7 +616,7 @@ body { overflow:hidden; }
   min-height:0;
 }
 .sidebar-frame:not(.chatting) #chatMessages { display:none; }
-.sidebar-frame:not(.chatting) .welcome { padding:0 2px; text-align:left; }
+.sidebar-frame:not(.chatting) .welcome { width:100%; box-sizing:border-box; padding:0 2px; text-align:left; }
 .sidebar-frame:not(.chatting) .suggestion-list { width:100%; max-width:min(360px, 100%); gap:12px; }
 /* 有對話時隱藏歡迎區和建議列表（立即隱藏） */
 .sidebar-frame.chatting .welcome { 
