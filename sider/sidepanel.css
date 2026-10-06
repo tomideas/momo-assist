@@ -561,7 +561,7 @@ body { overflow:hidden; }
   display: none;
 }
 .momo-sticker{ 
-  width:var(--momo-size,69px); 
+  width:var(--momo-size,86px); 
   height:auto; 
   opacity:1; 
   pointer-events:none; 

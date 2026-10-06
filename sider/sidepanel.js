@@ -85,7 +85,6 @@ let lastZhVariantRefreshAt = 0;
 // 自動捲動
 let scrollRAF = null;
 let _programmaticScroll = false;
-let _streamScrollInterval = null;
 let isFirstMessage = false;
 let lastScrollPosition = 0;
 let currentStreamingMessageTs = null;
@@ -578,22 +577,6 @@ function doAutoScroll(){
     lastScrollPosition = scroller.scrollTop;
     setTimeout(()=>{ _programmaticScroll = false; }, 80);
   });
-}
-
-function startStreamingScroll(){
-  stopStreamingScroll();
-  _streamScrollInterval = setInterval(()=>{
-    if(!autoFollow || !streaming) return;
-    doAutoScroll();
-  }, 120);
-}
-
-function stopStreamingScroll(){
-  if(_streamScrollInterval){
-    clearInterval(_streamScrollInterval);
-    _streamScrollInterval = null;
-  }
-  _programmaticScroll = false;
 }
 
 /* ================= Welcome zh apply ================= */
@@ -1219,7 +1202,7 @@ async function init(){
   // 確保 momo 圖片（需在 loadTheme 後，bubble 文案才會用對應語言）
   const momoStartedAt = spPerfNow();
   try{
-    const url=chrome.runtime?.getURL ? chrome.runtime.getURL('assets/icons/momo.png') : 'assets/icons/momo.png';
+    const url=chrome.runtime?.getURL ? chrome.runtime.getURL('assets/icons/momo.webp') : 'assets/icons/momo.webp';
     let wrap=document.querySelector('.momo-wrap');
     if(!wrap){
       wrap=document.createElement('div');
@@ -1431,9 +1414,13 @@ function bindEvents(){
 
   // 剪貼板粘貼圖片事件
   els.messageInput?.addEventListener('paste', handlePaste);
-  window.addEventListener('pagehide', ()=>archiveCurrentSessionAttachments('sidepanel-close'));
+  window.addEventListener('pagehide', ()=>{
+    flushPersistSessions();
+    archiveCurrentSessionAttachments('sidepanel-close');
+  });
   document.addEventListener('visibilitychange', ()=>{
     if(document.visibilityState === 'hidden'){
+      flushPersistSessions();
       archiveCurrentSessionAttachments('sidepanel-hidden');
     }else if(document.visibilityState === 'visible'){
       if(ensureHermesLocalSession({ render: currentSessionId !== HERMES_LOCAL_SESSION_ID })) return;
@@ -4856,6 +4843,8 @@ function switchSession(id){
   // 更新頁面內容預覽（自動顯示所有引用的頁面）
   updatePageContextPreview();
 }
+const PERSIST_SESSIONS_DEBOUNCE_MS = 400;
+let persistSessionsTimer = null;
 function persistSessions(){
   // Remove empty sessions that are not the current one
   sessions = sessions.filter(s=>s.id===currentSessionId || s.messages.some(m=>m.role==='user'));
@@ -4867,6 +4856,17 @@ function persistSessions(){
   if(sessions.length > StorageHelper.MAX_SESSIONS){
     sessions = StorageHelper.cleanupSessions(sessions);
   }
+  // 合併短時間內的多次寫入：每次都會序列化全部會話，同步佔用主執行緒
+  clearTimeout(persistSessionsTimer);
+  persistSessionsTimer = setTimeout(writeSessionsToStorage, PERSIST_SESSIONS_DEBOUNCE_MS);
+}
+function flushPersistSessions(){
+  if(!persistSessionsTimer) return;
+  clearTimeout(persistSessionsTimer);
+  writeSessionsToStorage();
+}
+function writeSessionsToStorage(){
+  persistSessionsTimer = null;
   chrome.storage.local.set({ chatSessions:sessions, currentSessionId })
     .catch(err => {
       // 配額超限：清理舊會話後重試一次，避免靜默丟失資料
@@ -7635,7 +7635,6 @@ async function onSend(){
   const ts=Date.now();
   appendMessage({ role:'assistant', content:'', ts, _streaming:true });
   streaming=true; setSendButtonState(); renderSuggestionsIfNeeded().catch(err => console.warn('[SP] renderSuggestionsIfNeeded failed:', err));
-  startStreamingScroll();
   console.log('[SP] Starting stream...');
   try{
     await streamChatCompletion(ts);
@@ -7643,7 +7642,6 @@ async function onSend(){
     console.error('[SP] Stream error:', e);
     replaceMessageContent(ts,sp_t('errorPrefix')+formatErrorMessage(e));
   }finally{
-    stopStreamingScroll();
     streaming=false; finalizeStreamingMessage(ts); setSendButtonState();
     resetComposerIfEmpty();
   }
@@ -8425,7 +8423,6 @@ async function streamChatCompletion(assistantTs){
         // 處理普通 content
         if(delta?.content){
           if(!thinkingDotsHidden){ hideThinkingDots(assistantTs); thinkingDotsHidden = true; }
-          console.log('[SP] 🔤 delta.content:', delta.content);
           const contentChunk = delta.content;
           const ctx = streamingContexts.get(assistantTs);
           if(ctx){
@@ -8483,7 +8480,6 @@ async function streamChatCompletion(assistantTs){
   }
   finalizeStreamingMessage(assistantTs);
   finalizeAssistantMessageContent(assistantTs, full);
-  console.log('[SP] ✅ Final assistant content:', full);
   }, 0);
 }
 function finalizeStreamingMessage(ts){
@@ -8573,33 +8569,70 @@ function observeScroll(){
   const scroller=getScrollContainer();
   if(!scroller) return;
   let previousScrollTop = scroller.scrollTop;
-  
-  scroller.addEventListener('scroll',(e)=>{
+  // 只有使用者真的操作（滾輪、觸控、鍵盤、拖捲軸）才停止跟隨；
+  // 內容變短、思考區塊收起等造成的 scrollTop 變化不算
+  let userScrollingDown = false;
+  let draggingScrollbar = false;
+  let lastTouchY = null;
+  const canScroll = () => scroller.scrollHeight > scroller.clientHeight + 1;
+  const breakFollow = () => { if(canScroll()) autoFollow = false; userScrollingDown = false; };
+
+  scroller.addEventListener('wheel',(e)=>{
+    if(e.deltaY < 0) breakFollow();
+    else if(e.deltaY > 0) userScrollingDown = true;
+  },{ passive:true });
+  scroller.addEventListener('touchstart',(e)=>{
+    lastTouchY = e.touches[0]?.clientY ?? null;
+  },{ passive:true });
+  scroller.addEventListener('touchmove',(e)=>{
+    const y = e.touches[0]?.clientY;
+    if(y == null || lastTouchY == null) return;
+    if(y > lastTouchY + 2) breakFollow();
+    else if(y < lastTouchY - 2) userScrollingDown = true;
+    lastTouchY = y;
+  },{ passive:true });
+  scroller.addEventListener('pointerdown',(e)=>{
+    const rect = scroller.getBoundingClientRect();
+    if(e.clientX >= rect.left + scroller.clientWidth) draggingScrollbar = true;
+  });
+  window.addEventListener('pointerup',()=>{ draggingScrollbar = false; });
+  document.addEventListener('keydown',(e)=>{
+    const t = e.target;
+    if(t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    if(['PageUp','ArrowUp','Home'].includes(e.key)) breakFollow();
+    else if(['PageDown','ArrowDown','End',' '].includes(e.key)) userScrollingDown = true;
+  });
+
+  scroller.addEventListener('scroll',()=>{
     const currentScrollTop = scroller.scrollTop;
     const diff=scroller.scrollHeight - currentScrollTop - scroller.clientHeight;
-    
-    if(_programmaticScroll){
-      previousScrollTop = currentScrollTop;
-      lastScrollPosition = currentScrollTop;
-    } else if(e.isTrusted){
-      const isScrollingUp = currentScrollTop < previousScrollTop - 3;
-      const isScrollingDown = currentScrollTop > previousScrollTop + 3;
-      previousScrollTop = currentScrollTop;
-      lastScrollPosition = currentScrollTop;
-      
-      if(isScrollingDown && diff <= AUTO_FOLLOW_REARM_OFFSET){
-        autoFollow = true;
-      } else if(isScrollingUp) {
-        autoFollow = false;
+
+    if(!_programmaticScroll){
+      if(draggingScrollbar){
+        if(currentScrollTop < previousScrollTop - 3) breakFollow();
+        else if(currentScrollTop > previousScrollTop + 3) userScrollingDown = true;
       }
-    } else {
-      previousScrollTop = currentScrollTop;
-      lastScrollPosition = currentScrollTop;
+      // 回到最底，或使用者往下滾到接近底部 → 恢復跟隨
+      if(diff <= 2 || (userScrollingDown && diff <= AUTO_FOLLOW_REARM_OFFSET)){
+        autoFollow = true;
+      }
     }
-    
+    previousScrollTop = currentScrollTop;
+    lastScrollPosition = currentScrollTop;
+
     // 更新滾動按鈕的顯示狀態
     updateScrollBtnVisibility(diff);
   });
+
+  // 內容或可視區高度改變時（串流、圖片載入、思考區塊展開收起、輸入框變高），跟隨到底部
+  if(typeof ResizeObserver === 'function'){
+    const ro = new ResizeObserver(()=>{
+      scheduleAutoFollow();
+      updateScrollBtnVisibility();
+    });
+    ro.observe(scroller);
+    if(els.chatMessages && els.chatMessages !== scroller) ro.observe(els.chatMessages);
+  }
 }
 function updateScrollBtnVisibility(diff){
   if(diff === undefined){
@@ -8751,6 +8784,65 @@ function openSettingsSafe(){
 
 /* ── Markdown renderer now in js/markdown.js ── */
 
+/* Streaming incremental render：已完成的段落只渲染一次，之後每次只重建最後一段 */
+const streamRenderStates = new WeakMap(); // container -> { stableText, stableCount, tail }
+
+// 回傳可固定的前綴長度：停在空行之後，且不在程式碼區塊、未關閉的思考標籤或清單之中
+function findStreamStableBoundary(text, min){
+  let idx = text.lastIndexOf('\n\n');
+  while(idx > min){
+    const before = text.slice(0, idx);
+    if(((before.match(/```/g) || []).length) % 2 === 1){
+      idx = text.lastIndexOf('\n\n', before.lastIndexOf('```') - 1);
+      continue;
+    }
+    const opens = [...before.matchAll(/<(think|thinking|thought)>/gi)];
+    const closes = (before.match(/<\/(think|thinking|thought)>/gi) || []).length;
+    if(opens.length > closes){
+      idx = text.lastIndexOf('\n\n', opens[opens.length - 1].index - 1);
+      continue;
+    }
+    const trimmed = before.replace(/\s+$/, '');
+    const lastLine = trimmed.slice(trimmed.lastIndexOf('\n') + 1);
+    // 清單項目之間可有空行，切開會變成多個清單（編號重來），等清單結束再固定
+    if(isListLine(lastLine) || /^( {4}|\t)/.test(lastLine)){
+      idx = text.lastIndexOf('\n\n', idx - 1);
+      continue;
+    }
+    return idx + 2;
+  }
+  return min;
+}
+
+function htmlToFragment(html){
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html;
+  return tpl.content;
+}
+
+function renderStreamingIncremental(container, text, renderFn){
+  let st = streamRenderStates.get(container);
+  const valid = st && text.startsWith(st.stableText) &&
+    container.childNodes.length === st.stableCount + st.tail.length &&
+    st.tail.every(n => n.parentNode === container);
+  if(!valid){
+    container.innerHTML = '';
+    st = { stableText:'', stableCount:0, tail:[] };
+    streamRenderStates.set(container, st);
+  }
+  const boundary = findStreamStableBoundary(text, st.stableText.length);
+  st.tail.forEach(n => n.remove());
+  if(boundary > st.stableText.length){
+    const frag = htmlToFragment(renderFn(text.slice(st.stableText.length, boundary)));
+    st.stableCount += frag.childNodes.length;
+    container.appendChild(frag);
+    st.stableText = text.slice(0, boundary);
+  }
+  const tailFrag = htmlToFragment(renderFn(text.slice(boundary)));
+  st.tail = Array.from(tailFrag.childNodes);
+  container.appendChild(tailFrag);
+}
+
 /* Streaming inline update */
 function updateStreamingMessage(ts, text){
   const session=getCurrentSession(); if(!session)return;
@@ -8798,17 +8890,23 @@ function updateStreamingMessage(ts, text){
         }
         if(isMd){
           const existingThinking = node.querySelector('.reasoning-block');
-          if(existingThinking && /<think>[\s\S]*$/i.test(latest)){
+          if(existingThinking && /<think>[\s\S]*$/i.test(latest) && !/<\/think>/i.test(latest)){
             const thinkMatch = latest.match(/<think>([\s\S]*)$/i);
             if(thinkMatch){
               const thinkContent = thinkMatch[1];
               const thinkingBody = existingThinking.querySelector('.reasoning-body');
               if(thinkingBody){
-                thinkingBody.innerHTML = renderMarkdownBlocksCore(thinkContent);
+                renderStreamingIncremental(thinkingBody, thinkContent, renderMarkdownBlocksCore);
               }
             }
           } else {
-            node.innerHTML=renderStreamingMarkdown(latest);
+            // 思考結束後改回整段渲染；保留使用者展開思考區塊的狀態
+            const thinkingWasOpen = !!existingThinking?.open;
+            renderStreamingIncremental(node, latest, renderStreamingMarkdown);
+            if(thinkingWasOpen){
+              const thinking = node.querySelector('.reasoning-block');
+              if(thinking) thinking.open = true;
+            }
           }
     }else{
           node.textContent=String(latest);
