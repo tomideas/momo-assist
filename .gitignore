@@ -42,3 +42,6 @@ model sets/
 
 # Claude settings
 .claude/
+
+# Design system (local design tool, never push)
+design-system/

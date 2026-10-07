@@ -310,7 +310,8 @@ html[data-theme="dark"] .seg-group .seg-btn.active:hover { background:var(--bg-a
 .provider-option:first-child { border-radius:12px 12px 0 0; }
 .provider-option:last-child { border-radius:0 0 12px 12px; }
 .provider-option .provider-icon { width:20px; height:20px; display:block; object-fit:contain; }
-.provider-option span:last-child { font-size:15px; color:var(--text); }
+.provider-option span:not(.provider-enabled-count) { font-size:15px; color:var(--text); }
+.provider-enabled-count { margin-left:auto; display:inline-flex; align-items:center; gap:4px; color:var(--bg-active); font-size:13px; font-weight:600; }
 .provider-option.selected { background:var(--bg-subtle); }
 
 /* ---- form field ---- */

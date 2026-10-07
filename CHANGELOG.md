@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [2.22.32] — 2026-10-06
+### Added — Azure OpenAI provider
+- AI 服務提供商新增 Azure OpenAI（OpenAI 相容 v1 端點，Base URL 與模型名稱〔部署名稱〕自行填寫）
+- 啟用模型區塊在選擇 Azure 時顯示「模型名稱請填部署名稱」提示
+- GPT-5／GPT-6 系列部署同樣自動改用 `max_completion_tokens` 並省略 `temperature`／`top_p`
+
+### Added — 提供商下拉選單顯示已啟用模型數量
+- 有啟用模型的 provider 在右側顯示星芒圖示＋數字，沒有啟用的不顯示
+
+### Changed — 提供商下拉選單依名稱排序
+- Custom 固定在最上方，其餘依名稱字母順序排列
+
 ## [2.22.31] — 2026-10-06
 ### Changed — Momo 歡迎區改為動態 IP
 - 側邊欄歡迎區的 Momo 由靜態 PNG 改為透明背景的動態 WebP（`assets/icons/momo.webp`），只播放一次後停在最後一幀

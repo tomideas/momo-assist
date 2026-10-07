@@ -210,10 +210,34 @@ function initProvidersData(){
   });
 }
 
+/* Show how many models are enabled next to each provider in the dropdown. */
+function updateProviderEnabledCounts(){
+  document.querySelectorAll('.provider-option').forEach(opt=>{
+    const id = opt.dataset.provider;
+    let models = providersData[id]?.models || [];
+    if(id === currentProvider){
+      models = isConnectFirstProvider(id)
+        ? [{ enabled: !!els.openclawModelToggle?.checked }]
+        : collectModels();
+    }
+    const count = models.filter(m=>m.enabled).length;
+    let badge = opt.querySelector('.provider-enabled-count');
+    if(!count){ badge?.remove(); return; }
+    if(!badge){
+      badge = document.createElement('span');
+      badge.className = 'provider-enabled-count';
+      opt.appendChild(badge);
+    }
+    badge.innerHTML = '<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M10 5Q12 12 19 14Q12 16 10 23Q8 16 1 14Q8 12 10 5Z\"/><path d=\"M19 1Q20 4 23 5Q20 6 19 9Q18 6 15 5Q18 4 19 1Z\"/></svg>' + count;
+    badge.title = `${t('enabledModels')} (${count})`;
+  });
+}
+
 function toggleProviderDropdown(){
   if(!els.providerDropdown) return;
   const isHidden = els.providerDropdown.classList.contains('hidden');
   if(isHidden){
+    updateProviderEnabledCounts();
     els.providerDropdown.classList.remove('hidden');
     els.providerSelectButton.classList.add('open');
   }else{
@@ -243,6 +267,7 @@ function updateProviderSelectButton(providerId){
 
 const THINKING_HINTS_I18N = {
   hant: {
+    azureModel: '💡 <strong>Azure</strong>：模型名稱請填 Azure 的「部署名稱」（Deployment name），不是 OpenAI 模型名稱。<br>',
     qwen:       '💡 <strong>Custom</strong>：停止思考可填 <code>{"enable_thinking": false}</code>',
     google:     '💡 <strong>Custom</strong>：Gemini 3 無法完全停止思考；可填 <code>{"reasoning_effort": "low"}</code> 降低延遲與用量。',
     moonshot:   '💡 <strong>Custom</strong>：停止 Kimi 思考可填 <code>{"thinking": {"type": "disabled"}}</code>',
@@ -251,6 +276,7 @@ const THINKING_HINTS_I18N = {
     _prefix:    '　<strong>Prefix</strong>：每次發訊息時自動貼在最前面，例如 Gemini Pro 無法用 API 停止思考，可填 <code>Direct answer only. No thinking.</code>',
   },
   hans: {
+    azureModel: '💡 <strong>Azure</strong>：模型名称请填 Azure 的「部署名称」（Deployment name），不是 OpenAI 模型名称。<br>',
     qwen:       '💡 <strong>Custom</strong>：停止思考可填 <code>{"enable_thinking": false}</code>',
     google:     '💡 <strong>Custom</strong>：Gemini 3 无法完全停止思考；可填 <code>{"reasoning_effort": "low"}</code> 降低延迟与用量。',
     moonshot:   '💡 <strong>Custom</strong>：停止 Kimi 思考可填 <code>{"thinking": {"type": "disabled"}}</code>',
@@ -259,6 +285,7 @@ const THINKING_HINTS_I18N = {
     _prefix:    '　<strong>Prefix</strong>：每次发消息时自动贴在最前面，例如 Gemini Pro 无法用 API 停止思考，可填 <code>Direct answer only. No thinking.</code>',
   },
   en: {
+    azureModel: '💡 <strong>Azure</strong>: Enter your Azure <strong>deployment name</strong> as the model name, not the OpenAI model name.<br>',
     qwen:       '💡 <strong>Custom</strong>: To disable thinking, fill in <code>{"enable_thinking": false}</code>',
     google:     '💡 <strong>Custom</strong>: Gemini 3 cannot fully disable thinking; use <code>{"reasoning_effort": "low"}</code> to reduce latency and usage.',
     moonshot:   '💡 <strong>Custom</strong>: To disable Kimi thinking, fill in <code>{"thinking": {"type": "disabled"}}</code>',
@@ -272,7 +299,7 @@ function updateThinkingHint(providerId){
   if(!el) return;
   const hints = THINKING_HINTS_I18N[currentLang] || THINKING_HINTS_I18N.en;
   const base = hints[providerId] || hints._default;
-  el.innerHTML = base + hints._prefix;
+  el.innerHTML = (providerId === 'azure' ? hints.azureModel : '') + base + hints._prefix;
 }
 
 function isConnectFirstProvider(providerId){
@@ -444,6 +471,7 @@ function loadProviderConfig(providerId){
     // 針對不同 Provider 添加 API Key 申請連結提示
     const apiKeyLinks = {
       anthropic: 'https://console.anthropic.com/settings/keys',
+      azure: 'https://ai.azure.com/',
       bigmodel: 'https://bigmodel.cn/usercenter/proj-mgmt/apikeys',
       cerebras: 'https://cloud.cerebras.ai/',
       chutes: 'https://chutes.ai/app/api',
@@ -471,6 +499,7 @@ function loadProviderConfig(providerId){
     
     // Provider-specific extra hints
     const providerExtraHints = {
+      azure: 'Base URL: <code>https://&lt;resource&gt;.openai.azure.com/openai/v1</code> (Foundry: <code>https://&lt;resource&gt;.services.ai.azure.com/openai/v1</code>). Use your <strong>deployment name</strong> as the model name.',
       groq: 'Free tier: ~30 req/min, up to 14,400 req/day. No credit card required. Supports Llama, DeepSeek-R1 & more. Ultra-fast inference. <a href="https://console.groq.com/docs/rate-limits" target="_blank" style="color:var(--accent);text-decoration:underline;">Rate limits →</a>',
       hermes: 'Hermes Agent API Server must be enabled in the Hermes <code>.env</code>, similar to OpenClaw gateway setup. Set <code>API_SERVER_ENABLED=true</code>, <code>API_SERVER_HOST=0.0.0.0</code>, <code>API_SERVER_PORT=8642</code>, <code>API_SERVER_KEY=&lt;your-secret-key&gt;</code>, and <code>API_SERVER_CORS_ORIGINS=*</code>, then restart Hermes. Use the same key here. Default API URL is <code>http://127.0.0.1:8642/v1</code>.'
     };

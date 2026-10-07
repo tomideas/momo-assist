@@ -72,35 +72,22 @@
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <td>DuckDuckGo（預設）</td>
-      <td>免費</td>
-      <td>不需要</td>
-      <td>透過 HTML 擷取，無需註冊</td>
-    </tr>
-    <tr>
-      <td>Brave</td>
-      <td>免費額度</td>
-      <td>需要</td>
-      <td>高品質搜尋結果</td>
-    </tr>
-    <tr>
-      <td>Tavily</td>
-      <td>免費額度</td>
-      <td>需要</td>
-      <td>專為 AI 設計的搜尋 API</td>
-    </tr>
+    <tr><td>DuckDuckGo（預設）</td><td>免費</td><td>不需要</td><td>HTML 擷取</td></tr>
+    <tr><td>Brave</td><td>依供應商方案</td><td>需要</td><td>Search API</td></tr>
+    <tr><td>Tavily</td><td>依供應商方案</td><td>需要</td><td>AI Search API</td></tr>
   </tbody>
 </table>
 
 <h3>OpenRouter 伺服器端搜尋</h3>
-<p>使用 OpenRouter 時會自動啟用 <code>:online</code> 功能，由 Exa 引擎驅動。</p>
+<p>OpenRouter 優先使用擴充功能的搜尋結果；只有需要搜尋、但本地搜尋失敗或沒有可用結果時，才回退到 <code>:online</code> 伺服器端搜尋。</p>
 
 <h2>搜尋模式</h2>
 <ul>
-  <li><strong>簡易搜尋</strong>：僅摘要，快速。</li>
-  <li><strong>關閉</strong>：造訪頁面取得內容，較慢但較精確。</li>
+  <li><strong>簡易搜尋開啟</strong>：只使用搜尋摘要，速度較快。</li>
+  <li><strong>簡易搜尋關閉（預設）</strong>：額外讀取前 3 筆搜尋結果的頁面正文，取得更完整的依據。</li>
 </ul>
+
+<p>訊息中的網址成功讀取後，不會無條件再次搜尋；只有明確要求最新資訊、比較或額外搜尋時才同時搜尋。來源會去重並依相關性排序。</p>
 
 <h2>搜尋設定</h2>
 <p>於設定中可調整：搜尋引擎、結果數量（1–20）、簡易搜尋模式、自動造訪 URL、預設開啟搜尋，以及測試搜尋。</p>

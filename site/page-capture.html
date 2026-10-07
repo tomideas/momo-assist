@@ -73,28 +73,14 @@
 <p>於<strong>設定 → 引用頁面</strong>可選擇擷取模式。<strong>新安裝或未設定時，預設為 Smart Capture（推薦）。</strong></p>
 
 <h3>Smart Capture（推薦）</h3>
-<p>自動依頁型選擇較省 token 的策略：文章、文件與 blog 走 Markdown 智能提取；產品頁、定價頁、dashboard、設定頁、表格與卡片密集頁走可見文字擷取。</p>
-
-<h3>Markdown Smart Extraction（智慧精讀模式）</h3>
-<p>使用 Mozilla Readability 與 Turndown 轉為 Markdown，利於結構化閱讀。擷取前會先<strong> clone 頁面</strong>，只在 clone 內處理 DOM，不會改動你正在瀏覽的原網站排版。</p>
-<p>若 Readability 結果與目前頁面的 title / H1 關鍵字明顯不一致（常見於產品頁、SPA），會丟棄該結果並改用 fallback DOM 與可見文字保底，避免抓到隱藏模板或其他文章片段。</p>
-<div class="callout tip"><strong>💡 適合</strong>一般閱讀、文章與長文摘要，可減少雜訊並保留標題與段落結構。</div>
-
-<h3>Visible Text（可見文字）</h3>
-<p>只收集頁面實際可見的標題、段落、列表、表格、按鈕與價格 / plan / feature 類區塊並去重。適合產品頁、定價頁與應用型頁面。若精簡結果過短，會回退到 <code>document.body.innerText</code>。</p>
-
-<h3>Full Page（全文模式）</h3>
-<p>將完整 HTML 轉為純文字後送入對話。當其他模式漏內容時才建議使用，token 成本較高。</p>
-
-<h3>自訂 CSS 選擇器模式</h3>
-<p>以 CSS 選擇器指定要包含或排除的區塊，只擷取你需要的內容。</p>
-
-<h2>字元限制</h2>
-<p>單次引用約為 1,000～200,000 字元（依設定與頁面而定）。</p>
-<div class="callout warning"><strong>⚠️ 過長上下文費用</strong>內容越長，佔用的上下文與 API 費用可能越高，請依需求調整擷取範圍或模式。</div>
-
-<h2>智慧捲動</h2>
-<p>支援虛擬捲動與延遲載入偵測，盡量將可見或可展開的內容納入擷取範圍。</p>
+<p>依頁型智能提取文章結構或可見文字，不套用字元上限。若精簡內容覆蓋率不足，會回退到較完整的可見正文。擷取在頁面副本處理，不會改動原網站排版。</p>
+<h3>Limited Capture（限制字數）</h3>
+<p>在智能擷取後套用字元上限；新安裝或尚未設定時預設為 <strong>50,000</strong>，可設定 1,000–200,000 字元。既有使用者已儲存的數值保持不變。</p>
+<h3>Full Page（整個頁面）</h3>
+<p>擷取並傳送頁面中已載入的全部內容，不套用字元上限；適合智能模式漏掉重要內容時使用。</p>
+<h2>內容完整性</h2>
+<p>未載入的虛擬內容、收合區域、iframe、canvas、Shadow DOM 或字數截斷可能造成缺漏。引用卡片會標示<strong>可能不完整</strong>，並提醒 AI 不能將擷取內容視為完整資料。需要時先在原頁面展開或載入內容，再重新引用。</p>
+<div class="callout warning"><strong>⚠️ 上下文用量</strong>Smart Capture 與 Full Page 不設字元上限，內容越長，模型上下文與 API 用量越高；需要控制用量時選擇 Limited Capture。</div>
 
 <h2>追蹤擷取狀態</h2>
 <p>系統會記錄 URL，避免在同一頁面重複擷取時產生多餘負擔。</p>

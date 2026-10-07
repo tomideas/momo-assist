@@ -72,14 +72,16 @@
 </ul>
 
 <h2>Auto-Scroll</h2>
-<p>The conversation automatically follows the latest content. If you manually scroll up to view earlier messages, auto-scroll will pause. Click the <strong>⬇</strong> button to resume following the latest content.</p>
+<p>The conversation automatically follows the latest content. If you manually scroll up to view earlier messages, auto-scroll will pause. Returning to the bottom, scrolling down near the bottom, or clicking <strong>⬇</strong> resumes following. Collapsing thinking sections or content reflow does not count as manual upward scrolling.</p>
 <p>When an AI reply includes images (stickers or Markdown images), layout height may change after images finish loading. In auto-follow mode, Momo scrolls to the bottom again so the last text is not hidden behind the input area.</p>
 
 <h2>Streaming Responses</h2>
 <p>Responses are streamed via SSE (Server-Sent Events). Different update frequencies are used based on response length: <strong>short responses</strong> update approximately every 80ms, <strong>medium</strong> every 300ms, and <strong>long</strong> every 800ms, balancing smoothness and performance.</p>
 
+<p>Streaming retains completed paragraphs and incrementally updates the last segment. Very long responses display plain text while generating, then render Markdown on completion. Long-chat requests include only recent two-turn history images; older images remain in local history.</p>
+
 <h2>Welcome Screen &amp; Prompt Suggestions</h2>
-<p>When no conversation has started, a welcome screen shows <strong>Prompt Suggestions</strong> for one-click starters. See <a href="system-prompts.html">System Prompts</a> for details.</p>
+<p>Before chatting, a Momo animation plays once and stops, alongside wrapping outlined <strong>Prompt Suggestions</strong> for one-click starters. See <a href="system-prompts.html">System Prompts</a> for details.</p>
 <p>The system prompt selector in the top toolbar appears only when at least one prompt is set to <strong>visible</strong>. <strong>MoMo</strong> is active by default.</p>
 
 <h2 id="edit-messages">Edit Messages</h2>

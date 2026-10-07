@@ -72,14 +72,16 @@
 </ul>
 
 <h2>自動捲動</h2>
-<p>對話會自動跟隨最新內容；若你手動向上捲動檢視較早訊息，自動捲動會暫停。點擊 <strong>⬇</strong> 按鈕可恢復跟隨最新內容。</p>
+<p>對話會自動跟隨最新內容；若你手動向上捲動檢視較早訊息，自動捲動會暫停。回到底部、往下捲至接近底部，或點擊 <strong>⬇</strong> 按鈕，都會恢復跟隨。思考區塊收起或內容重新排版不會被當成手動上捲。</p>
 <p>若 AI 回覆包含圖片（含貼圖或 Markdown 圖片），圖片載入完成後高度可能延後變化；處於自動跟隨狀態時會補捲到底部，避免最後文字被輸入區遮住。</p>
 
 <h2>串流回覆</h2>
 <p>回覆以 SSE（Server-Sent Events）串流傳送。依回覆長度採用不同更新頻率：<strong>短回覆</strong>約每 80ms、<strong>中</strong>約 300ms、<strong>長</strong>約 800ms 更新一次，以平衡流暢度與效能。</p>
 
+<p>串流會保留已完成段落，只增量更新最後一段。超長回覆在生成期間先顯示純文字，結束後恢復 Markdown。長對話送出時只附上最近兩輪的歷史圖片，較舊圖片保留在本機記錄。</p>
+
 <h2>歡迎畫面與 Prompt Suggestions</h2>
-<p>尚未開始對話時會顯示歡迎畫面與 <strong>Prompt Suggestions</strong>（快捷提示），可一鍵開始聊天。詳見 <a href="system-prompts.html">系統提示詞</a> 頁面的 Prompt Suggestions 說明。</p>
+<p>尚未開始對話時會顯示播放一次後停留的 Momo 動畫，以及橫向排列、可換行的 <strong>Prompt Suggestions</strong>（快捷提示），可一鍵開始聊天。詳見 <a href="system-prompts.html">系統提示詞</a> 頁面的 Prompt Suggestions 說明。</p>
 <p>頂部工具列的系統提示詞選擇器僅在至少一個提示詞設為<strong>可見</strong>時顯示；預設 <strong>MoMo</strong> 為啟用狀態。</p>
 
 <h2 id="edit-messages">編輯訊息</h2>

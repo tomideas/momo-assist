@@ -50,6 +50,66 @@
 <main class="main-content">
 <h1>Changelog</h1>
 
+<h2>v2.22.32 (2026-10-06)</h2>
+<p><strong>Azure OpenAI and provider menu:</strong> Added Azure OpenAI with a user-defined resource Base URL and deployment names as model names. The provider menu shows enabled-model counts; Custom stays first and the remaining providers are sorted by name.</p>
+
+<h2>v2.22.31 (2026-10-06)</h2>
+<p><strong>Animated Momo and streaming performance:</strong> The welcome screen uses a transparent WebP animation that plays once, with Momo enlarged by 1.25×. Fixed delayed answers after thinking collapses. Auto-scroll pauses on user upward navigation and resumes near the bottom. Incremental rendering and batched session saves reduce stutter.</p>
+
+<h2>v2.22.30 (2026-09-26)</h2>
+<p><strong>Welcome layout and text size:</strong> Fixed overlap between the greeting and Momo while preserving greeting size in narrow panels. Input text stays at 14px; suggestions follow the conversation font size and use wrapping outlined pills. The settings slider displays the current size immediately.</p>
+
+<h2>v2.22.29 (2026-09-16)</h2>
+<p><strong>Provider defaults and version display:</strong> Updated bundled models and added Cerebras, Fireworks AI, Perplexity, and SiliconFlow. Fixed the model name used for Custom connection tests. Settings now displays the installed extension version at the bottom.</p>
+
+<h2>v2.22.28 (2026-09-14)</h2>
+<p><strong>Product name:</strong> Unified the product name as Momo: AI Assist across the extension, README, and manual; historical entries retain their original names.</p>
+
+<h2>v2.22.27 (2026-09-14)</h2>
+<p><strong>Connection testing:</strong> Connection tests now use an authenticated inference request instead of a potentially public model list. HTTP 401/403 indicates key or proxy authorization failure.</p>
+
+<h2>v2.22.26 (2026-07-28)</h2>
+<p><strong>First-request language policy:</strong> Global, interface, or fixed reply-language guidance is added only to the first request of a new chat. Later replies follow the conversation and explicit user language changes. Suggestion and translation overrides apply only to their current request.</p>
+
+<h2>v2.22.25 (2026-07-28)</h2>
+<p><strong>Conversation language continuity:</strong> An explicitly requested reply language continues in later turns until changed again, instead of resetting to the interface or global default.</p>
+
+<h2>v2.22.24 (2026-07-28)</h2>
+<p><strong>First use without a model:</strong> Language settings can be saved before configuring a model. Sending without an available model preserves the input and directs users to settings instead of using a nonexistent fallback model.</p>
+
+<h2>v2.22.23 (2026-07-28)</h2>
+<p><strong>Reply-language descriptions:</strong> Renamed the default option to Message language (default). The description updates with the selection and distinguishes message, interface, and fixed languages.</p>
+
+<h2>v2.22.22 (2026-07-28)</h2>
+<p><strong>Compact language menus:</strong> Shortened language option labels to avoid clipping in narrow menus while retaining full behavior in field descriptions.</p>
+
+<h2>v2.22.21 (2026-07-28)</h2>
+<p><strong>Reply-language policy guidance:</strong> Clarified inheritance and overrides across global settings, system prompts, suggestions, and translation target languages.</p>
+
+<h2>v2.22.20 (2026-07-28)</h2>
+<p><strong>Suggestions follow reply language:</strong> Summarize, Improve writing, and Continue writing inherit the AI reply language. Built-in suggestions migrate while preserving edited titles and content.</p>
+
+<h2>v2.22.19 (2026-07-28)</h2>
+<p><strong>AI reply language:</strong> Added a separate AI reply-language setting supporting message language, interface language, Traditional Chinese, Simplified Chinese, English, Japanese, and Korean. Prompts and suggestions can override it; explicit user requests take priority.</p>
+
+<h2>v2.22.18 (2026-07-28)</h2>
+<p><strong>Config backup spacing:</strong> Increased spacing between the Config backup heading and divider.</p>
+
+<h2>v2.22.17 (2026-07-28)</h2>
+<p><strong>Prompt configuration density:</strong> Reduced prompt and suggestion card height, padding, and corner radius to show more items while preserving button hit areas.</p>
+
+<h2>v2.22.16 (2026-07-28)</h2>
+<p><strong>Web-search accuracy:</strong> Enabled search follows message intent; explicit search requests also work when the toggle is off. Search context is injected once and successful URL reads avoid redundant searches. Added source deduplication, relevance ranking, relevant body excerpts, and handling of webpage content as untrusted data.</p>
+
+<h2>v2.22.15 (2026-07-28)</h2>
+<p><strong>Page-capture completeness:</strong> Simplified modes to Smart Capture, Limited Capture, and Full Page. Only Limited applies a character cap, defaulting to 50,000. Improved text coverage on SPAs, product pages, and pricing pages. Unloaded, collapsed, or truncated content is marked as potentially incomplete. Fixed double scrollbars in short windows.</p>
+
+<h2>v2.22.14 (2026-06-26)</h2>
+<p><strong>Search reads page bodies by default:</strong> Quick search is off by default, so search also reads the page bodies of the first three results. Enable quick mode to use summaries only.</p>
+
+<h2>v2.22.13 (2026-06-26)</h2>
+<p><strong>Search and long-chat stability:</strong> Fixed the ineffective search toggle (search behavior was later adjusted in v2.22.16). Only recent two-turn history images are hydrated for sending. Very long streams use plain text until completion, then render Markdown. Added storage-quota cleanup retries and cleared leftover stream timers.</p>
+
 <h2>v2.22.12 (2026-06-08)</h2>
 <p><strong>TTS semantic symbols:</strong> <code>&amp;</code>, <code>%</code>, <code>+</code>, <code>=</code>, <code>×</code>, <code>&lt;</code>, <code>&gt;</code>, <code>@</code>, and common currency symbols are converted to natural words before speech; other punctuation and decorative symbols are used only for pauses, not spoken.</p>
 

@@ -70,6 +70,7 @@ function normalizeOpenClawGatewayUrl(url) {
 /* ── Provider icon mapping ── */
 const PROVIDER_ICONS = {
   anthropic: 'assets/icons/anthropic.svg',
+  azure:     'assets/icons/azure.svg',
   bigmodel:  'assets/icons/zhipu-color.svg',
   cerebras:  'assets/icons/cerebras.svg',
   chutes:    'assets/icons/chutes.png',
@@ -111,6 +112,11 @@ const PROVIDER_DEFAULTS = {
     baseUrl: 'https://api.anthropic.com/v1',
     models: ['claude-opus-5', 'claude-sonnet-5', 'claude-fable-5-1'],
     testModel: 'claude-sonnet-5'
+  },
+  azure: {
+    id: 'azure', name: 'Azure OpenAI',
+    baseUrl: '',
+    models: []
   },
   bigmodel: {
     id: 'bigmodel', name: 'BigModel (Zhipu)',
@@ -293,10 +299,10 @@ function resolveProviderTestModel(providerId, models, selectedModelUid = '') {
     || '';
 }
 
-/* Keep current OpenAI reasoning models compatible with the Chat Completions API. */
+/* Keep current OpenAI reasoning models (incl. Azure deployments named after them) compatible with the Chat Completions API. */
 function adaptChatCompletionRequest(providerId, modelName, body) {
   const request = { ...(body || {}) };
-  const isCurrentOpenAIModel = providerId === 'openai' && /^gpt-(?:5(?:\.|-)|6(?:\.|-))/i.test(String(modelName || ''));
+  const isCurrentOpenAIModel = (providerId === 'openai' || providerId === 'azure') && /^gpt-(?:5(?:\.|-)|6(?:\.|-))/i.test(String(modelName || ''));
   if (!isCurrentOpenAIModel) return request;
 
   delete request.temperature;

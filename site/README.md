@@ -1,6 +1,6 @@
 # Momo 說明文件（HTML）
 
-本目錄是 **Momo: AI Assist** 的使用者說明書，與擴充功能原始碼同屬 [momo-assist](https://github.com/tomideas/momo-assist) repo。
+本目錄是 **Momo: AI Assist v2.22.32** 的繁體中文／英文使用者說明書，與擴充功能原始碼同屬 [momo-assist](https://github.com/tomideas/momo-assist) repo。
 
 ## 閱讀方式
 

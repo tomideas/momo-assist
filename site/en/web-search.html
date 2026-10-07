@@ -72,47 +72,22 @@
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <td>Google</td>
-      <td>Free</td>
-      <td>Not required</td>
-      <td>Default</td>
-    </tr>
-    <tr>
-      <td>DuckDuckGo</td>
-      <td>Free</td>
-      <td>Not required</td>
-      <td>HTML scraping</td>
-    </tr>
-    <tr>
-      <td>SearXNG</td>
-      <td>Free</td>
-      <td>Not required</td>
-      <td>Open-source meta search</td>
-    </tr>
-    <tr>
-      <td>Brave</td>
-      <td>Free tier</td>
-      <td>Required</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Tavily</td>
-      <td>Free tier</td>
-      <td>Required</td>
-      <td>—</td>
-    </tr>
+    <tr><td>DuckDuckGo (default)</td><td>Free</td><td>Not required</td><td>HTML scraping</td></tr>
+    <tr><td>Brave</td><td>Provider plan</td><td>Required</td><td>Search API</td></tr>
+    <tr><td>Tavily</td><td>Provider plan</td><td>Required</td><td>AI Search API</td></tr>
   </tbody>
 </table>
 
 <h3>OpenRouter Server-Side Search</h3>
-<p>When using OpenRouter, the <code>:online</code> feature is automatically enabled, powered by the Exa engine.</p>
+<p>OpenRouter uses extension-side search results first. When search is needed but client-side search fails or returns no usable results, it falls back to <code>:online</code> server-side search.</p>
 
 <h2>Search Modes</h2>
 <ul>
-  <li><strong>Quick Search</strong>: Summaries only, fast.</li>
-  <li><strong>Off</strong>: Visits pages to retrieve content, slower but more accurate.</li>
+  <li><strong>Quick Search on</strong>: Uses search summaries only for faster results.</li>
+  <li><strong>Quick Search off (default)</strong>: Also reads page bodies from the first three results for more complete evidence.</li>
 </ul>
+
+<p>Successfully reading a URL in your message does not automatically trigger another search. Additional searches are used for explicit requests for recent information, comparisons, or further research. Sources are deduplicated and ranked by relevance.</p>
 
 <h2>Search Settings</h2>
 <p>In settings you can adjust: search engine, number of results (1–20), quick search mode, auto-visit URLs, default search on, and test search.</p>

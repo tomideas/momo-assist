@@ -59,25 +59,31 @@
 <h2>支援的供應商</h2>
 
 <h3>雲端供應商</h3>
+<p>以下為 v2.22.32 內建的端點與預設模型；實際可用模型依供應商帳號與部署而定，可在設定中修改。Anthropic 使用 Messages API adapter，其餘 HTTP 供應商使用 OpenAI 相容介面。</p>
 <ul>
-  <li><strong>OpenAI</strong>：<code>api.openai.com/v1</code> — 例如 GPT-5.4、GPT-5.4-mini 等；需 API 金鑰。</li>
-  <li><strong>Anthropic (Claude)</strong>：<code>api.anthropic.com/v1</code> — 使用 Messages API adapter；例如 claude-sonnet-4-5、claude-opus-4-1。</li>
-  <li><strong>Google AI (Gemini)</strong>：<code>generativelanguage.googleapis.com/v1beta/openai</code> — Gemini 3 Flash 系列；支援思考模式。</li>
-  <li><strong>DeepSeek</strong>：<code>api.deepseek.com/v1</code> — <code>deepseek-chat</code> / <code>deepseek-reasoner</code>；Reasoner 始終進行推理。</li>
-  <li><strong>Qwen</strong>：<code>dashscope.aliyuncs.com/compatible-mode/v1</code> — 如 qwen3.5-plus、qwen3.5-flash 等；支援 <code>enable_thinking</code>。</li>
-  <li><strong>xAI</strong>：<code>api.x.ai/v1</code> — grok-4、grok-4-fast 等。</li>
-  <li><strong>Mistral</strong>：<code>api.mistral.ai/v1</code> — mistral-large-latest、mistral-small-latest 等。</li>
-  <li><strong>OpenRouter</strong>：<code>openrouter.ai/api/v1</code> — 聚合多模型；支援 <code>:online</code> 伺服器端搜尋。</li>
-  <li><strong>Together AI</strong>：<code>api.together.xyz/v1</code></li>
-  <li><strong>Hugging Face</strong>：<code>router.huggingface.co/v1</code></li>
-  <li><strong>Vercel AI Gateway</strong>：<code>ai-gateway.vercel.sh/v1</code></li>
-  <li><strong>Novita AI</strong>：<code>api.novita.ai/v3/openai</code></li>
-  <li><strong>Chutes</strong>：<code>llm.chutes.ai/v1</code></li>
-  <li><strong>BigModel (Zhipu)</strong>：<code>open.bigmodel.cn/api/paas/v4</code></li>
-  <li><strong>Moonshot (Kimi)</strong>：<code>api.moonshot.cn/v1</code> — kimi-k2.5、kimi-k2 等。</li>
-  <li><strong>MiniMax</strong>：<code>api.minimaxi.chat/v1</code> — MiniMax-Text-01 等。</li>
-  <li><strong>Groq</strong>：<code>api.groq.com/openai/v1</code> — 高速推理；預設如 <code>openai/gpt-oss-120b</code>、<code>meta-llama/llama-4-scout-17b-16e-instruct</code>；需 API 金鑰。</li>
-  <li><strong>NVIDIA NIM</strong>：<code>integrate.api.nvidia.com/v1</code></li>
+  <li><strong>Anthropic (Claude)</strong>: <code>api.anthropic.com/v1</code> — <code>claude-opus-5</code>、<code>claude-sonnet-5</code>、<code>claude-fable-5-1</code></li>
+  <li><strong>Azure OpenAI</strong>: <code>&lt;resource&gt;.openai.azure.com/openai/v1</code> — 自行填入資源的 Base URL，模型名稱使用 Azure 部署名稱。</li>
+  <li><strong>BigModel (Zhipu)</strong>: <code>open.bigmodel.cn/api/paas/v4</code> — <code>glm-5.2</code>、<code>glm-5v-turbo</code></li>
+  <li><strong>Cerebras</strong>: <code>api.cerebras.ai/v1</code> — <code>gpt-oss-120b</code>、<code>zai-glm-4.7</code></li>
+  <li><strong>Chutes</strong>: <code>llm.chutes.ai/v1</code> — <code>moonshotai/Kimi-K3-TEE</code>、<code>Qwen/Qwen3.8-27B-TEE</code>、<code>deepseek-ai/DeepSeek-V4-Flash-0731-TEE</code></li>
+  <li><strong>DeepSeek</strong>: <code>api.deepseek.com/v1</code> — <code>deepseek-flash</code></li>
+  <li><strong>Fireworks AI</strong>: <code>api.fireworks.ai/inference/v1</code> — <code>accounts/fireworks/models/glm-5p2</code>、<code>accounts/fireworks/models/kimi-k2p7-code</code>、<code>accounts/fireworks/models/kimi-k2p6</code></li>
+  <li><strong>Google AI</strong>: <code>generativelanguage.googleapis.com/v1beta/openai</code> — <code>gemini-3.8-flash</code>、<code>gemini-3.5-flash-lite</code>、<code>gemini-3.1-pro-preview</code></li>
+  <li><strong>Groq</strong>: <code>api.groq.com/openai/v1</code> — <code>openai/gpt-oss-120b</code>、<code>openai/gpt-oss-20b</code>、<code>llama-3.3-70b-versatile</code></li>
+  <li><strong>Hugging Face</strong>: <code>router.huggingface.co/v1</code> — <code>zai-org/GLM-5.3-Flash</code>、<code>deepseek-ai/DeepSeek-V4.1-Flash</code>、<code>Qwen/Qwen3.8-27B</code></li>
+  <li><strong>MiniMax</strong>: <code>api.minimax.io/v1</code> — <code>MiniMax-M3</code>、<code>MiniMax-M2.7</code>、<code>MiniMax-M2.7-highspeed</code></li>
+  <li><strong>Mistral</strong>: <code>api.mistral.ai/v1</code> — <code>mistral-medium-3-5</code>、<code>mistral-small-2603</code></li>
+  <li><strong>Moonshot</strong>: <code>api.moonshot.cn/v1</code> — <code>kimi-k2.5</code></li>
+  <li><strong>Novita AI</strong>: <code>api.novita.ai/openai</code> — <code>zai-org/glm-5.3-flash</code>、<code>deepseek/deepseek-v4.1-flash</code>、<code>moonshotai/kimi-k3</code></li>
+  <li><strong>NVIDIA</strong>: <code>integrate.api.nvidia.com/v1</code> — <code>nvidia/nemotron-3.5-lightning-30b-a3b</code>、<code>nvidia/nemotron-3-ultra-550b-a55b</code>、<code>nvidia/nemotron-3-nano-omni-30b-a3b-reasoning</code></li>
+  <li><strong>OpenAI</strong>: <code>api.openai.com/v1</code> — <code>gpt-6-astra</code>、<code>gpt-5.6-terra</code>、<code>gpt-5.6-luna</code></li>
+  <li><strong>OpenRouter</strong>: <code>openrouter.ai/api/v1</code> — <code>openai/gpt-6-astra</code>、<code>anthropic/claude-sonnet-5</code>、<code>google/gemini-3.8-flash</code></li>
+  <li><strong>Perplexity</strong>: <code>api.perplexity.ai</code> — <code>sonar</code>、<code>sonar-pro</code>、<code>sonar-reasoning-pro</code>、<code>sonar-deep-research</code></li>
+  <li><strong>Qwen</strong>: <code>dashscope.aliyuncs.com/compatible-mode/v1</code> — <code>qwen3.8-max</code>、<code>qwen3.8-flash</code></li>
+  <li><strong>SiliconFlow</strong>: <code>api.siliconflow.com/v1</code> — <code>zai-org/GLM-5.3-Flash</code>、<code>deepseek-ai/DeepSeek-V4-Flash-0731</code>、<code>Qwen/Qwen3.8-2.4T-A95B</code></li>
+  <li><strong>Together AI</strong>: <code>api.together.xyz/v1</code> — <code>MiniMaxAI/MiniMax-M2.7</code>、<code>moonshotai/Kimi-K2.6</code>、<code>deepseek-ai/DeepSeek-V4-Pro</code></li>
+  <li><strong>Vercel AI Gateway</strong>: <code>ai-gateway.vercel.sh/v1</code> — <code>openai/gpt-6-astra</code>、<code>anthropic/claude-sonnet-5</code>、<code>google/gemini-3.8-flash</code></li>
+  <li><strong>xAI</strong>: <code>api.x.ai/v1</code> — <code>grok-4.6</code>、<code>grok-4.5</code>、<code>grok-4.3</code></li>
 </ul>
 
 <h3>自訂供應商</h3>
@@ -99,6 +105,7 @@
   <thead><tr><th>供應商</th><th>申請連結</th></tr></thead>
   <tbody>
     <tr><td>OpenAI</td><td><a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a></td></tr>
+    <tr><td>Azure OpenAI</td><td><a href="https://ai.azure.com/" target="_blank">ai.azure.com</a></td></tr>
     <tr><td>Anthropic</td><td><a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com/settings/keys</a></td></tr>
     <tr><td>Google AI</td><td><a href="https://aistudio.google.com/api-keys" target="_blank">aistudio.google.com/api-keys</a></td></tr>
     <tr><td>DeepSeek</td><td><a href="https://platform.deepseek.com/api_keys" target="_blank">platform.deepseek.com/api_keys</a></td></tr>
@@ -144,6 +151,13 @@ API_SERVER_CORS_ORIGINS=*</code></pre>
   <li>編輯舊 user message 時，Hermes 會<strong>追加新訊息</strong>重新送給 agent，不截斷本地歷史；詳見<a href="sidebar-chat.html#edit-messages">側邊欄聊天 — 編輯訊息</a>。</li>
 </ul>
 
+<h2>Azure OpenAI 設定</h2>
+<ol>
+  <li>選擇 <strong>Azure OpenAI</strong>，填入完整 Base URL，例如 <code>https://&lt;resource&gt;.openai.azure.com/openai/v1</code>。</li>
+  <li>填入資源的 API 金鑰，新增模型並以 Azure 上的<strong>部署名稱</strong>作為模型名稱，然後啟用。</li>
+  <li>按<strong>測試連線</strong>驗證設定。GPT-5／GPT-6 系列名稱的部署自動使用相容的請求參數。</li>
+</ol>
+
 <h2>設定供應商</h2>
 <ol>
   <li>開啟側邊欄，點擊右上角 <strong>設定</strong>（⚙️）。</li>
@@ -153,8 +167,10 @@ API_SERVER_CORS_ORIGINS=*</code></pre>
   <li>使用 <strong>測試連線</strong> 確認金鑰與網路可正常連線後再開始對話。</li>
 </ol>
 
+<p>供應商下拉選單將 <strong>Custom</strong> 固定在最上方，其餘依名稱排序。有啟用模型的供應商會顯示星芒圖示與數量；沒有啟用模型則不顯示數字。</p>
+
 <h2>模型管理</h2>
-<p>每個供應商預設提供 2 個主流模型（預設關閉），你可以完整管理：</p>
+<p>多數雲端供應商提供預設模型（初始為關閉）；Azure 與 Custom 需自行新增模型，本地模型依服務設定。你可以完整管理：</p>
 <ul>
   <li><strong>新增</strong> / <strong>刪除</strong> 模型項目（包括預設模型也可刪除或重新命名）</li>
   <li><strong>啟用</strong> / <strong>停用</strong> 個別模型</li>
@@ -177,7 +193,7 @@ API_SERVER_CORS_ORIGINS=*</code></pre>
   <li>選擇 Session 後，側邊欄會自動載入該 Session 的對話記錄。</li>
   <li>模型開關會自動啟用，顯示為 <code>openclaw</code>。</li>
 </ol>
-<p>點擊 <strong>Setup Guide</strong> 可查看完整的伺服器架設與裝置認證教學。</p>
+<p>點擊 <strong>Setup Guide</strong> 可查看完整的伺服器架設、Gateway Token 與 Connect 連線教學。</p>
 <p>若 Gateway 回覆包含 HTTP 圖片（<code>image</code> / <code>image_url</code> content part，或文字中的 <code>MEDIA:&lt;url&gt;</code>），Momo 會自動下載並在對話中內嵌顯示；詳見<a href="image-upload.html#ai-reply-images">圖片上傳 — AI 回覆中的圖片</a>。</p>
 <p>編輯舊 user message 時，OpenClaw 會<strong>追加新訊息</strong>重新送給 gateway，不截斷本地歷史；詳見<a href="sidebar-chat.html#edit-messages">側邊欄聊天 — 編輯訊息</a>。</p>
 

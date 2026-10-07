@@ -79,6 +79,12 @@ test('current OpenAI chat requests omit unsupported sampling parameters', () => 
   assert.equal(body.max_completion_tokens, 32);
 });
 
+test('Azure OpenAI deployments of current models get the same adaptation', () => {
+  const body = adaptChatCompletionRequest('azure', 'gpt-5.6-luna', { temperature: 0.7, max_tokens: 32 });
+  assert.equal(body.temperature, undefined);
+  assert.equal(body.max_completion_tokens, 32);
+});
+
 test('request adaptation does not rewrite other providers', () => {
   const body = adaptChatCompletionRequest('openrouter', 'openai/gpt-6-astra', {
     temperature: 0.7,
